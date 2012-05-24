@@ -1,0 +1,316 @@
+/* general */
+.it        { font-style:italic }                    /* DESpecs: _ _ and attribute "it" */
+.bf        { font-weight:bold }                     /* DESpecs: <bf> */
+.sc        { font-variant:small-caps }              /* DESpecs: <sc> */
+.sub       { vertical-align:sub; font-size:.8em }   /* DESpecs: <_>  */ /* line-height:1em; ? */
+.super     { vertical-align:super; font-size:.8em } /* DESpecs: <^> */
+.sm        { font-size:smaller }                    /* DESpecs: <sm>, if within <p> */
+.ul        { text-decoration:underline }            /* DESpecs: <ul> */
+.ol        { text-decoration:overline }             /* DESpecs: <ol> */
+.st        { text-decoration:line-through }         /* DESpecs: <st> */
+.red       { color:red }                            /* DESpecs: <red> */
+.sp        { letter-spacing:0.3em }                 /* DESpecs: <sp> */  /* "font-stretch:wider;" is deprecated */
+.center    { text-align:center }
+.fr        { font-family:'Lucida blackletter'}     /* preliminary representation of Fraktur */
+.rom       { font-family:'default'}
+
+/* unused */
+.setoff    { margin-left:2cm; margin-right:2cm }
+
+/* highlighting    */
+.highlight { background-color:#D3D3D3; }  /* LightGrey    */
+span.highlight.elem { background-color:#D3D3D3; }  /* LightGrey    */
+span.highlight.hit { background-color:#77DD77; }  /* pastell green  */
+
+/* xml presentation    */
+span.xml.elementName { font-weight:bold;color:purple; }
+span.xml.attributeName { font-weight:bold; }
+span.xml.attributeValue { color:blue; }
+span.xml.comment { color:green; font-style:italic; }
+ul.xml.element { margin-left:0px;padding-left:8px }
+ul.xml.element.highlight { background-color:#D3D3D3; }      /* LightGrey    */
+
+/* Paragraphs     */
+div.p { 
+  margin: 1.12em 0px;
+}
+
+/* drop cap (Initiale)     */
+span.dc {
+   float: left;
+   font-family: Georgia;
+   font-size: 250%;
+   line-height: 0.8em; 
+   text-transform: uppercase; /* immer als Gro§buchstabe */
+   margin-right: 10px;
+   padding-top: 1px;
+}
+span.dc-unmodified {
+   float: left;
+   font-family: Georgia;
+   font-size: 250%;
+   line-height: 0.8em; 
+   margin-right: 10px;
+   padding-top: 1px;
+}
+
+/* variables and numbers */
+span.var { font-style:italic; }
+span.var.segment { font-style:italic; text-decoration:overline; }
+span.var.line    { font-style:italic; text-decoration:underline; }
+span.var.gnomon  { font-style:italic; text-decoration:line-through; }
+span.num   { color:maroon }
+
+/* foreign languages     */
+span.foreign { color:#006400; }
+span.foreign a:link { color:#006400; }
+span.foreign a:visited { color:#1B370D; }
+span.foreign.el span.foreign.grc span.foreign.greek { color:#006400; } 
+span.foreign.en span.foreign.english { color:#006400; }  
+span.foreign.fr span.foreign.french { color:#006400; } 
+span.foreign.la span.foreign.latin { color:#006400; } 
+/*  .....    */
+
+/* XPointer highligting    */
+span.seg.highlight { background-color:#D3D3D3; }  /* LightGrey    */
+span.seg.highlight:before {
+  content: url('../images/linkto.png');
+  margin-left: 0.1em;
+  margin-right: 0.1em;
+}
+span.seg.highlightPoint {
+  background: url('../images/linkto.png') no-repeat center center;
+  padding: 0.1em 0.5em 0.1em 0.1em;
+  margin-left: 0.5em;
+  margin-right: 0.1em;
+}
+
+/* indentation at the beginning of a paragraph: <emph class="sc it"> */
+span.sc { font-weight:bold; }
+span.sc.it {font-weight:bold; font-style:italic; }
+
+/* ref               */
+span.ref a:link {text-decoration: underline; color: blue;}
+span.ref a:visited {text-decoration: none; color: #800080;}
+span.ref a:hover {text-decoration: underline; color: blue;}
+
+/* quotes */
+span.q     { font-style:italic; }
+div.quote { margin-left:10px; font-style:italic; }
+div.blockquote { margin-left:10px; font-style:normal; }
+div.set-off { margin-left:10px; font-style:italic; }
+
+/* dictionary / terminology     */
+span.term { color:purple; }  /* Blue   */
+span.entry { display:block; margin-bottom:20px;}
+span.entryDiv { margin-left:2em; display:block; margin-bottom:0.5em; margin-top:0.5em;}
+span.orth { font-weight:bold; }
+span.mentioned { font-style:italic; }
+
+/* notes     */
+span.note { font-style:italic; }
+span.note.margin.left { position:absolute; left:2em; width: 5em; font-style:normal; }
+span.note.margin.right { position:absolute; left:30em; width: 5em; font-style:normal; } 
+
+/* GIS elements    */
+span.place { color:#0000FF; }  /* Blue   */
+span.person  { color:#0000FF; }  /* Blue   */
+span.organization  { color:#0000FF; }  /* Blue   */
+span.time  { color:#0000FF; }  /* Blue   */
+span.event  { color:#0000FF; }  /* Blue  */
+
+/* preliminary representations of single/double/wavy/circled lines in Chinese text */
+span.sl { text-decoration:underline; }        /* DESpecs for Chinese: <sl> */
+span.dl { text-decoration:underline; }        /* DESpecs for Chinese: <dl> */
+span.wl { text-decoration:underline; }        /* DESpecs for Chinese: <wl> */
+span.cl { text-decoration:underline; }        /* DESpecs for Chinese: <cl> */
+
+/* sentence    */
+span.s.highlight { background-color:#D3D3D3; }  /* LightGrey    */
+span.s:hover { background-color:#D3D3D3; }      /* LightGrey    */
+span.s.it { font-style:italic; }
+
+/* highlighting    */
+span.hit.highlight { background-color:#77DD77; }  /* pastell green  */
+
+/* Links   */
+a.dictionary:link {text-decoration: none; color: #892B06;}
+a.dictionary:visited {text-decoration: none; color: #892B06;}
+a.dictionary:hover {text-decoration: underline; color: #892B06;}
+/* Note Links   */
+a.note {
+  color: blue;
+  margin-right: 0.2em;
+}
+a.note:before {
+  content: url('../images/linkback.png');
+  margin-left: 0.1em;
+  margin-right: 0.2em;
+}
+a.note:link { text-decoration: none; }
+a.note:visited { text-decoration: none; }
+a.note:hover { text-decoration: underline; }
+a.noteRef {
+  color: blue;
+  margin-right: 0.2em;
+}
+a.noteRef:before {
+  content: url('../images/linkto.png');
+  margin-left: 0.1em;
+  margin-right: 0.2em;
+}
+a.noteRef:link { text-decoration: none; }
+a.noteRef:visited { text-decoration: none; }
+a.noteRef:hover { text-decoration: underline; }
+/*
+a:link {text-decoration: none;}
+a:visited {text-decoration: none}
+a:active {text-decoration: none}
+a:hover {text-decoration: underline; color: red;}
+ */
+
+/* table     */
+table { margin-left:30px; }
+
+table.toc { width:100%; margin-left:1px; }
+
+/* page splittings: hr etc.   */
+hr.notesBottom {
+  border:none; 
+  border-top:2px dashed black; 
+  height:2px; 
+  color:#000000; 
+  background:transparent;
+}
+
+div.handwritten {
+  margin-left:10%; 
+} 
+
+/* divs */
+div.float.none {
+  margin-left:10%; 
+} 
+div.float.right {
+  float:right;
+  clear:both;
+  margin-right:10%
+}
+
+/* toc elements    */
+div.toc.float.right {
+    text-align:center;
+    vertical-align:top;
+  top:10%;
+  clear:right;
+  font-style:normal; 
+}
+div.toc.float.right a:link, a:visited {
+    text-decoration: none;
+    font-style: normal; 
+}
+div.toc.one   { 
+    clear: left;
+    text-align: left;
+    vertical-align:top;
+  float:left; 
+  margin-left:2%; 
+    width:75%;        
+}
+div.toc.two  { 
+    clear:left;
+    text-align: left;
+    vertical-align:top;
+  float:left; 
+  margin-left:2%; 
+    width:75%;        
+}
+div.toc.three { 
+    clear:left;
+    text-align: left;
+    vertical-align:top;
+  float:left; 
+  margin-left:2%; 
+    width:75%;        
+}
+div.toc.four div.toc.five div.toc.six div.toc.seven {   
+    clear:left;
+    text-align: left;
+    vertical-align:top;
+  float:left; 
+  margin-left:2%; 
+    width:75%;        
+}
+
+
+/* page styling for generating PDF documents with Flying Saucer */
+div.pageNumber {
+  display:none;
+}
+div.pageNumberOrig {
+  display:none;
+}
+div.countPages {
+  display:none;
+}
+div.countPlaces {
+  display:none;
+}
+div.countTocEntries {
+  display:none;
+}
+div.countFigureEntries {
+  display:none;
+}
+div.pageHeaderTitle {
+  font-weight:bold;
+  text-align:center;
+}
+body {
+    counter-reset: pn; 
+}
+div.page:before {
+  float:right;
+  font:11pt sans-serif;
+  font-weight:bold;
+  content:"[Page " counter(pn) "]";
+  counter-increment:pn;
+  page:pdfPage;
+  clear:both;
+}
+div.page {
+  page-break-after:always;
+  page:pdfPage;
+  clear:both;
+}
+@page pdfPage {
+  size:A4;
+  margin-top:0.7cm;
+  margin-bottom:0.7cm;
+  margin-left:0.7cm;
+  margin-right:0.7cm;
+  padding:0.2cm;
+  border:thin solid #808080;
+    @top-left { font: 11pt sans-serif; padding-left: 0.2cm; padding-right: 1cm; font-weight:bold;};
+    @top-right { font: 11pt sans-serif;  white-space: nowrap; font-weight:bold;};
+    @bottom-left { font: 11pt sans-serif;  white-space: nowrap; font-weight:bold;};
+    @bottom-right { font: 11pt sans-serif;  white-space: nowrap; content: counter(page);};
+}
+
+div.tocPage {
+  page-break-after:always;
+  page:tocPage;
+}
+@page tocPage {
+  size:A4;
+  margin-top:0.7cm;
+  margin-bottom:0.7cm;
+  margin-left:0.7cm;
+  margin-right:0.7cm;
+  padding:0.2cm;
+  border:thin solid #808080;
+    @top-left { font: 11pt sans-serif; padding-left: 0.2cm; padding-right: 1cm; font-weight:bold;};
+    @top-right { font: 11pt sans-serif;  white-space: nowrap; font-weight:bold;};
+    @bottom-left { font: 11pt sans-serif;  white-space: nowrap; font-weight:bold;};
+    @bottom-right { font: 11pt sans-serif;  white-space: nowrap; content: counter(page);};
+}
