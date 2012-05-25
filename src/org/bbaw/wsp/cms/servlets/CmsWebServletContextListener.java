@@ -55,6 +55,7 @@ public class CmsWebServletContextListener implements ServletContextListener {
       IndexHandler.getInstance().end();
       CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
       scheduler.end();
+      Thread.sleep(1000);  // with this, also the scheduler worker threads could be closed
       System.out.println(CmsWebServletContextListener.class.getName() + ": contextDestroyed");
     } catch (Exception e) {
       e.printStackTrace();
