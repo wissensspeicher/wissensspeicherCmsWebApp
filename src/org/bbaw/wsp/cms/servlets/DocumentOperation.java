@@ -37,7 +37,7 @@ public class DocumentOperation extends HttpServlet {
     String docId = request.getParameter("docId");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     String elementNames = request.getParameter("elementNames");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     if (elementNames == null)
-      elementNames = "s head caption variables description";
+      elementNames = "p div s head caption variables description";
     String operation = request.getParameter("operation");
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
