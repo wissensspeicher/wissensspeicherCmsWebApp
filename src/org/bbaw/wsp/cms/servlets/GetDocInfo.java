@@ -10,8 +10,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.saxon.s9api.QName;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmValue;
+
+import org.bbaw.wsp.cms.document.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
 
@@ -29,6 +35,7 @@ public class GetDocInfo extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     String docId = request.getParameter("docId");
+    String field = request.getParameter("field");
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "xml";
@@ -45,40 +52,53 @@ public class GetDocInfo extends HttpServlet {
       if (mdRecord != null) {
         out.print("<doc>");
         out.print("<id>" + docId + "</id>");
-        String echoId = mdRecord.getEchoId();
-        if (echoId != null)
-          out.print("<echoId>" + echoId + "</echoId>");
         String author = mdRecord.getCreator();
-        if (author != null)
+        if ((field == null || (field != null && field.equals("author"))) && author != null)
           out.print("<author>" + author + "</author>");
         String title = mdRecord.getTitle();
-        if (title != null)
+        if ((field == null || (field != null && field.equals("title"))) && title != null)
           out.print("<title>" + title + "</title>");
         String language = mdRecord.getLanguage();
-        if (language != null)
+        if ((field == null || (field != null && field.equals("language"))) && language != null)
           out.print("<language>" + language + "</language>");
         String date = mdRecord.getYear();
-        if (date != null)
+        if ((field == null || (field != null && field.equals("date"))) && date != null)
           out.print("<date>" + date + "</date>");
         String rights = mdRecord.getRights();
-        if (rights != null)
+        if ((field == null || (field != null && field.equals("rights"))) && rights != null)
           out.print("<rights>" + rights + "</rights>");
         String license = mdRecord.getLicense();
-        if (license != null)
+        if ((field == null || (field != null && field.equals("license"))) && license != null)
           out.print("<license>" + license + "</license>");
         String accessRights = mdRecord.getAccessRights();
-        if (accessRights != null)
+        if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
         int pageCount = mdRecord.getPageCount();
-        out.print("<countPages>" + pageCount + "</countPages>");
+        if (field == null || (field != null && field.equals("countPages")))
+          out.print("<countPages>" + pageCount + "</countPages>");
         Date lastModified = mdRecord.getLastModified();
-        if (lastModified != null) {
+        if ((field == null || (field != null && field.equals("lastModified"))) && lastModified != null) {
           String lastModifiedStr = new Util().toXsDate(lastModified);
           out.print("<lastModified>" + lastModifiedStr + "</lastModified>");
         }
         String schemaName = mdRecord.getSchemaName();
-        if (schemaName != null)
+        if ((field == null || (field != null && field.equals("schema"))) && schemaName != null)
           out.print("<schema>" + schemaName + "</schema>");
+        String echoId = mdRecord.getEchoId();
+        if ((field == null || (field != null && field.equals("echoId"))) && echoId != null)
+          out.print("<echoId>" + echoId + "</echoId>");
+        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("handwrittens"))) { 
+          XslResourceTransformer tocTransformer = new XslResourceTransformer("tocOut.xsl");
+          DocumentHandler docHandler = new DocumentHandler();
+          String docDir = docHandler.getDocDir(docId);
+          String tocFileName = docDir + "/toc.xml";
+          QName typeQName = new QName("type");
+          XdmValue typeXdmValue = new XdmAtomicValue(field);
+          tocTransformer.setParameter(typeQName, typeXdmValue);
+          // tocTransformer.setOutputProperty(Serializer.Property.METHOD, outputFormat);
+          String tocXmlStr = tocTransformer.transform(tocFileName);
+          out.print(tocXmlStr);
+        }
         out.print("</doc>");
         out.close();
       } else {
@@ -92,5 +112,4 @@ public class GetDocInfo extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     // TODO Auto-generated method stub
   }
-
 }
