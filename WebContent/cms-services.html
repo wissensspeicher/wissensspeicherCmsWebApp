@@ -173,7 +173,7 @@
           <li>language (optional)
             <ul>
               <li>ISO 639-3 specifier</li>
-              <li>default: "eng"</li>
+              <li>default: automatically derived from query</li>
             </ul>
           </li>
           <li>page (optional)
@@ -203,7 +203,8 @@
           <li>Example: <a href="query/QueryDocuments?query=tokenOrig:relatiuũ">all documents which contains "relatiuũ" in original content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenReg:relatiuum">all documents which contains "relatiuum" in regularized content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenNorm:relativum">all documents which contains "relativum" in normalized content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:praeclarus">all documents which contains morphological "praeclarus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:praeclarus">all documents which morphological contains "praeclarus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:schmutziges">all documents which morphological contains "schmutziges" in content (language is automatically detected)</a></li>
         </ul>
       </li>
     </ul>
