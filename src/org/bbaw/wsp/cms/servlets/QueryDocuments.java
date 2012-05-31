@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.document.Document;
 
 import org.bbaw.wsp.cms.lucene.IndexHandler;
-import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
+import org.bbaw.wsp.cms.translator.MicrosoftTranslator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -45,6 +45,11 @@ public class QueryDocuments extends HttpServlet {
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
+      if (language == null) {
+        ArrayList<String> queryTerms = indexHandler.fetchTerms(query);
+        String queryTermsStr = toString(queryTerms);
+        language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
+      }
       ArrayList<Document> docs = indexHandler.queryDocuments(query, language);
       int docsSize = 0;
       if (docs != null)
@@ -74,7 +79,7 @@ public class QueryDocuments extends HttpServlet {
       out.print("</hits>");
       out.print("</result>");
       out.close();
-    } catch (ApplicationException e) {
+    } catch (Exception e) {
       throw new ServletException(e);
     }
   }
@@ -83,4 +88,16 @@ public class QueryDocuments extends HttpServlet {
     // TODO Auto-generated method stub
   }
 
+  private String toString(ArrayList<String> queryForms) {
+    String queryFormsStr = "";
+    for (int i=0; i<queryForms.size(); i++) {
+      String form = queryForms.get(i);
+      queryFormsStr = queryFormsStr + form + " ";
+    }
+    if (queryForms == null || queryForms.size() == 0)
+      return null;
+    else
+      return queryFormsStr.substring(0, queryFormsStr.length() -1); 
+  }
+  
 }
