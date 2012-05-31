@@ -20,6 +20,7 @@ import org.xml.sax.XMLReader;
 
 import com.sun.org.apache.xerces.internal.parsers.SAXParser;
 
+import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.HighlightContentHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
@@ -44,16 +45,13 @@ public class QueryDocument extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String docId = request.getParameter("docId");
     String query = request.getParameter("query");
-    String attribute = request.getParameter("attribute");
-    if (attribute == null)
-      attribute = "tokenOrig";
     String[] normFunctions = {"none"};
-    if (attribute.equals("tokenReg"))
+    if (query.contains("tokenReg"))  // TODO ordentlich behandeln
       normFunctions[0] = "reg";
-    else if (attribute.equals("tokenNorm"))
+    else if (query.contains("tokenNorm"))  // TODO ordentlich behandeln
       normFunctions[0] = "norm";
     String[] outputOptions = {};
-    if (attribute.equals("tokenMorph")) {
+    if (query.contains("tokenMorph")) {  // TODO ordentlich behandeln
       outputOptions = new String[1];
       outputOptions[0] = "withLemmas";
     }
@@ -70,7 +68,8 @@ public class QueryDocument extends HttpServlet {
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      ArrayList<Document> docs = indexHandler.queryDocument(docId, attribute, query);
+      ArrayList<Document> docs = indexHandler.queryDocument(docId, query);
+      MetadataRecord docMetadataRecord = indexHandler.getDocMetadata(docId);
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
       else if (outputFormat.equals("html"))
@@ -80,9 +79,9 @@ public class QueryDocument extends HttpServlet {
       PrintWriter out = response.getWriter();
       String resultStr = "";
       if (outputFormat.equals("xml"))
-        resultStr = createXmlString(docId, attribute, query, page, pageSize, normFunctions, outputOptions, docs);
+        resultStr = createXmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, docs);
       else 
-        resultStr = createHtmlString(docId, attribute, query, page, pageSize, normFunctions, outputOptions, docs, request);
+        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, docs, request);
       out.print(resultStr);
       out.close();
     } catch (ApplicationException e) {
@@ -90,7 +89,8 @@ public class QueryDocument extends HttpServlet {
     }
   }
 
-  private String createXmlString(String docId, String attribute, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs) throws ApplicationException {
+  private String createXmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs) throws ApplicationException {
+    String docId = docMetadataRecord.getDocId();
     int docsSize = 0;
     if (docs != null)
       docsSize = docs.size();
@@ -102,7 +102,6 @@ public class QueryDocument extends HttpServlet {
     xmlStrBuilder.append("<document>");
     xmlStrBuilder.append("<id>" + docId + "</id>");
     xmlStrBuilder.append("<query>");
-    xmlStrBuilder.append("<attribute>" + attribute + "</attribute>");
     xmlStrBuilder.append("<queryText>" + query + "</queryText>");
     xmlStrBuilder.append("<resultPage>" + page + "</resultPage>");
     xmlStrBuilder.append("<resultPageSize>" + pageSize + "</resultPageSize>");
@@ -173,7 +172,8 @@ public class QueryDocument extends HttpServlet {
         String xmlPre = "<content xmlns:xhtml=\"http://www.w3.org/1999/xhtml\" xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
         String xmlPost = "</content>";
         String xmlInputStr = xmlPre + xmlContentTokenized + xmlPost;
-        String highlightedXmlStr = highlight(xmlInputStr, highlightQueryType, query);
+        String docLanguage = docMetadataRecord.getLanguage();
+        String highlightedXmlStr = highlight(xmlInputStr, highlightQueryType, query, docLanguage);
         if (highlightedXmlStr == null)
           highlightedXmlStr = "<content>" + xmlContentTokenized + "</content>";
         xmlStrBuilder.append(highlightedXmlStr);
@@ -185,7 +185,8 @@ public class QueryDocument extends HttpServlet {
     return xmlStrBuilder.toString();   
   }
   
-  private String createHtmlString(String docId, String attribute, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs, HttpServletRequest request) throws ApplicationException {
+  private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs, HttpServletRequest request) throws ApplicationException {
+    String docId = docMetadataRecord.getDocId();
     int docsSize = 0;
     if (docs != null)
       docsSize = docs.size();
@@ -200,10 +201,10 @@ public class QueryDocument extends HttpServlet {
     xmlStrBuilder.append("</head>");
     xmlStrBuilder.append("<body>");
     xmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
-    xmlStrBuilder.append("<td>[<i>This is a MPIWG CMS technology service</i>] <a href=\"/mpiwg-mpdl-cms-web/index.html\"><img src=\"/mpiwg-mpdl-cms-web/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
+    xmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW WSP CMS service\"/></a></td>");
     xmlStrBuilder.append("</table>");
     xmlStrBuilder.append("<p/>");
-    xmlStrBuilder.append("<h1>Query: " + "\"" + query + "\"" + " in: " + attribute + "</h1>");
+    xmlStrBuilder.append("<h1>Query: " + "\"" + query + "\"" + "</h1>");
     xmlStrBuilder.append("<h3>Document: " + docId + "</h3>");
     xmlStrBuilder.append("<table>");
     for (int i=from; i<=to; i++) {
@@ -234,11 +235,11 @@ public class QueryDocument extends HttpServlet {
       }
       String baseUrl = getBaseUrl(request);
       String highlightQueryType = "orig";
-      String normalizationStr = "";
       String highlightQueryTypeStr = "";
+      String normalizationStr = "";
       if (withLemmas(outputOptions)) {
-        highlightQueryTypeStr = "&highlightQueryType=morph";
-        highlightQueryType = "morph";
+        highlightQueryTypeStr = "&highlightQueryType=norm";
+        highlightQueryType = "norm";
       } else if (normFunctions != null) { 
         String normFunction = normFunctions[0];
         normalizationStr = "&normalization=" + normFunction;
@@ -248,13 +249,14 @@ public class QueryDocument extends HttpServlet {
           highlightQueryType = "orig";
         }
       }
-      String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
+      String language = docMetadataRecord.getLanguage();
+      String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query + "&language=" + language;
       xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
       String xmlContentTokenized = null;
       Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
       if (fXmlContentTokenized != null) {
         xmlContentTokenized = fXmlContentTokenized.stringValue();
-        String highlightedXmlStr = highlight(xmlContentTokenized, highlightQueryType, query);  
+        String highlightedXmlStr = highlight(xmlContentTokenized, highlightQueryType, query, language);  
         String highlightHtmlStr = highlightTransformer.transformStr(highlightedXmlStr);  // TODO performance: do not highlight each single node but highlight them all in one step
         xmlStrBuilder.append("</br>");
         xmlStrBuilder.append(highlightHtmlStr);
@@ -268,10 +270,10 @@ public class QueryDocument extends HttpServlet {
     return xmlStrBuilder.toString();   
   }
   
-  private String highlight(String xmlStr, String highlightQueryType, String highlightQuery) throws ApplicationException {
+  private String highlight(String xmlStr, String highlightQueryType, String highlightQuery, String language) throws ApplicationException {
     String result = null;
     try {
-      HighlightContentHandler highlightContentHandler = new HighlightContentHandler(null, -1, highlightQueryType, highlightQuery);
+      HighlightContentHandler highlightContentHandler = new HighlightContentHandler(null, -1, highlightQueryType, highlightQuery, language);
       highlightContentHandler.setFirstPageBreakReachedMode(true);
       XMLReader xmlParser = new SAXParser();
       xmlParser.setContentHandler(highlightContentHandler);

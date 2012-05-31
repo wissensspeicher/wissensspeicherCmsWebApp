@@ -54,6 +54,7 @@ public class GetPage extends HttpServlet {
     String highlightQueryType = request.getParameter("highlightQueryType");
     if (highlightQueryType == null)
       highlightQueryType = "form";
+    String language = request.getParameter("language");
     String highlightElem = request.getParameter("highlightElem");
     String highlightElemPosStr = request.getParameter("highlightElemPos");
     int highlightElemPos = -1;
@@ -90,7 +91,7 @@ public class GetPage extends HttpServlet {
           hiQueryType = "morph";
         else 
           hiQueryType = normalization;
-        fragment = highlight(fragment, highlightElem, highlightElemPos, hiQueryType, highlightQuery);
+        fragment = highlight(fragment, highlightElem, highlightElemPos, hiQueryType, highlightQuery, language);
       }
       if (outputFormat.equals("html")) {
         IndexHandler indexHandler = IndexHandler.getInstance();
@@ -154,10 +155,10 @@ public class GetPage extends HttpServlet {
     }
   }
   
-  private String highlight(String xmlStr, String highlightElem, int highlightElemPos, String highlightQueryType, String highlightQuery) throws ApplicationException {
+  private String highlight(String xmlStr, String highlightElem, int highlightElemPos, String highlightQueryType, String highlightQuery, String language) throws ApplicationException {
     String result = null;
     try {
-      HighlightContentHandler highlightContentHandler = new HighlightContentHandler(highlightElem, highlightElemPos, highlightQueryType, highlightQuery);
+      HighlightContentHandler highlightContentHandler = new HighlightContentHandler(highlightElem, highlightElemPos, highlightQueryType, highlightQuery, language);
       highlightContentHandler.setFirstPageBreakReachedMode(true);
       XMLReader xmlParser = new SAXParser();
       xmlParser.setContentHandler(highlightContentHandler);

@@ -19,6 +19,7 @@
 
 /* highlighting    */
 .highlight { background-color:#D3D3D3; }  /* LightGrey    */
+div.highlight.elem { background-color:#D3D3D3; }  /* LightGrey    */
 span.highlight.elem { background-color:#D3D3D3; }  /* LightGrey    */
 span.highlight.hit { background-color:#77DD77; }  /* pastell green  */
 
@@ -41,7 +42,7 @@ span.dc {
    font-family: Georgia;
    font-size: 250%;
    line-height: 0.8em; 
-   text-transform: uppercase; /* immer als Gro§buchstabe */
+   text-transform: uppercase; /* immer als Groï¿½buchstabe */
    margin-right: 10px;
    padding-top: 1px;
 }

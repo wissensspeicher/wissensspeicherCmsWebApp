@@ -2,13 +2,13 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Max Planck Institute for the History of Science - CMS Services</title>
+    <title>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</title>
   </head>
 <body>
-<h2>Max Planck Institute for the History of Science - CMS Services</h2>
+<h2>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</h2>
 
 <ul>
-  <li><b>Url: /mpiwg-mpdl-cms-web/doc/DocumentOperation</b>
+  <li><b>Url: /wspCmsWebApp/doc/DocumentOperation</b>
     <ul>
       <li>Request parameters
         <ul>
@@ -19,7 +19,7 @@
           </li>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/tei/de/dt-ptolemaeus-tei-merge2.xml")</li>
+              <li>document identifier of the document (e.g. "/tei/de/Marie_1969-12-13.xml")</li>
             </ul>
           </li>
           <li>elementNames (optional)
@@ -54,13 +54,13 @@
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/GetPage</b>
+  <li><b>Url: /wspCmsWebApp/query/GetPage</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/tei/de/dt-ptolemaeus-tei-merge2.xml")</li>
+              <li>document identifier of the document (e.g. "/tei/de/Marie_1969-12-13.xml")</li>
             </ul>
           </li>
           <li>page (optional)
@@ -140,31 +140,40 @@
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/QueryDocuments</b>
+  <li><b>Url: /wspCmsWebApp/query/QueryDocuments</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>query (required)
             <ul>
-              <li>Lucene query</li>
+              <li>Lucene query (e.g. +title:marie* +tokenMorph:gebrauchen +tokenMorph:schmutzig)
+	            <ul>
+	              <li>supported fields
+	                <ul>
+		              <li>docId</li>
+		              <li>identifier</li>
+		              <li>author</li>
+		              <li>title</li>
+		              <li>language</li>
+		              <li>date</li>
+		              <li>rights</li>
+		              <li>license</li>
+		              <li>accessRights</li>
+		              <li>tokenOrig</li>
+		              <li>tokenReg</li>
+		              <li>tokenNorm</li>
+		              <li>tokenMorph</li>
+		              <li>default: tokenOrig</li>
+		            </ul>
+		          </li>
+	            </ul>
+	          </li>
             </ul>
           </li>
-          <li>attribute (optional)
+          <li>language (optional)
             <ul>
-              <li>docId</li>
-              <li>identifier</li>
-              <li>author</li>
-              <li>title</li>
-              <li>language</li>
-              <li>date</li>
-              <li>rights</li>
-              <li>license</li>
-              <li>accessRights</li>
-              <li>tokenOrig</li>
-              <li>tokenReg</li>
-              <li>tokenNorm</li>
-              <li>tokenMorph</li>
-              <li>default: tokenOrig</li>
+              <li>ISO 639-3 specifier</li>
+              <li>default: "eng"</li>
             </ul>
           </li>
           <li>page (optional)
@@ -190,47 +199,50 @@
       <li>Response output
         <ul>
           <li>Documents matching the query</li>
-          <li>Example: <a href="query/QueryDocuments?query=tempore&attribute=tokenOrig">all documents which contains "tempore" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=relatiuũ&attribute=tokenOrig">all documents which contains "relatiuũ" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=relatiuum&attribute=tokenReg">all documents which contains "relatiuum" in regularized content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=relativum&attribute=tokenNorm">all documents which contains "relativum" in normalized content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=praeclarus&attribute=tokenMorph">all documents which contains morphological "praeclarus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:tempore">all documents which contains "tempore" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:relatiuũ">all documents which contains "relatiuũ" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenReg:relatiuum">all documents which contains "relatiuum" in regularized content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenNorm:relativum">all documents which contains "relativum" in normalized content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:praeclarus">all documents which contains morphological "praeclarus" in content</a></li>
         </ul>
       </li>
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/QueryDocument</b>
+  <li><b>Url: /wspCmsWebApp/query/QueryDocument</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/echo/la/Benedetti_1585.xml"</li>
+              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
             </ul>
           </li>
           <li>query (required)
             <ul>
-              <li>Lucene query</li>
-            </ul>
-          </li>
-          <li>attribute (optional)
-            <ul>
-              <li>identifier</li>
-              <li>language</li>
-              <li>pageNumber</li>
-              <li>lineNumber</li>
-              <li>elementName</li>
-              <li>elementPosition</li>
-              <li>elementAbsolutePosition</li>
-              <li>elementPagePosition</li>
-              <li>xmlId</li>
-              <li>xpath</li>
-              <li>tokenOrig</li>
-              <li>tokenReg</li>
-              <li>tokenNorm</li>
-              <li>tokenMorph</li>
-              <li>default: tokenOrig</li>
+              <li>Lucene query (e.g. +tokenMorph:gebrauchen +tokenMorph:schmutzig)
+	            <ul>
+	              <li>supported fields
+	                <ul>
+		              <li>identifier</li>
+		              <li>language</li>
+		              <li>pageNumber</li>
+		              <li>lineNumber</li>
+		              <li>elementName</li>
+		              <li>elementPosition</li>
+		              <li>elementAbsolutePosition</li>
+		              <li>elementPagePosition</li>
+		              <li>xmlId</li>
+		              <li>xpath</li>
+		              <li>tokenOrig</li>
+		              <li>tokenReg</li>
+		              <li>tokenNorm</li>
+		              <li>tokenMorph</li>
+		              <li>default: tokenOrig</li>
+		            </ul>
+		          </li>
+	            </ul>
+	          </li>
             </ul>
           </li>
           <li>page (optional)
@@ -257,23 +269,24 @@
       <li>Response output
         <ul>
           <li>nodes in document which matches the query, word tokens are extracted and hits are highlighted</li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tempore&attribute=tokenOrig">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (XML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tempore&attribute=tokenOrig&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=relatiuum&attribute=tokenReg">in /echo/la/Benedetti_1585.xml: all nodes which contains "relatiuum" in regularized content (XML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=praeclarus&attribute=tokenMorph&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains morphological "praeclarus" in content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/tei/en/Test_1789.xml&query=sentence&attribute=tokenOrig&outputFormat=html">in /tei/en/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenOrig:tempore">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenOrig:tempore&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenReg:relatiuum">in /echo/la/Benedetti_1585.xml: all nodes which contains "relatiuum" in regularized content (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenMorph:praeclarus&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains morphological "praeclarus" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/tei/en/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in /tei/en/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/tei/de/Marie_1969-12-13.xml&query=elementName:p">in /tei/de/Marie_1969-12-13.xml: all p elements (XML output)</a></li>
         </ul>
       </li>
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/GetToken</b>
+  <li><b>Url: /wspCmsWebApp/query/GetToken</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>docId (optional)
             <ul>
-              <li>document identifier (e.g. "/echo/la/Benedetti_1585.xml"</li>
+              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
             </ul>
           </li>
           <li>attribute (optional)
@@ -324,13 +337,13 @@
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/GetDocInfo</b>
+  <li><b>Url: /wspCmsWebApp/query/GetDocInfo</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/echo/la/Benedetti_1585.xml"</li>
+              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
             </ul>
           </li>
           <li>outputFormat (optional)
@@ -350,7 +363,7 @@
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/doc/GetDocumentJobs</b>
+  <li><b>Url: /wspCmsWebApp/doc/GetDocumentJobs</b>
     <ul>
       <li>Request parameters
         <ul>
@@ -376,7 +389,7 @@
     </ul>
   </li>
 
-  <li><b>Url: /mpiwg-mpdl-cms-web/query/QueryDocumentByXsl</b>
+  <li><b>Url: /wspCmsWebApp/query/QueryDocumentByXsl</b>
     <ul>
       <li>Request parameters
         <ul>

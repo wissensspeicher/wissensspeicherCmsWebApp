@@ -29,9 +29,7 @@ public class QueryDocuments extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
-    String attribute = request.getParameter("attribute");
-    if (attribute == null)
-      attribute = "tokenOrig";
+    String language = request.getParameter("language");
     String pageStr = request.getParameter("page");
     if (pageStr == null)
       pageStr = "1";
@@ -47,7 +45,7 @@ public class QueryDocuments extends HttpServlet {
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      ArrayList<Document> docs = indexHandler.queryDocuments(attribute, query);
+      ArrayList<Document> docs = indexHandler.queryDocuments(query, language);
       int docsSize = 0;
       if (docs != null)
         docsSize = docs.size();
@@ -62,7 +60,6 @@ public class QueryDocuments extends HttpServlet {
       PrintWriter out = response.getWriter();
       out.print("<result>");
       out.print("<query>");
-      out.print("<attribute>" + attribute + "</attribute>");
       out.print("<queryText>" + query + "</queryText>");
       out.print("<resultPage>" + page + "</resultPage>");
       out.print("<resultPageSize>" + pageSize + "</resultPageSize>");
