@@ -73,6 +73,11 @@ public class GetDocInfo extends HttpServlet {
         String accessRights = mdRecord.getAccessRights();
         if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
+        String echoId = mdRecord.getEchoId();
+        if ((field == null || (field != null && field.equals("echoId"))) && echoId != null)
+          out.print("<echoId>" + echoId + "</echoId>");
+        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
+          out.print("<system>");
         int pageCount = mdRecord.getPageCount();
         if (field == null || (field != null && field.equals("countPages")))
           out.print("<countPages>" + pageCount + "</countPages>");
@@ -84,10 +89,9 @@ public class GetDocInfo extends HttpServlet {
         String schemaName = mdRecord.getSchemaName();
         if ((field == null || (field != null && field.equals("schema"))) && schemaName != null)
           out.print("<schema>" + schemaName + "</schema>");
-        String echoId = mdRecord.getEchoId();
-        if ((field == null || (field != null && field.equals("echoId"))) && echoId != null)
-          out.print("<echoId>" + echoId + "</echoId>");
-        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("handwrittens"))) { 
+        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
+          out.print("</system>");
+        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("handwritten") || field.equals("pages"))) { 
           XslResourceTransformer tocTransformer = new XslResourceTransformer("tocOut.xsl");
           DocumentHandler docHandler = new DocumentHandler();
           String docDir = docHandler.getDocDir(docId);
