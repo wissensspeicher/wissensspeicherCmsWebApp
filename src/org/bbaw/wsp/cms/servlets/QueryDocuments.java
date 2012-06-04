@@ -14,7 +14,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
 import org.bbaw.wsp.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.bbaw.wsp.cms.translator.MicrosoftTranslator;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -59,7 +63,7 @@ public class QueryDocuments extends HttpServlet {
         to = docsSize - 1;
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
-      else if (outputFormat.equals("html"))
+      else if (outputFormat.equals("html") || outputFormat.equals("json"))
         response.setContentType("text/html");
       else 
         response.setContentType("text/xml");
@@ -93,7 +97,37 @@ public class QueryDocuments extends HttpServlet {
         out.print("</hits>");
         out.print("</result>");
       } else if (outputFormat.equals("json")) {
-        // TODO
+        WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+        jsonEncoder.clear();
+        jsonEncoder.putStrings("searchTerm", query);
+        jsonEncoder.putStrings("numberOfHits", String.valueOf(docsSize));  
+        JSONArray jsonArray = new JSONArray();  
+        for (int i=from; i<to; i++) {
+          JSONObject jsonWrapper = new JSONObject();
+          Document doc = docs.get(i);
+          Fieldable docUriField = doc.getFieldable("uri");
+          if (docUriField != null) {
+            String docUri = docUriField.stringValue();
+            jsonWrapper.put("uri", docUri);
+          }
+          String docId = doc.getFieldable("docId").stringValue();
+          jsonWrapper.put("docId", docId);
+          jsonArray.add(jsonWrapper);
+        }
+        //TODO
+        //jsonWrapper.put("projects", doc.get("projectIds"));
+        //JSONArray jasonFragents = new JSONArray();
+        //TODO
+//        for (int j = 0; j < fragements.length; j++) {
+//          if ((fragements[j] != null) && (fragements[j].getScore() > 0)) {
+//            out.println((fragements[j].toString()));
+//            //send to Json
+//            jasonFragents.add(ceckFragment(fragements[j].toString()));
+//          }
+//        }
+          jsonEncoder.putJsonObj("hits", jsonArray);
+          //send Json
+          out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       }
       out.close();
     } catch (Exception e) {
