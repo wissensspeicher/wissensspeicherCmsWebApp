@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
 
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.translator.MicrosoftTranslator;
@@ -63,21 +64,32 @@ public class QueryDocuments extends HttpServlet {
       else 
         response.setContentType("text/xml");
       PrintWriter out = response.getWriter();
-      out.print("<result>");
-      out.print("<query>");
-      out.print("<queryText>" + query + "</queryText>");
-      out.print("<resultPage>" + page + "</resultPage>");
-      out.print("<resultPageSize>" + pageSize + "</resultPageSize>");
-      out.print("</query>");
-      out.print("<hitsSize>" + docsSize + "</hitsSize>");
-      out.print("<hits>");
-      for (int i=from; i<=to; i++) {
-        Document doc = docs.get(i);
-        String docId = doc.getFieldable("docId").stringValue();
-        out.print("<doc>" + docId + "</doc>");
+      if (outputFormat.equals("xml")) {
+        out.print("<result>");
+        out.print("<query>");
+        out.print("<queryText>" + query + "</queryText>");
+        out.print("<resultPage>" + page + "</resultPage>");
+        out.print("<resultPageSize>" + pageSize + "</resultPageSize>");
+        out.print("</query>");
+        out.print("<hitsSize>" + docsSize + "</hitsSize>");
+        out.print("<hits>");
+        for (int i=from; i<=to; i++) {
+          Document doc = docs.get(i);
+          String docId = doc.getFieldable("docId").stringValue();
+          Fieldable docUriField = doc.getFieldable("uri");
+          out.print("<doc>");
+          out.print("<docId>" + docId + "</docId>");
+          if (docUriField != null) {
+            String docUri = docUriField.stringValue();
+            out.print("<uri>" + docUri + "</uri>");
+          }
+          out.print("</doc>");
+        }
+        out.print("</hits>");
+        out.print("</result>");
+      } else if (outputFormat.equals("json")) {
+        // TODO
       }
-      out.print("</hits>");
-      out.print("</result>");
       out.close();
     } catch (Exception e) {
       throw new ServletException(e);
