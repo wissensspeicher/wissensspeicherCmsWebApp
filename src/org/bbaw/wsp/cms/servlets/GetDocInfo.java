@@ -44,14 +44,15 @@ public class GetDocInfo extends HttpServlet {
       MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
-      else if (outputFormat.equals("html"))
+      else if (outputFormat.equals("html") || outputFormat.equals("json"))
         response.setContentType("text/html");
-      else 
-        response.setContentType("text/xml");
       PrintWriter out = response.getWriter();
-      if (mdRecord != null) {
+      if (mdRecord != null && outputFormat.equals("xml")) {
         out.print("<doc>");
         out.print("<id>" + docId + "</id>");
+        String uri = mdRecord.getUri();
+        if ((field == null || (field != null && field.equals("uri"))) && uri != null)
+          out.print("<uri>" + uri + "</uri>");
         String author = mdRecord.getCreator();
         if ((field == null || (field != null && field.equals("author"))) && author != null)
           out.print("<author>" + author + "</author>");
@@ -99,15 +100,17 @@ public class GetDocInfo extends HttpServlet {
           QName typeQName = new QName("type");
           XdmValue typeXdmValue = new XdmAtomicValue(field);
           tocTransformer.setParameter(typeQName, typeXdmValue);
-          // tocTransformer.setOutputProperty(Serializer.Property.METHOD, outputFormat);
           String tocXmlStr = tocTransformer.transform(tocFileName);
           out.print(tocXmlStr);
         }
         out.print("</doc>");
-        out.close();
+      } else if (mdRecord != null && outputFormat.equals("json")) {
+        // TODO
+        
       } else {
         out.print("<result>" + "no document found with id: " + docId + "</result>");
       }
+      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
