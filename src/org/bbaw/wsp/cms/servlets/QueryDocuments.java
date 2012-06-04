@@ -75,13 +75,18 @@ public class QueryDocuments extends HttpServlet {
         out.print("<hits>");
         for (int i=from; i<=to; i++) {
           Document doc = docs.get(i);
-          String docId = doc.getFieldable("docId").stringValue();
-          Fieldable docUriField = doc.getFieldable("uri");
           out.print("<doc>");
+          String docId = doc.getFieldable("docId").stringValue();
           out.print("<docId>" + docId + "</docId>");
+          Fieldable docUriField = doc.getFieldable("uri");
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
             out.print("<uri>" + docUri + "</uri>");
+          }
+          Fieldable docProjectIdsField = doc.getFieldable("projectIds");
+          if (docProjectIdsField != null) {
+            String docProjectIds = docProjectIdsField.stringValue();
+            out.print("<projectIds>" + docProjectIds + "</projectIds>");
           }
           out.print("</doc>");
         }
