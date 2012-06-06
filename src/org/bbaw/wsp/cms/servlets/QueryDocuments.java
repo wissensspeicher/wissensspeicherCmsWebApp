@@ -55,7 +55,9 @@ public class QueryDocuments extends HttpServlet {
         String queryTermsStr = toString(queryTerms);
         language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
       }
-      ArrayList<Document> docs = indexHandler.queryDocuments(query, language);
+      ArrayList<Document> docs = indexHandler.queryDocuments(query, language, from, to);
+      ArrayList<String> fragments = indexHandler.getFragments();
+      System.out.println("fragemnts size : "+fragments.size());
       int docsSize = 0;
       if (docs != null)
         docsSize = docs.size();
@@ -115,16 +117,16 @@ public class QueryDocuments extends HttpServlet {
           jsonArray.add(jsonWrapper);
         }
         //TODO
-        //jsonWrapper.put("projects", doc.get("projectIds"));
-        //JSONArray jasonFragents = new JSONArray();
+//        jsonWrapper.put("projects", doc.get("projectIds"));
+        JSONArray jasonFragents = new JSONArray();
         //TODO
-//        for (int j = 0; j < fragements.length; j++) {
-//          if ((fragements[j] != null) && (fragements[j].getScore() > 0)) {
+        for (int j = 0; j < fragments.size(); j++) {
+          if (fragments.get(j) != null) {
 //            out.println((fragements[j].toString()));
 //            //send to Json
-//            jasonFragents.add(ceckFragment(fragements[j].toString()));
-//          }
-//        }
+            jasonFragents.add(fragments.get(j).toString());
+          }
+        }
           jsonEncoder.putJsonObj("hits", jsonArray);
           //send Json
           out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
