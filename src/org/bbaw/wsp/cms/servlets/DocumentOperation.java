@@ -60,7 +60,7 @@ public class DocumentOperation extends HttpServlet {
           write(response, docFile);
         else
           write(response, "Document: " + docId + " does not exist");
-      } else if (operation.equals("create") || operation.equals("update") || operation.equals("delete")) {
+      } else if (operation.equals("create") || operation.equals("delete")) {
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         docOperation = scheduler.doOperation(docOperation);
         String jobId = "" + docOperation.getOrderId();
