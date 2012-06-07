@@ -115,10 +115,11 @@ public class QueryDocuments extends HttpServlet {
           jsonWrapper.put("projects", doc.getFieldable("projectIds"));
           ArrayList<String> hitFragments = doc.getHitFragments();
           JSONArray jasonFragments = new JSONArray();
-          //TODO
-          for (int j = 0; j < hitFragments.size(); j++) {
-            String hitFragment = hitFragments.get(j);
-            jasonFragments.add(hitFragment);
+          if (hitFragments != null) {
+            for (int j = 0; j < hitFragments.size(); j++) {
+              String hitFragment = hitFragments.get(j);
+              jasonFragments.add(hitFragment);
+            }
           }
           jsonWrapper.put("fragments", jasonFragments);
           jsonArray.add(jsonWrapper);
