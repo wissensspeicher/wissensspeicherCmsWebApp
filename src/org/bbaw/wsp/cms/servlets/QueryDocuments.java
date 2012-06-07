@@ -55,9 +55,7 @@ public class QueryDocuments extends HttpServlet {
         String queryTermsStr = toString(queryTerms);
         language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
       }
-      ArrayList<Document> docs = indexHandler.queryDocuments(query, language, from, to);
-      ArrayList<String> fragments = indexHandler.getFragments();
-      System.out.println("fragemnts size : "+fragments.size());
+      ArrayList<org.bbaw.wsp.cms.document.Document> docs = indexHandler.queryDocuments(query, language, from, to, true);
       int docsSize = 0;
       if (docs != null)
         docsSize = docs.size();
@@ -80,7 +78,7 @@ public class QueryDocuments extends HttpServlet {
         out.print("<hitsSize>" + docsSize + "</hitsSize>");
         out.print("<hits>");
         for (int i=from; i<=to; i++) {
-          Document doc = docs.get(i);
+          org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           out.print("<doc>");
           String docId = doc.getFieldable("docId").stringValue();
           out.print("<docId>" + docId + "</docId>");
@@ -102,11 +100,11 @@ public class QueryDocuments extends HttpServlet {
         WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
         jsonEncoder.clear();
         jsonEncoder.putStrings("searchTerm", query);
-        jsonEncoder.putStrings("numberOfHits", String.valueOf(docsSize));  
-        JSONArray jsonArray = new JSONArray();  
+        jsonEncoder.putStrings("numberOfHits", String.valueOf(docsSize));
+        JSONArray jsonArray = new JSONArray();
         for (int i=from; i<to; i++) {
           JSONObject jsonWrapper = new JSONObject();
-          Document doc = docs.get(i);
+          org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docUriField = doc.getFieldable("uri");
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
@@ -114,22 +112,19 @@ public class QueryDocuments extends HttpServlet {
           }
           String docId = doc.getFieldable("docId").stringValue();
           jsonWrapper.put("docId", docId);
+          jsonWrapper.put("projects", doc.getFieldable("projectIds"));
+          ArrayList<String> hitFragments = doc.getHitFragments();
+          JSONArray jasonFragments = new JSONArray();
+          //TODO
+          for (int j = 0; j < hitFragments.size(); j++) {
+            String hitFragment = hitFragments.get(j);
+            jasonFragments.add(hitFragment);
+          }
+          jsonWrapper.put("fragments", jasonFragments);
           jsonArray.add(jsonWrapper);
         }
-        //TODO
-//        jsonWrapper.put("projects", doc.get("projectIds"));
-        JSONArray jasonFragents = new JSONArray();
-        //TODO
-        for (int j = 0; j < fragments.size(); j++) {
-          if (fragments.get(j) != null) {
-//            out.println((fragements[j].toString()));
-//            //send to Json
-            jasonFragents.add(fragments.get(j).toString());
-          }
-        }
-          jsonEncoder.putJsonObj("hits", jsonArray);
-          //send Json
-          out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+        jsonEncoder.putJsonObj("hits", jsonArray);
+        out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       }
       out.close();
     } catch (Exception e) {
