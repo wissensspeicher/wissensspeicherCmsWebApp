@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
+import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.bbaw.wsp.cms.translator.MicrosoftTranslator;
@@ -55,10 +55,13 @@ public class QueryDocuments extends HttpServlet {
         String queryTermsStr = toString(queryTerms);
         language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
       }
-      ArrayList<org.bbaw.wsp.cms.document.Document> docs = indexHandler.queryDocuments(query, language, from, to, true);
+      Hits hits = indexHandler.queryDocuments(query, language, from, to, true);
+      ArrayList<org.bbaw.wsp.cms.document.Document> docs = null;
+      if (hits != null)
+        docs = hits.getHits();
       int docsSize = 0;
-      if (docs != null)
-        docsSize = docs.size();
+      if (hits != null)
+        docsSize = hits.getSize();
       if (to >= docsSize)
         to = docsSize - 1;
       if (outputFormat.equals("xml"))
@@ -87,10 +90,10 @@ public class QueryDocuments extends HttpServlet {
             String docUri = docUriField.stringValue();
             out.print("<uri>" + docUri + "</uri>");
           }
-          Fieldable docProjectIdsField = doc.getFieldable("projectIds");
-          if (docProjectIdsField != null) {
-            String docProjectIds = docProjectIdsField.stringValue();
-            out.print("<projectIds>" + docProjectIds + "</projectIds>");
+          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          if (docCollectionNamesField != null) {
+            String docCollectionNames = docCollectionNamesField.stringValue();
+            out.print("<collectionNames>" + docCollectionNames + "</collectionNames>");
           }
           out.print("</doc>");
         }
@@ -112,7 +115,7 @@ public class QueryDocuments extends HttpServlet {
           }
           String docId = doc.getFieldable("docId").stringValue();
           jsonWrapper.put("docId", docId);
-          jsonWrapper.put("projects", doc.getFieldable("projectIds"));
+          jsonWrapper.put("collectionNames", doc.getFieldable("collectionNames"));
           ArrayList<String> hitFragments = doc.getHitFragments();
           JSONArray jasonFragments = new JSONArray();
           if (hitFragments != null) {
