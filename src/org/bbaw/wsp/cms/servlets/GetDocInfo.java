@@ -53,9 +53,9 @@ public class GetDocInfo extends HttpServlet {
         String uri = mdRecord.getUri();
         if ((field == null || (field != null && field.equals("uri"))) && uri != null)
           out.print("<uri>" + uri + "</uri>");
-        String projectIds = mdRecord.getProjectIds();
-        if ((field == null || (field != null && field.equals("projectIds"))) && projectIds != null)
-          out.print("<projectIds>" + projectIds + "</projectIds>");
+        String collectionNames = mdRecord.getCollectionNames();
+        if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
+          out.print("<collectionNames>" + collectionNames + "</collectionNames>");
         String author = mdRecord.getCreator();
         if ((field == null || (field != null && field.equals("author"))) && author != null)
           out.print("<author>" + author + "</author>");
