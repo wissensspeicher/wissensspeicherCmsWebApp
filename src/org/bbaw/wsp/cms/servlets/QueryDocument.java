@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -20,6 +19,8 @@ import org.xml.sax.XMLReader;
 
 import com.sun.org.apache.xerces.internal.parsers.SAXParser;
 
+import org.bbaw.wsp.cms.document.Document;
+import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.HighlightContentHandler;
@@ -63,12 +64,14 @@ public class QueryDocument extends HttpServlet {
     if (pageSizeStr == null)
       pageSizeStr = "10";
     int pageSize = Integer.parseInt(pageSizeStr);
+    int from = (page * pageSize) - pageSize;  // e.g. 0
+    int to = page * pageSize - 1;  // e.g. 9
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      ArrayList<Document> docs = indexHandler.queryDocument(docId, query);
+      Hits hits = indexHandler.queryDocument(docId, query, from, to);
       MetadataRecord docMetadataRecord = indexHandler.getDocMetadata(docId);
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
@@ -79,9 +82,9 @@ public class QueryDocument extends HttpServlet {
       PrintWriter out = response.getWriter();
       String resultStr = "";
       if (outputFormat.equals("xml"))
-        resultStr = createXmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, docs);
+        resultStr = createXmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits);
       else 
-        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, docs, request);
+        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits, request);
       out.print(resultStr);
       out.close();
     } catch (ApplicationException e) {
@@ -89,11 +92,14 @@ public class QueryDocument extends HttpServlet {
     }
   }
 
-  private String createXmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs) throws ApplicationException {
+  private String createXmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits) throws ApplicationException {
     String docId = docMetadataRecord.getDocId();
+    ArrayList<Document> docs = null;
+    if (hits != null)
+      docs = hits.getHits();
     int docsSize = 0;
-    if (docs != null)
-      docsSize = docs.size();
+    if (hits != null)
+      docsSize = hits.getSize();
     int from = (page * pageSize) - pageSize;  // e.g. 0
     int to = page * pageSize - 1;  // e.g. 9
     if (to >= docsSize)
@@ -185,11 +191,14 @@ public class QueryDocument extends HttpServlet {
     return xmlStrBuilder.toString();   
   }
   
-  private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, ArrayList<Document> docs, HttpServletRequest request) throws ApplicationException {
+  private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits, HttpServletRequest request) throws ApplicationException {
     String docId = docMetadataRecord.getDocId();
+    ArrayList<Document> docs = null;
+    if (hits != null)
+      docs = hits.getHits();
     int docsSize = 0;
-    if (docs != null)
-      docsSize = docs.size();
+    if (hits != null)
+      docsSize = hits.getSize();
     int from = (page * pageSize) - pageSize;  // e.g. 0
     int to = page * pageSize - 1;  // e.g. 9
     if (to >= docsSize)
@@ -250,7 +259,7 @@ public class QueryDocument extends HttpServlet {
         }
       }
       String language = docMetadataRecord.getLanguage();
-      String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query + "&language=" + language;
+      String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
       xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
       String xmlContentTokenized = null;
       Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
