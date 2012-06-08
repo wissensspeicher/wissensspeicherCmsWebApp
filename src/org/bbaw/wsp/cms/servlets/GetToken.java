@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.index.Term;
 
+import org.bbaw.wsp.cms.document.Token;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -42,11 +43,11 @@ public class GetToken extends HttpServlet {
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      ArrayList<Term> terms = null;
+      ArrayList<Token> token = null;
       if (docId == null)
-        terms = indexHandler.getTerms(attribute, query, count);
+        token = indexHandler.getToken(attribute, query, count);
       else
-        terms = indexHandler.getTerms(docId, attribute, query, count);
+        token = indexHandler.getToken(docId, attribute, query, count);
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
       else if (outputFormat.equals("html"))
@@ -56,13 +57,20 @@ public class GetToken extends HttpServlet {
       PrintWriter out = response.getWriter();
       out.print("<result>");
       out.print("<attribute>" + attribute + "</attribute>");
-      out.print("<query>" + query + "</query>");
+      if (query != null)
+        out.print("<query>" + query + "</query>");
       out.print("<count>" + count + "</count>");
       out.print("<result>");
-      if (terms != null) {
-        for (int i=0; i<terms.size(); i++) {
-          Term term = terms.get(i);
-          out.print("<token>" + term.text() + "</token>");
+      if (token != null) {
+        for (int i=0; i<token.size(); i++) {
+          Token t = token.get(i);
+          Term term = t.getTerm();
+          int freq = t.getFreq();
+          out.print("<token>");
+          out.print("<text>" + term.text() + "</text>");
+          if (freq != -1)
+            out.print("<freq>" + freq + "</freq>");
+          out.print("</token>");
         }
       }
       out.print("</result>");
