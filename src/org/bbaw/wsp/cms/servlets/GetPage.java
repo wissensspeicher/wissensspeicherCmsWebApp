@@ -54,7 +54,6 @@ public class GetPage extends HttpServlet {
     String highlightQueryType = request.getParameter("highlightQueryType");
     if (highlightQueryType == null)
       highlightQueryType = "form";
-    String language = request.getParameter("language");
     String highlightElem = request.getParameter("highlightElem");
     String highlightElemPosStr = request.getParameter("highlightElemPos");
     int highlightElemPos = -1;
@@ -75,14 +74,13 @@ public class GetPage extends HttpServlet {
     if (pageStr != null)
       page = Integer.parseInt(pageStr);
     try {
+      IndexHandler indexHandler = IndexHandler.getInstance();
+      MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
       DocumentHandler docHandler = new DocumentHandler();
       String docDir = docHandler.getDocDir(docId);
       String pageFileName = docDir + "/" + "pages" + "/page-" + page + "-morph.xml";
       File pageFile = new File(pageFileName);
       String fragment = FileUtils.readFileToString(pageFile, "utf-8");
-      
-      // TODO echo-Dokumente: anchor ersetzen durch figure und note (figure und note aus figures.xml und notes.xml lesen)
-      
       if (normalization.equals("norm"))
         fragment = normalizeWords(fragment);
       if (highlightElem != null || highlightQuery != null) {
@@ -91,11 +89,10 @@ public class GetPage extends HttpServlet {
           hiQueryType = "morph";
         else 
           hiQueryType = normalization;
+        String language = mdRecord.getLanguage();
         fragment = highlight(fragment, highlightElem, highlightElemPos, hiQueryType, highlightQuery, language);
       }
       if (outputFormat.equals("html")) {
-        IndexHandler indexHandler = IndexHandler.getInstance();
-        MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
         String schemaName = mdRecord.getSchemaName();
         String title = docId + ", Page: " + page;
         String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
