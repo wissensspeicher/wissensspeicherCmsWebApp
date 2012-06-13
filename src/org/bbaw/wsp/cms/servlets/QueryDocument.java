@@ -83,8 +83,10 @@ public class QueryDocument extends HttpServlet {
       String resultStr = "";
       if (outputFormat.equals("xml"))
         resultStr = createXmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits);
-      else 
+      else if (outputFormat.equals("html")) 
         resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits, request);
+      else if (outputFormat.equals("json")) 
+        resultStr = createJsonString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits, request);
       out.print(resultStr);
       out.close();
     } catch (ApplicationException e) {
@@ -276,6 +278,111 @@ public class QueryDocument extends HttpServlet {
     xmlStrBuilder.append("</table>");
     xmlStrBuilder.append("</body>");
     xmlStrBuilder.append("</html>");
+    return xmlStrBuilder.toString();   
+  }
+  
+  private String createJsonString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits, HttpServletRequest request) throws ApplicationException {
+    String docId = docMetadataRecord.getDocId();
+    ArrayList<Document> docs = null;
+    if (hits != null)
+      docs = hits.getHits();
+    int docsSize = 0;
+    if (hits != null)
+      docsSize = hits.getSize();
+    int from = (page * pageSize) - pageSize;  // e.g. 0
+    int to = page * pageSize - 1;  // e.g. 9
+    if (to >= docsSize)
+      to = docsSize - 1;
+    StringBuilder xmlStrBuilder = new StringBuilder();
+    xmlStrBuilder.append("<document>");
+    xmlStrBuilder.append("<id>" + docId + "</id>");
+    xmlStrBuilder.append("<query>");
+    xmlStrBuilder.append("<queryText>" + query + "</queryText>");
+    xmlStrBuilder.append("<resultPage>" + page + "</resultPage>");
+    xmlStrBuilder.append("<resultPageSize>" + pageSize + "</resultPageSize>");
+    xmlStrBuilder.append("</query>");
+    xmlStrBuilder.append("<hitsSize>" + docsSize + "</hitsSize>");
+    xmlStrBuilder.append("<hits>");
+    for (int i=from; i<=to; i++) {
+      Document doc = docs.get(i);
+      int num = i + 1;
+      xmlStrBuilder.append("<hit>");
+      xmlStrBuilder.append("<num>" + num + "</num>");
+      String pageNumber = null;
+      Fieldable fPageNumber = doc.getFieldable("pageNumber");
+      if (fPageNumber != null) {
+        pageNumber = fPageNumber.stringValue();
+        xmlStrBuilder.append("<pageNumber>" + pageNumber + "</pageNumber>");
+      }
+      String elementPagePosition = null;
+      Fieldable fElementPagePosition = doc.getFieldable("elementPagePosition");
+      if (fElementPagePosition != null) {
+        elementPagePosition = fElementPagePosition.stringValue();
+        xmlStrBuilder.append("<pagePosition>" + elementPagePosition + "</pagePosition>");
+      }
+      String lineNumber = null;
+      Fieldable fLineNumber = doc.getFieldable("lineNumber");
+      if (fLineNumber != null) {
+        lineNumber = fLineNumber.stringValue();
+        xmlStrBuilder.append("<lineNumber>" + lineNumber + "</lineNumber>");
+      }
+      String elementPosition = null;
+      Fieldable fElementPosition = doc.getFieldable("elementAbsolutePosition");
+      if (fElementPosition != null) {
+        elementPosition = fElementPosition.stringValue();
+        xmlStrBuilder.append("<absolutePosition>" + elementPosition + "</absolutePosition>");
+      }
+      String xpath = null;
+      Fieldable fXPath = doc.getFieldable("xpath");
+      if (fXPath != null) {
+        xpath = fXPath.stringValue();
+        xmlStrBuilder.append("<xpath>" + xpath + "</xpath>");
+      }
+      String xmlId = null;
+      Fieldable fXmlId = doc.getFieldable("xmlId");
+      if (fXmlId != null) {
+        xmlId = fXmlId.stringValue();
+        xmlStrBuilder.append("<xmlId>" + xmlId + "</xmlId>");
+      }
+      String language = null;
+      Fieldable fLanguage = doc.getFieldable("language");
+      if (fLanguage != null) {
+        language = fLanguage.stringValue();
+        xmlStrBuilder.append("<language>" + language + "</language>");
+      }
+      String xmlContentTokenized = null;
+      Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
+      if (fXmlContentTokenized != null) {
+        String highlightQueryType = "orig";
+        if (withLemmas(outputOptions)) {
+          highlightQueryType = "morph";
+        } else if (normFunctions != null) { 
+          String normFunction = normFunctions[0];
+          highlightQueryType = normFunction;
+          if (normFunction.equals("none")) {
+            highlightQueryType = "orig";
+          }
+        }
+        xmlContentTokenized = fXmlContentTokenized.stringValue();
+        String xmlPre = "<content xmlns:xhtml=\"http://www.w3.org/1999/xhtml\" xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">";
+        String xmlPost = "</content>";
+        String xmlInputStr = xmlPre + xmlContentTokenized + xmlPost;
+        String docLanguage = docMetadataRecord.getLanguage();
+        String highlightedXmlStr = highlight(xmlInputStr, highlightQueryType, query, docLanguage);
+        if (highlightedXmlStr == null)
+          highlightedXmlStr = "<content>" + xmlContentTokenized + "</content>";
+        xmlStrBuilder.append(highlightedXmlStr);
+      }
+      String xmlContent = null;
+      Fieldable fXmlContent = doc.getFieldable("xmlContent");
+      if (fXmlContent != null) {
+        xmlContent = fXmlContent.stringValue();
+        xmlStrBuilder.append(xmlContent);
+      }
+      xmlStrBuilder.append("</hit>");
+    }
+    xmlStrBuilder.append("</hits>");
+    xmlStrBuilder.append("</document>");
     return xmlStrBuilder.toString();   
   }
   
