@@ -77,8 +77,8 @@ public class QueryDocument extends HttpServlet {
         response.setContentType("text/xml");
       else if (outputFormat.equals("html"))
         response.setContentType("text/html");
-      else 
-        response.setContentType("text/xml");
+      else if (outputFormat.equals("json"))
+        response.setContentType("text/html");
       PrintWriter out = response.getWriter();
       String resultStr = "";
       if (outputFormat.equals("xml"))
@@ -95,6 +95,20 @@ public class QueryDocument extends HttpServlet {
   }
 
   private String createXmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits) throws ApplicationException {
+    if (docMetadataRecord == null) {
+      StringBuilder xmlStrBuilder = new StringBuilder();
+      xmlStrBuilder.append("<document>");
+      xmlStrBuilder.append("<id></id>");
+      xmlStrBuilder.append("<query>");
+      xmlStrBuilder.append("<queryText>" + query + "</queryText>");
+      xmlStrBuilder.append("<resultPage>" + page + "</resultPage>");
+      xmlStrBuilder.append("<resultPageSize>" + pageSize + "</resultPageSize>");
+      xmlStrBuilder.append("</query>");
+      xmlStrBuilder.append("<hitsSize>0</hitsSize>");
+      xmlStrBuilder.append("<hits></hits>");
+      xmlStrBuilder.append("</document>");
+      return xmlStrBuilder.toString();   
+    }
     String docId = docMetadataRecord.getDocId();
     ArrayList<Document> docs = null;
     if (hits != null)
@@ -194,6 +208,9 @@ public class QueryDocument extends HttpServlet {
   }
   
   private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits, HttpServletRequest request) throws ApplicationException {
+    if (hits == null) {
+      return ""; 
+    }
     String docId = docMetadataRecord.getDocId();
     ArrayList<Document> docs = null;
     if (hits != null)
@@ -282,6 +299,9 @@ public class QueryDocument extends HttpServlet {
   }
   
   private String createJsonString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, String[] normFunctions, String[] outputOptions, Hits hits, HttpServletRequest request) throws ApplicationException {
+    if (hits == null) {
+      return ""; 
+    }
     String docId = docMetadataRecord.getDocId();
     ArrayList<Document> docs = null;
     if (hits != null)
