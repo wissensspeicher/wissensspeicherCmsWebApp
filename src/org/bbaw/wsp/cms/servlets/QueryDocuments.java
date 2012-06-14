@@ -111,18 +111,34 @@ public class QueryDocuments extends HttpServlet {
         for (int i=from; i<to; i++) {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
-          Fieldable docUriField = doc.getFieldable("uri");
-          if (docUriField != null) {
-            String docUri = docUriField.stringValue();
-            jsonWrapper.put("uri", docUri);
+          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          if (docCollectionNamesField != null) {
+            jsonWrapper.put("collectionName", docCollectionNamesField.stringValue());
           }
           Fieldable docIdField = doc.getFieldable("docId");
           if(docIdField != null){
             jsonWrapper.put("docId", docIdField.stringValue());
           }
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
-          if (docCollectionNamesField != null) {
-            jsonWrapper.put("collectionNames", docCollectionNamesField.stringValue());
+          Fieldable docUriField = doc.getFieldable("uri");
+          if (docUriField != null) {
+            String docUri = docUriField.stringValue();
+            jsonWrapper.put("uri", docUri);
+          }
+          Fieldable docAuthorField = doc.getFieldable("author");
+          if (docAuthorField != null) {
+            jsonWrapper.put("author", docAuthorField.stringValue());
+          }
+          Fieldable docTitleField = doc.getFieldable("title");
+          if (docTitleField != null) {
+            jsonWrapper.put("title", docTitleField.stringValue());
+          }
+          Fieldable docDateField = doc.getFieldable("date");
+          if (docDateField != null) {
+            jsonWrapper.put("date", docDateField.stringValue());
+          }
+          Fieldable docPageCountField = doc.getFieldable("pageCount");
+          if (docPageCountField != null) {
+            jsonWrapper.put("pageCount", docPageCountField.stringValue());
           }
           ArrayList<String> hitFragments = doc.getHitFragments();
           JSONArray jasonFragments = new JSONArray();
@@ -140,14 +156,24 @@ public class QueryDocuments extends HttpServlet {
               Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
               ArrayList<Document> namesList = persHits.getHits();
               for (Document nameDoc : namesList) {
-//                jsonNames.add(namesList.size());
-                Fieldable docPersNameField = doc.getFieldable("xmlContent");
+                Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
                   jsonNames.add(docPersName);
                 }
               }
               jsonWrapper.put("persNames", jsonNames);
+              JSONArray jsonPlaces = new JSONArray();
+              Hits placeHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:placeName", 0, 100);
+              ArrayList<Document> placeList = placeHits.getHits();
+              for (Document placeDoc : placeList) {
+                Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
+                if (docPlaceField != null) {
+                  String docPlace = docPlaceField.stringValue();
+                  jsonPlaces.add(docPlace);
+                }
+              }
+              jsonWrapper.put("placeNames", jsonPlaces);
             }
           }
           jsonArray.add(jsonWrapper);
