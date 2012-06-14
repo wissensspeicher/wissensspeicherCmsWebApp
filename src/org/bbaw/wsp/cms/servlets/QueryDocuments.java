@@ -2,8 +2,6 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
@@ -61,15 +59,15 @@ public class QueryDocuments extends HttpServlet {
         language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
       }
       Hits hits = indexHandler.queryDocuments(query, language, from, to, true);
-      
       ArrayList<org.bbaw.wsp.cms.document.Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
-      int docsSize = 0;
+      int hitsSize = -1;
+      int docsSize = -1;
       if (hits != null)
-        docsSize = hits.getSize();
-      if (to >= docsSize)
-        to = docsSize - 1;
+        hitsSize = hits.getSize();
+      if (docs != null)
+        docsSize = docs.size();
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
       else if (outputFormat.equals("html") || outputFormat.equals("json"))
@@ -84,9 +82,9 @@ public class QueryDocuments extends HttpServlet {
         out.print("<resultPage>" + page + "</resultPage>");
         out.print("<resultPageSize>" + pageSize + "</resultPageSize>");
         out.print("</query>");
-        out.print("<hitsSize>" + docsSize + "</hitsSize>");
+        out.print("<hitsSize>" + hitsSize + "</hitsSize>");
         out.print("<hits>");
-        for (int i=from; i<=to; i++) {
+        for (int i=0; i<=docsSize; i++) {
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           out.print("<doc>");
           String docId = doc.getFieldable("docId").stringValue();
@@ -109,9 +107,9 @@ public class QueryDocuments extends HttpServlet {
         WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
         jsonEncoder.clear();
         jsonEncoder.putStrings("searchTerm", query);
-        jsonEncoder.putStrings("numberOfHits", String.valueOf(docsSize));
+        jsonEncoder.putStrings("numberOfHits", String.valueOf(hitsSize));
         JSONArray jsonArray = new JSONArray();
-        for (int i=from; i<to; i++) {
+        for (int i=0; i<docsSize; i++) {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
