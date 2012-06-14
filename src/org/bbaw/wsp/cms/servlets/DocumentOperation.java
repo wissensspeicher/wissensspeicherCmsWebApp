@@ -46,7 +46,9 @@ public class DocumentOperation extends HttpServlet {
       response.setContentType("text/html");
     }
     CmsDocOperation docOperation = new CmsDocOperation(operation, srcUrlStr, null, docId); 
-    String[] elementNamesArray = elementNames.split(" ");
+    String[] elementNamesArray = null;
+    if (elementNames != null)
+      elementNamesArray = elementNames.split(" ");
     docOperation.setElementNames(elementNamesArray);
     try {
       if (docId == null || docId.isEmpty()) {
