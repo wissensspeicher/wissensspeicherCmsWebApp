@@ -2,6 +2,8 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
@@ -10,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 
 import org.bbaw.wsp.cms.document.Document;
@@ -156,10 +159,22 @@ public class QueryDocuments extends HttpServlet {
               Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
               ArrayList<Document> namesList = persHits.getHits();
               for (Document nameDoc : namesList) {
+//                jsonNames.add(namesList.size());
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
-                  jsonNames.add(docPersName);
+//                  if(docPersName.contains("<persName>"))
+//                    docPersName = docPersName.replace("<persName>", "");
+                  String persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".*>", "$1");
+                  if(persNameAttribute.contains("</persName>"))
+                    persNameAttribute = persNameAttribute.replace("</persName>", "");
+                  persNameAttribute = persNameAttribute.trim();
+                  //TODO
+                  String persNameContent = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");    
+                  JSONObject nameAndLink = new JSONObject();
+
+                  nameAndLink.put(persNameAttribute, "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(persNameAttribute));
+                  jsonNames.add(nameAndLink);
                 }
               }
               jsonWrapper.put("persNames", jsonNames);
@@ -170,6 +185,10 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
+                  if(docPlace.contains("<placeName>"))
+                    docPlace = docPlace.replace("<placeName>", "");
+                  if(docPlace.contains("</placeName>"))
+                    docPlace = docPlace.replace("</placeName>", "");
                   jsonPlaces.add(docPlace);
                 }
               }
