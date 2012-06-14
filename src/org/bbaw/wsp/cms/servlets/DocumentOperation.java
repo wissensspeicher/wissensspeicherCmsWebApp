@@ -46,7 +46,8 @@ public class DocumentOperation extends HttpServlet {
       response.setContentType("text/html");
     }
     CmsDocOperation docOperation = new CmsDocOperation(operation, srcUrlStr, null, docId); 
-    docOperation.setElementNames(elementNames);
+    String[] elementNamesArray = elementNames.split(" ");
+    docOperation.setElementNames(elementNamesArray);
     try {
       if (docId == null || docId.isEmpty()) {
         write(response, "Parameter: \"docId\" is not set. Please set parameter \"docId\".");
