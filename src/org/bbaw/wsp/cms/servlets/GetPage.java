@@ -73,13 +73,28 @@ public class GetPage extends HttpServlet {
     int page = 1;
     if (pageStr != null)
       page = Integer.parseInt(pageStr);
+    if (outputFormat.equals("xml"))
+      response.setContentType("text/xml");
+    else if (outputFormat.equals("html"))
+      response.setContentType("text/html");
+    PrintWriter out = response.getWriter();
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
       MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
       DocumentHandler docHandler = new DocumentHandler();
       String docDir = docHandler.getDocDir(docId);
-      String pageFileName = docDir + "/" + "pages" + "/page-" + page + "-morph.xml";
+      String docPageDir = docDir + "/" + "pages";
+      String pageFileName = docPageDir + "/page-" + page + "-morph.xml";
       File pageFile = new File(pageFileName);
+      if (page == 1 && ! (new File(docPageDir)).exists()) {
+        String docFileName = docHandler.getDocFullFileName(docId);
+        pageFile = new File(docFileName);  // when no page breaks are in the document then the whole document is the first page
+      }
+      if (! pageFile.exists()) {
+        out.print("There is no page: " + page + " in document");
+        out.close();
+        return;
+      }
       String fragment = FileUtils.readFileToString(pageFile, "utf-8");
       if (normalization.equals("norm"))
         fragment = normalizeWords(fragment);
@@ -108,11 +123,6 @@ public class GetPage extends HttpServlet {
       } else {
         result = fragment;
       }
-      if (outputFormat.equals("xml"))
-        response.setContentType("text/xml");
-      else if (outputFormat.equals("html"))
-        response.setContentType("text/html");
-      PrintWriter out = response.getWriter();
       out.print(result); 
       out.close(); 
     } catch (ApplicationException e) {
