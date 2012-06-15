@@ -84,7 +84,7 @@ public class QueryDocuments extends HttpServlet {
         out.print("</query>");
         out.print("<hitsSize>" + hitsSize + "</hitsSize>");
         out.print("<hits>");
-        for (int i=0; i<=docsSize; i++) {
+        for (int i=0; i<docsSize; i++) {
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           out.print("<doc>");
           String docId = doc.getFieldable("docId").stringValue();
