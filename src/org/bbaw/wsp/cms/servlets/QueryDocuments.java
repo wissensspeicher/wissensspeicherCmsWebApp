@@ -39,6 +39,7 @@ public class QueryDocuments extends HttpServlet {
     String language = request.getParameter("language");
     String pageStr = request.getParameter("page");
     String additionalInfo = request.getParameter("addInf");
+    String translate = request.getParameter("translate");
     if (pageStr == null)
       pageStr = "1";
     int page = Integer.parseInt(pageStr);
@@ -53,12 +54,10 @@ public class QueryDocuments extends HttpServlet {
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      if (language == null) {
-        ArrayList<String> queryTerms = indexHandler.fetchTerms(query);
-        String queryTermsStr = toString(queryTerms);
-        language = MicrosoftTranslator.detectLanguageCode(queryTermsStr);
-      }
-      Hits hits = indexHandler.queryDocuments(query, language, from, to, true);
+      Boolean translateBool = false;
+      if (translate != null)
+        translateBool = true;
+      Hits hits = indexHandler.queryDocuments(query, language, from, to, true, translateBool);
       ArrayList<org.bbaw.wsp.cms.document.Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
@@ -151,13 +150,12 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonWrapper.put("fragments", jasonFragments);
           
-          if(additionalInfo != null){
-            if(additionalInfo.equals("true")){
+          if(additionalInfo != null) {
+            if(additionalInfo.equals("true")) {
               JSONArray jsonNames = new JSONArray();
               Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
               ArrayList<Document> namesList = persHits.getHits();
               for (Document nameDoc : namesList) {
-//                jsonNames.add(namesList.size());
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
