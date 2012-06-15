@@ -35,6 +35,7 @@ public class DocumentOperation extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String srcUrlStr = request.getParameter("srcUrl");
     String docId = request.getParameter("docId");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
+    String mainLanguage = request.getParameter("mainLanguage");  // main language for that document
     String elementNames = request.getParameter("elementNames");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     String operation = request.getParameter("operation");
     String outputFormat = request.getParameter("outputFormat");
@@ -46,6 +47,8 @@ public class DocumentOperation extends HttpServlet {
       response.setContentType("text/html");
     }
     CmsDocOperation docOperation = new CmsDocOperation(operation, srcUrlStr, null, docId); 
+    if (mainLanguage != null)
+      docOperation.setMainLanguage(mainLanguage);
     String[] elementNamesArray = null;
     if (elementNames != null)
       elementNamesArray = elementNames.split(" ");
