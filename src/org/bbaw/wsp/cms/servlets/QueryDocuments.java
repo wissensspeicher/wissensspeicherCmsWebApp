@@ -159,16 +159,14 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
-//                  if(docPersName.contains("<persName>"))
-//                    docPersName = docPersName.replace("<persName>", "");
                   String persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".*>", "$1");
                   if(persNameAttribute.contains("</persName>"))
                     persNameAttribute = persNameAttribute.replace("</persName>", "");
                   persNameAttribute = persNameAttribute.trim();
-                  //TODO
+                  //TODO evtl auch den inhalt der tags mit auswerten, nicht nur das attribut
                   String persNameContent = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");    
                   JSONObject nameAndLink = new JSONObject();
-
+                  //TODO was tun mit dupilaten?
                   nameAndLink.put(persNameAttribute, "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(persNameAttribute));
                   jsonNames.add(nameAndLink);
                 }
@@ -181,11 +179,16 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
-                  if(docPlace.contains("<placeName>"))
-                    docPlace = docPlace.replace("<placeName>", "");
-                  if(docPlace.contains("</placeName>"))
-                    docPlace = docPlace.replace("</placeName>", "");
-                  jsonPlaces.add(docPlace);
+                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\".*>", "$1");
+                  if(placeAttribute.contains("</placeName>"))
+                    placeAttribute = placeAttribute.replace("</placeName>", "");
+                  placeAttribute = placeAttribute.trim();
+                  //TODO evtl auch den inhalt der tags mit auswerten, nicht nur das attribut
+                  String placeContent = docPlace.replaceAll("<placeName.*?>(.*)</placeName>", "$1"); 
+                  if(placeAttribute.contains("</placeName>"))
+                    placeAttribute = placeAttribute.replace("</placeName>", "");
+                  //TODO was tun mit dupilaten?
+                  jsonPlaces.add(placeAttribute);
                 }
               }
               jsonWrapper.put("placeNames", jsonPlaces);
