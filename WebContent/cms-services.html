@@ -19,7 +19,7 @@
           </li>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/tei/de/Marie_1969-12-13.xml")</li>
+              <li>document identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml")</li>
             </ul>
           </li>
           <li>elementNames (optional)
@@ -46,8 +46,8 @@
       <li>Response output
         <ul>
           <li>Link to document job</li>
-          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://mpdl-system.mpiwg-berlin.mpg.de/mpdl/getDoc?doc=/tei/de/dt-ptolemaeus-tei-merge2.xml&docId=/tei/de/dt-ptolemaeus-tei-merge2.xml&operation=create">Create test document</a></li>
-          <li>Example: <a href="doc/DocumentOperation?docId=/tei/de/dt-ptolemaeus-tei-merge2.xml&operation=get">Get test document</a></li>
+          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test document</a></li>
+          <li>Example: <a href="doc/DocumentOperation?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=get">Get test document</a></li>
         </ul>
       </li>
     </ul>
@@ -59,7 +59,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/tei/de/Marie_1969-12-13.xml")</li>
+              <li>document identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml")</li>
             </ul>
           </li>
           <li>page (optional)
@@ -126,14 +126,13 @@
       <li>Response output
         <ul>
           <li>Document page</li>
-          <li>Example: <a href="query/GetPage?docId=/echo/de/Adams_1785_S7ECRGW8.xml&page=128">Page 128 in Adams document</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/de/Adams_1785_S7ECRGW8.xml&page=128&mode=tokenized">Page 128 in Adams document, tokenized</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/de/Adams_1785_S7ECRGW8.xml&page=128&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:halt">Page 128 in Adams document, tokenized, morphological forms of "halt" are highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/la/Benedetti_1585.xml&page=13">Page 13 in Benedetti document</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/la/Benedetti_1585.xml&page=13&mode=tokenized">Page 13 in Benedetti document, tokenized</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/la/Benedetti_1585.xml&page=13&highlightElem=s&highlightElemPos=1">Page 13 in Benedetti document, first sentence highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/la/Benedetti_1585.xml&page=13&normalization=reg&highlightQuery=tokenReg:relatiuum">Page 13 in Benedetti document, regularized form "relatiuum" is highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/echo/la/Benedetti_1585.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:praeclarus">Page 13 in Benedetti document, morphological forms of "praeclarus" are highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Page 1 in Humboldt - Ehrenberg letter</a></li>
+          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized">Page 1 in Humboldt - Ehrenberg letter, tokenized</a></li>
+          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 1 in in Humboldt - Ehrenberg letter, tokenized, morphological forms of "ist" are highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA document</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA document, tokenized</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA document, first paragraph highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA document, morphological forms of "ist" are highlighted</a></li>
         </ul>
       </li>
     </ul>
@@ -198,12 +197,14 @@
       <li>Response output
         <ul>
           <li>Documents matching the query</li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:tempore">all documents which contains "tempore" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all documents which contains "körper" in original content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenOrig:relatiuũ">all documents which contains "relatiuũ" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenReg:relatiuum">all documents which contains "relatiuum" in regularized content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenNorm:relativum">all documents which contains "relativum" in normalized content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:praeclarus">all documents which morphological contains "praeclarus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:schmutziges">all documents which morphological contains "schmutziges" in content (language is automatically detected)</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenNorm:koerper">all documents which contains "koerper" in normalized content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus">all documents which morphological contains "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all documents which morphological contains translated "house" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all documents which morphological contains translated "sur" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:etrangers">all documents which contains "etrangers" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:etrangers&translate=true">all documents which contains translated "etrangers" in content</a></li>
         </ul>
       </li>
     </ul>
@@ -269,13 +270,12 @@
       <li>Response output
         <ul>
           <li>nodes in document which matches the query, word tokens are extracted and hits are highlighted</li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenOrig:tempore">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (XML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenOrig:tempore&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains "tempore" in original content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenReg:relatiuum">in /echo/la/Benedetti_1585.xml: all nodes which contains "relatiuum" in regularized content (XML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/tei/de/Marie_1969-12-13.xml&query=tokenMorph:bin&outputFormat=html">in /tei/de/Marie_1969-12-13.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/echo/la/Benedetti_1585.xml&query=tokenMorph:praeclarus&outputFormat=html">in /echo/la/Benedetti_1585.xml: all nodes which contains morphological "praeclarus" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:später&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "später" in content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/tei/en/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in /tei/en/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/tei/de/Marie_1969-12-13.xml&query=elementName:p">in /tei/de/Marie_1969-12-13.xml: all p elements (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&query=elementName:p">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all p elements (XML output)</a></li>
         </ul>
       </li>
     </ul>
@@ -287,7 +287,7 @@
         <ul>
           <li>docId (optional)
             <ul>
-              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+              <li>document identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>attribute (optional)
@@ -331,7 +331,7 @@
         <ul>
           <li>Tokens of the attribute</li>
           <li>Example: <a href="query/GetToken?attribute=docId">all token in docId field (starting from beginning)</a></li>
-          <li>Example: <a href="query/GetToken?docId=/echo/la/Benedetti_1585.xml&attribute=tokenMorph&query=a">in /echo/la/Benedetti_1585.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
+          <li>Example: <a href="query/GetToken?docId=/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenMorph&query=a">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
           <li>Example: <a href="query/GetToken?attribute=tokenMorph&query=a">in all documents: all token beginning with "a" in morphological content (starting from "a")</a></li>
         </ul>
       </li>
@@ -344,7 +344,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+              <li>document identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>field (optional)
@@ -377,7 +377,7 @@
       <li>Response output
         <ul>
           <li>Meta info of the document</li>
-          <li>Example: <a href="query/GetDocInfo?docId=/echo/la/Benedetti_1585.xml">Meta info of document /echo/la/Benedetti_1585.xml</a></li>
+          <li>Example: <a href="query/GetDocInfo?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of document /AvH/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
         </ul>
       </li>
     </ul>
@@ -404,47 +404,6 @@
         <ul>
           <li>all document jobs (when parameter id is not set) or document job with the specified id</li>
           <li>Example: <a href="doc/GetDocumentJobs">get all document jobs</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Url: /wspCmsWebApp/query/QueryDocumentByXsl</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>srcUrl (required)
-            <ul>
-              <li>source URL of XML document</li>
-            </ul>
-          </li>
-          <li>query (required)
-            <ul>
-              <li>regular expression (based on XSL function "<a href="http://www.w3.org/TR/xpath-functions-30/#string.match">matches</a>")</li>
-            </ul>
-          </li>
-          <li>regular expression flags (optional)
-            <ul>
-              <li>s (single line mode)</li>
-              <li>m (multi line mode)</li>
-              <li>i (case insensitive)</li>
-              <li>x (whitespace characters (#x9, #xA, #xD and #x20) in the regular expression are removed prior to matching)</li>
-              <li>q (all characters in the regular expression are treated as representing themselves, not as meta characters)</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>xml</li>
-              <li>html</li>
-              <li>default: xml</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>XML nodes of the document (s and head nodes) which match the given regular expression</li>
-          <li>Example: <a href="query/QueryDocumentByXsl?srcUrl=http://mpdl-system.mpiwg-berlin.mpg.de/mpdl/getDoc?doc=/archimedes/la/achil_propo_087_la_1545.xml&query=proportio&outputFormat=html">all sentences which contains "proportio"</a></li>
         </ul>
       </li>
     </ul>
