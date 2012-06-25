@@ -17,7 +17,6 @@ import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
-import org.bbaw.wsp.cms.translator.MicrosoftTranslator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -37,9 +36,9 @@ public class QueryDocuments extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
     String language = request.getParameter("language");
-    String pageStr = request.getParameter("page");
     String additionalInfo = request.getParameter("addInf");
     String translate = request.getParameter("translate");
+    String pageStr = request.getParameter("page");
     if (pageStr == null)
       pageStr = "1";
     int page = Integer.parseInt(pageStr);
@@ -51,14 +50,14 @@ public class QueryDocuments extends HttpServlet {
     int to = page * pageSize - 1;  // e.g. 9
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
-      outputFormat = "xml";
+      outputFormat = "html";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
       Boolean translateBool = false;
-      if (translate != null)
+      if (translate != null && translate.equals("true"))
         translateBool = true;
       Hits hits = indexHandler.queryDocuments(query, language, from, to, true, translateBool);
-      ArrayList<org.bbaw.wsp.cms.document.Document> docs = null;
+      ArrayList<Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
       int hitsSize = -1;
@@ -84,24 +83,73 @@ public class QueryDocuments extends HttpServlet {
         out.print("<hitsSize>" + hitsSize + "</hitsSize>");
         out.print("<hits>");
         for (int i=0; i<docsSize; i++) {
-          org.bbaw.wsp.cms.document.Document doc = docs.get(i);
+          Document doc = docs.get(i);
           out.print("<doc>");
           String docId = doc.getFieldable("docId").stringValue();
           out.print("<docId>" + docId + "</docId>");
-          Fieldable docUriField = doc.getFieldable("uri");
-          if (docUriField != null) {
-            String docUri = docUriField.stringValue();
-            out.print("<uri>" + docUri + "</uri>");
-          }
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
           if (docCollectionNamesField != null) {
             String docCollectionNames = docCollectionNamesField.stringValue();
-            out.print("<collectionNames>" + docCollectionNames + "</collectionNames>");
+            out.print("<collectionName>" + docCollectionNames + "</collectionName>");
           }
           out.print("</doc>");
         }
         out.print("</hits>");
         out.print("</result>");
+      } else if (outputFormat.equals("html")) {
+        StringBuilder htmlStrBuilder = new StringBuilder();
+        String baseUrl = getBaseUrl(request);
+        String cssUrl = baseUrl + "/css/page.css";
+        htmlStrBuilder.append("<html>");
+        htmlStrBuilder.append("<head>");
+        htmlStrBuilder.append("<title>Query: \"" + query + "\"</title>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+        htmlStrBuilder.append("</head>");
+        htmlStrBuilder.append("<body>");
+        htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
+        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW WSP CMS service\"/></a></td>");
+        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("<p/>");
+        htmlStrBuilder.append("<h1>Query: " + "\"" + query + "</h1>");
+        htmlStrBuilder.append((from+1) + " - " + (to+1) + " of " + hitsSize + " documents");
+        htmlStrBuilder.append("<p/>");
+        htmlStrBuilder.append("<table align=\"right\" width=\"100%\" border=\"2\" rules=\"groups\">");
+        htmlStrBuilder.append("<colgroup>");
+        htmlStrBuilder.append("<col width=\"4%\"/>");
+        htmlStrBuilder.append("<col width=\"20%\"/>");
+        htmlStrBuilder.append("<col width=\"75%\"/>");
+        htmlStrBuilder.append("</colgroup>");
+        htmlStrBuilder.append("<thead");
+        htmlStrBuilder.append("<tr>");
+        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "No" + "</th>");
+        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "Document" + "</th>");
+        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "Hits" + "</th>");
+        htmlStrBuilder.append("</tr>");
+        htmlStrBuilder.append("</thead");
+        for (int i=0; i<docsSize; i++) {
+          htmlStrBuilder.append("<tr valign=\"top\">");
+          Document doc = docs.get(i);
+          int num = (page - 1) * pageSize + i + 1;
+          htmlStrBuilder.append("<td>" + num + ". " + "</td>");
+          String docId = doc.getFieldable("docId").stringValue();
+          htmlStrBuilder.append("<td align=\"left\">" + docId + "</td>");
+          ArrayList<String> hitFragments = doc.getHitFragments();
+          if (hitFragments != null) {
+            StringBuilder hitFragmentsStrBuilder = new StringBuilder();
+            hitFragmentsStrBuilder.append("<ol>");
+            for (int j=0; j<hitFragments.size(); j++) {
+              String hitFragment = hitFragments.get(j);
+              hitFragmentsStrBuilder.append(" <li>(...) " + hitFragment + " (...) </li>");
+            }
+            hitFragmentsStrBuilder.append("</ol>");
+            htmlStrBuilder.append("<td align=\"left\">" + hitFragmentsStrBuilder.toString() + "</td>");
+          }
+          htmlStrBuilder.append("</tr>");
+        }
+        htmlStrBuilder.append("</table");
+        htmlStrBuilder.append("</body>");
+        htmlStrBuilder.append("</html>");
+        out.print(htmlStrBuilder.toString());
       } else if (outputFormat.equals("json")) {
         WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
         jsonEncoder.clear();
@@ -218,16 +266,14 @@ public class QueryDocuments extends HttpServlet {
     // TODO Auto-generated method stub
   }
 
-  private String toString(ArrayList<String> queryForms) {
-    String queryFormsStr = "";
-    for (int i=0; i<queryForms.size(); i++) {
-      String form = queryForms.get(i);
-      queryFormsStr = queryFormsStr + form + " ";
-    }
-    if (queryForms == null || queryForms.size() == 0)
-      return null;
-    else
-      return queryFormsStr.substring(0, queryFormsStr.length() -1); 
+  private String getBaseUrl(HttpServletRequest request) {
+    return getServerUrl(request) + request.getContextPath();
   }
-  
+
+  private String getServerUrl(HttpServletRequest request) {
+    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
+      return request.getScheme() + "://" + request.getServerName();
+    else
+      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+  }
 }
