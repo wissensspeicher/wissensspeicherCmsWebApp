@@ -130,19 +130,18 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tr valign=\"top\">");
           Document doc = docs.get(i);
           int num = (page - 1) * pageSize + i + 1;
-          htmlStrBuilder.append("<td>" + num + ". " + "</td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
           String docId = doc.getFieldable("docId").stringValue();
-          htmlStrBuilder.append("<td align=\"left\">" + docId + "</td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + docId + "</td>");
           ArrayList<String> hitFragments = doc.getHitFragments();
           if (hitFragments != null) {
             StringBuilder hitFragmentsStrBuilder = new StringBuilder();
-            hitFragmentsStrBuilder.append("<ol>");
+            hitFragmentsStrBuilder.append("(...) ");
             for (int j=0; j<hitFragments.size(); j++) {
               String hitFragment = hitFragments.get(j);
-              hitFragmentsStrBuilder.append(" <li>(...) " + hitFragment + " (...) </li>");
+              hitFragmentsStrBuilder.append(hitFragment + " (...) ");
             }
-            hitFragmentsStrBuilder.append("</ol>");
-            htmlStrBuilder.append("<td align=\"left\">" + hitFragmentsStrBuilder.toString() + "</td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + hitFragmentsStrBuilder.toString() + "</td>");
           }
           htmlStrBuilder.append("</tr>");
         }
@@ -207,7 +206,7 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
-                  String persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".*>", "$1");
+                  String persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\"", "$1");
                   if(persNameAttribute.contains("</persName>"))
                     persNameAttribute = persNameAttribute.replace("</persName>", "");
                   if(persNameAttribute.contains("<persName>"))
@@ -230,7 +229,7 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
-                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\".*>", "$1");
+                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\"", "$1");
                   if(placeAttribute.contains("</placeName>"))
                     placeAttribute = placeAttribute.replace("</placeName>", "");
                   if(placeAttribute.contains("<placeName>"))
