@@ -235,7 +235,7 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
-                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\"", "$1");
+                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\".+?</placeName>", "$1");
                   if(placeAttribute.contains("</placeName>"))
                     placeAttribute = placeAttribute.replace("</placeName>", "");
                   if(placeAttribute.contains("<placeName>"))
