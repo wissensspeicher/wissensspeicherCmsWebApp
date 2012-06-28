@@ -206,11 +206,11 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
-                  String persNameAttribute = ""; 
+                  String persNameAttribute = docPersName; 
                   if(persNameAttribute.contains("persName nymRef"))
-                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+)\"", "$1");
+                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+)\".+?</persName>", "$1");
                   if(persNameAttribute.contains("persName name="))
-                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\"", "$1");
+                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".+?</persName>", "$1");
                   if(persNameAttribute.contains("persName key="))
                     persNameAttribute = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");
                   if(persNameAttribute.contains("</persName>"))
