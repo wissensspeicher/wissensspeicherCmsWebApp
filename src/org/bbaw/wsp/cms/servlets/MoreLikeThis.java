@@ -56,7 +56,6 @@ public class MoreLikeThis extends HttpServlet {
 	    int from = (page * pageSize) - pageSize;  // e.g. 0
 	    int to = page * pageSize - 1;  // e.g. 9
 	    PrintWriter out = response.getWriter();
-	    out.println(docId);
 	    IndexHandler indexHandler;
       try {
         indexHandler = IndexHandler.getInstance();
@@ -71,8 +70,6 @@ public class MoreLikeThis extends HttpServlet {
         if (docs != null)
           docsSize = docs.size();
 
-        out.println(hits.toString());
-        
         if (outputFormat.equals("html") || outputFormat.equals("json"))
           response.setContentType("text/html");
         
