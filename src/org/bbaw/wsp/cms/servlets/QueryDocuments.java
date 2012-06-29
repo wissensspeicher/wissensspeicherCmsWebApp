@@ -206,6 +206,7 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
+                  docPersName = docPersName.replaceAll("\\n", "");
                   String persNameAttribute = docPersName; 
                   if(persNameAttribute.contains("persName nymRef"))
                     persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+)\".+?</persName>", "$1");
@@ -213,13 +214,8 @@ public class QueryDocuments extends HttpServlet {
                     persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".+?</persName>", "$1");
                   if(persNameAttribute.contains("persName key="))
                     persNameAttribute = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");
-                  if(persNameAttribute.contains("</persName>"))
-                    persNameAttribute = persNameAttribute.replace("</persName>", "");
-                  if(persNameAttribute.contains("<persName>"))
-                      persNameAttribute = persNameAttribute.replace("<persName>", "");
+                  persNameAttribute = persNameAttribute.replaceAll("<persName.*?>(.*)</persName>", "$1");
                   persNameAttribute = persNameAttribute.trim();
-                  //TODO evtl auch den inhalt der tags mit auswerten, nicht nur das attribut
-                  String persNameContent = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");
                   JSONObject nameAndLink = new JSONObject();
                   //TODO was tun mit dupilaten?
                   nameAndLink.put("name", persNameAttribute);
@@ -235,18 +231,10 @@ public class QueryDocuments extends HttpServlet {
                 Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
+                  docPlace = docPlace.replaceAll("\\n", "");
                   String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\".+?</placeName>", "$1");
-                  if(placeAttribute.contains("</placeName>"))
-                    placeAttribute = placeAttribute.replace("</placeName>", "");
-                  if(placeAttribute.contains("<placeName>"))
-                    placeAttribute = placeAttribute.replace("<placeName>", "");
+                  placeAttribute = placeAttribute.replaceAll("<placeName.*?>(.*)</placeName>", "$1");
                   placeAttribute = placeAttribute.trim();
-                  //TODO evtl auch den inhalt der tags mit auswerten, nicht nur das attribut
-                  String placeContent = docPlace.replaceAll("<placeName.*?>(.*)</placeName>", "$1"); 
-                  if(placeAttribute.contains("</placeName>"))
-                    placeAttribute = placeAttribute.replace("</placeName>", "");
-                  if(placeAttribute.contains("<placeName>"))
-                      placeAttribute = placeAttribute.replace("<placeName>", "");
                   //TODO was tun mit dupilaten?
                   JSONObject placeObj = new JSONObject(); 
                   placeObj.put("place", placeAttribute);
