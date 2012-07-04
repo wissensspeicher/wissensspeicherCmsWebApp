@@ -3,6 +3,7 @@ package org.bbaw.wsp.cms.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -36,6 +37,8 @@ public class QueryDocuments extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
     String language = request.getParameter("language");
+    if (language != null && language.equals("none"))
+      language = null;
     String additionalInfo = request.getParameter("addInf");
     String translate = request.getParameter("translate");
     String pageStr = request.getParameter("page");
@@ -51,12 +54,28 @@ public class QueryDocuments extends HttpServlet {
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "html";
+    if (outputFormat.equals("xml"))
+      response.setContentType("text/xml");
+    else if (outputFormat.equals("html") || outputFormat.equals("json"))
+      response.setContentType("text/html");
+    else 
+      response.setContentType("text/xml");
+    PrintWriter out = response.getWriter();
+    if (query == null) {
+      out.print("no query specified: please set parameter \"query\"");
+      out.close();
+      return;
+    }
     try {
+      Date begin = new Date();
       IndexHandler indexHandler = IndexHandler.getInstance();
       Boolean translateBool = false;
       if (translate != null && translate.equals("true"))
         translateBool = true;
-      Hits hits = indexHandler.queryDocuments(query, language, from, to, true, translateBool);
+      boolean withHitHighlights = false;
+      if (query.contains("tokenOrig:") || query.contains("tokenMorph:") || query.contains("tokenReg:") || query.contains("tokenNorm:"))
+        withHitHighlights = true;
+      Hits hits = indexHandler.queryDocuments(query, language, from, to, withHitHighlights, translateBool);
       ArrayList<Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
@@ -66,13 +85,8 @@ public class QueryDocuments extends HttpServlet {
         hitsSize = hits.getSize();
       if (docs != null)
         docsSize = docs.size();
-      if (outputFormat.equals("xml"))
-        response.setContentType("text/xml");
-      else if (outputFormat.equals("html") || outputFormat.equals("json"))
-        response.setContentType("text/html");
-      else 
-        response.setContentType("text/xml");
-      PrintWriter out = response.getWriter();
+      Date end = new Date();
+      long elapsedTime = end.getTime() - begin.getTime();
       if (outputFormat.equals("xml")) {
         out.print("<result>");
         out.print("<query>");
@@ -95,57 +109,160 @@ public class QueryDocuments extends HttpServlet {
           out.print("</doc>");
         }
         out.print("</hits>");
+        out.print("<executionTime>" + elapsedTime + "</executionTime>");
         out.print("</result>");
       } else if (outputFormat.equals("html")) {
         StringBuilder htmlStrBuilder = new StringBuilder();
         String baseUrl = getBaseUrl(request);
         String cssUrl = baseUrl + "/css/page.css";
+        htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
         htmlStrBuilder.append("<html>");
         htmlStrBuilder.append("<head>");
-        htmlStrBuilder.append("<title>Query: \"" + query + "\"</title>");
+        htmlStrBuilder.append("<title>Query: " + query + "\"</title>");
         htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
         htmlStrBuilder.append("</head>");
         htmlStrBuilder.append("<body>");
         htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
-        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW WSP CMS service\"/></a></td>");
+        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
         htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("<h1>Query: " + "\"" + query + "</h1>");
-        htmlStrBuilder.append((from+1) + " - " + (to+1) + " of " + hitsSize + " documents");
-        htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("<table align=\"right\" width=\"100%\" border=\"2\" rules=\"groups\">");
+        htmlStrBuilder.append("<h4>Query: " + "\"" + query + "</h4>");
+        htmlStrBuilder.append("<table>");
         htmlStrBuilder.append("<colgroup>");
-        htmlStrBuilder.append("<col width=\"4%\"/>");
-        htmlStrBuilder.append("<col width=\"20%\"/>");
-        htmlStrBuilder.append("<col width=\"75%\"/>");
+        htmlStrBuilder.append("<col width=\"3%\"/>");
+        htmlStrBuilder.append("<col width=\"7%\"/>");
+        htmlStrBuilder.append("<col width=\"3%\"/>");
+        htmlStrBuilder.append("<col width=\"12%\"/>");
+        htmlStrBuilder.append("<col width=\"70%\"/>");
         htmlStrBuilder.append("</colgroup>");
-        htmlStrBuilder.append("<thead");
         htmlStrBuilder.append("<tr>");
-        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "No" + "</th>");
-        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "Document" + "</th>");
-        htmlStrBuilder.append("<th align=\"left\" valign=\"top\">" + "Hits" + "</th>");
+        int countPages = hitsSize / 10 + 1;
+        int pageLeft = page - 1;
+        if (page == 1)
+          pageLeft = 1;
+        int pageRight = page + 1; 
+        if (page == countPages)
+          pageRight = countPages;
+        htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"post\">");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
+        if (translate != null)
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
+        if (language != null)
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button name=\"page\" value=\"" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
+        htmlStrBuilder.append("<td align=\"middle\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button name=\"page\" value=\"" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
+        // String url = "/wspCmsWebApp/query/QueryDocuments?query=" + query;
+        // if (translate != null)
+        //   url = url + "&translate=" + translate;
+        // if (language != null)
+        //   url = url + "&language=" + language;
+        // String pageLeftUrl = url + "&page=" + pageLeft;
+        // String pageRightUrl = url + "&page=" + pageRight;
+        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><a href=\"" + pageLeftUrl + "\"><img src=\"/wspCmsWebApp/images/left.gif\"/></a></td>");
+        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
+        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><a href=\"" + pageRightUrl + "\"><img src=\"/wspCmsWebApp/images/right.gif\"/></a></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" name=\"page\" value=\"" + page + "\"/></td>");
+        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + (from+1) + " - " + (to+1) + " of " + hitsSize + " documents" + "</td>");
+        htmlStrBuilder.append("</form");  
         htmlStrBuilder.append("</tr>");
-        htmlStrBuilder.append("</thead");
+        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("<p/>");
+        htmlStrBuilder.append("<table width=\"100%\" align=\"right\" border=\"2\" rules=\"groups\">");
+        htmlStrBuilder.append("<colgroup>");
+        htmlStrBuilder.append("<col width=\"3%\"/>");
+        htmlStrBuilder.append("<col width=\"15%\"/>");
+        htmlStrBuilder.append("<col width=\"45%\"/>");
+        htmlStrBuilder.append("<col width=\"10%\"/>");
+        htmlStrBuilder.append("<col width=\"5%\"/>");
+        htmlStrBuilder.append("<col width=\"10%\"/>");
+        htmlStrBuilder.append("<col width=\"6%\"/>");
+        htmlStrBuilder.append("<col width=\"5%\"/>");
+        htmlStrBuilder.append("<col width=\"4%\"/>");
+        htmlStrBuilder.append("</colgroup>");
+        htmlStrBuilder.append("<thead>");
+        htmlStrBuilder.append("<tr>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "No" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Author" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Title" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Place" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Year" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Id" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Last modified" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Language" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Schema" + "</td>");
+        htmlStrBuilder.append("</tr>");
+        htmlStrBuilder.append("</thead>");
+        htmlStrBuilder.append("<tbody>");
         for (int i=0; i<docsSize; i++) {
-          htmlStrBuilder.append("<tr valign=\"top\">");
           Document doc = docs.get(i);
+          htmlStrBuilder.append("<tr valign=\"top\">");
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
+          Fieldable authorField = doc.getFieldable("author");
+          String author = "";
+          if (authorField != null)
+            author = authorField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + author + "</td>");
+          Fieldable titleField = doc.getFieldable("title");
+          String title = "";
+          if (authorField != null)
+            title = titleField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + title + "</td>");
+          String place = ""; // TODO
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + place + "</td>");
+          Fieldable yearField = doc.getFieldable("date");
+          String year = "";
+          if (yearField != null)
+            year = yearField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + year + "</td>");
           String docId = doc.getFieldable("docId").stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + docId + "</td>");
+          Fieldable lastModifiedField = doc.getFieldable("lastModified");
+          String lastModified = "";
+          if (lastModifiedField != null)
+            lastModified = lastModifiedField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + lastModified + "</td>");
+          Fieldable languageField = doc.getFieldable("language");
+          String lang = "";
+          if (languageField != null)
+            lang = languageField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
+          Fieldable schemaNameField = doc.getFieldable("schemaName");
+          String schemaName = "";
+          if (schemaNameField != null)
+            schemaName = schemaNameField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
+          htmlStrBuilder.append("</tr>");
+          // Link row
+          htmlStrBuilder.append("<tr valign=\"top\">");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+          htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + "<a href=\"/wspCmsWebApp/query/GetPage?docId=" + docId + "\">View</a>");
+          htmlStrBuilder.append(", <img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " Download: <a href=\"/wspCmsWebApp/doc/DocumentOperation?operation=get&docId=" + docId + "\">XML</a>");
+          htmlStrBuilder.append("</td>");
+          htmlStrBuilder.append("</tr>");
+          // hit fragments row
           ArrayList<String> hitFragments = doc.getHitFragments();
           if (hitFragments != null) {
             StringBuilder hitFragmentsStrBuilder = new StringBuilder();
+            hitFragmentsStrBuilder.append("<b>Hit summary: </b>");
             hitFragmentsStrBuilder.append("(...) ");
             for (int j=0; j<hitFragments.size(); j++) {
               String hitFragment = hitFragments.get(j);
               hitFragmentsStrBuilder.append(hitFragment + " (...) ");
             }
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + hitFragmentsStrBuilder.toString() + "</td>");
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">" + hitFragmentsStrBuilder.toString() + "</td>");
+            htmlStrBuilder.append("</tr>");
           }
-          htmlStrBuilder.append("</tr>");
         }
-        htmlStrBuilder.append("</table");
+        htmlStrBuilder.append("</tbody>");
+        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("<p/>");
+        htmlStrBuilder.append("Elapsed time: " + elapsedTime + " ms");
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
@@ -209,12 +326,13 @@ public class QueryDocuments extends HttpServlet {
                   docPersName = docPersName.replaceAll("\\n", "");
                   String persNameAttribute = docPersName; 
                   if(persNameAttribute.contains("persName nymRef"))
-                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+)\".+?</persName>", "$1");
+                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+?)\".+?</persName>", "$1");
                   if(persNameAttribute.contains("persName name="))
-                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+)\".+?</persName>", "$1");
+                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+?)\".+?</persName>", "$1");
                   if(persNameAttribute.contains("persName key="))
-                    persNameAttribute = docPersName.replaceAll("<persName.*?>(.*)</persName>", "$1");
-                  persNameAttribute = persNameAttribute.replaceAll("<persName.*?>(.*)</persName>", "$1");
+                    persNameAttribute = docPersName.replaceAll("<persName.*?>(.*?)</persName>", "$1");
+                  persNameAttribute = persNameAttribute.replaceAll("<persName.*?>(.*?)</persName>", "$1");
+                  persNameAttribute = persNameAttribute.replaceAll("&lt;|&gt;|<|>", "");
                   persNameAttribute = persNameAttribute.trim();
                   JSONObject nameAndLink = new JSONObject();
                   //TODO was tun mit dupilaten?
@@ -232,8 +350,8 @@ public class QueryDocuments extends HttpServlet {
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
                   docPlace = docPlace.replaceAll("\\n", "");
-                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+)\".+?</placeName>", "$1");
-                  placeAttribute = placeAttribute.replaceAll("<placeName.*?>(.*)</placeName>", "$1");
+                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+?)\".+?</placeName>", "$1");
+                  placeAttribute = placeAttribute.replaceAll("<placeName.*?>(.*?)</placeName>", "$1");
                   placeAttribute = placeAttribute.trim();
                   //TODO was tun mit dupilaten?
                   JSONObject placeObj = new JSONObject(); 
@@ -256,7 +374,7 @@ public class QueryDocuments extends HttpServlet {
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    // TODO Auto-generated method stub
+    doGet(request, response);
   }
 
   private String getBaseUrl(HttpServletRequest request) {
