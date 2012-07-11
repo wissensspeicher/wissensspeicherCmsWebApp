@@ -13,7 +13,7 @@
   <servlet-mapping>
     <servlet-name>DocumentOperation</servlet-name>
     <url-pattern>/doc/DocumentOperation</url-pattern>
-  </servlet-mapping> 
+  </servlet-mapping>
   <servlet>
     <description>GetPage</description>
     <display-name>GetPage</display-name>
@@ -84,9 +84,17 @@
     <servlet-name>GetDocumentJobs</servlet-name>
     <url-pattern>/doc/GetDocumentJobs</url-pattern>
   </servlet-mapping>
-  
   <listener>
     <listener-class>org.bbaw.wsp.cms.servlets.CmsWebServletContextListener</listener-class>
   </listener>
-
+  <servlet>
+    <description></description>
+    <display-name>MoreLikeThis</display-name>
+    <servlet-name>MoreLikeThis</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.MoreLikeThis</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MoreLikeThis</servlet-name>
+    <url-pattern>/query/MoreLikeThis</url-pattern>
+  </servlet-mapping>
 </web-app>
