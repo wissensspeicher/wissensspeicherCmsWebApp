@@ -4,22 +4,30 @@
 <script type="text/javascript">
 <!--
 function Browse() {
-  var luceneQuery = document.getElementById("luceneQuery");
+  var luceneQuery = document.getElementById("luceneQueryId1");
+  var schema1checked = document.getElementById("schema1Id").checked;
+  var schema2checked = document.getElementById("schema2Id").checked;
+  var schema3checked = document.getElementById("schema3Id").checked;
   var luceneSchemaQueryStr = GetLuceneSchemaQuery();
+  if (schema1checked && schema2checked && schema3checked)
+    luceneSchemaQueryStr =  "*";
   luceneQuery.value = luceneSchemaQueryStr;
 }
 function GetLuceneSchemaQuery() {
   var schemaFieldValue = "schemaName";
-  var schema1Val = document.queryDocuments.schema1.value;
-  var schema2Val = document.queryDocuments.schema2.value;
-  var schema3Val = document.queryDocuments.schema3.value;
+  var schema1Val = document.getElementById("schema1Id").value;
+  var schema2Val = document.getElementById("schema2Id").value;
+  var schema3Val = document.getElementById("schema3Id").value;
+  var schema1checked = document.getElementById("schema1Id").checked;
+  var schema2checked = document.getElementById("schema2Id").checked;
+  var schema3checked = document.getElementById("schema3Id").checked;
   var luceneQueryStr = "+" + schemaFieldValue + ":" + "(";
-  if (document.queryDocuments.schema1.checked)
+  if (schema1checked)
     luceneQueryStr = luceneQueryStr + schema1Val;
-  if (document.queryDocuments.schema2.checked)
+  if (schema2checked)
     luceneQueryStr = luceneQueryStr + " " + schema2Val;
-  if (document.queryDocuments.schema3.checked)
-	luceneQueryStr = luceneQueryStr + " " + schema3Val;
+  if (schema3checked)
+    luceneQueryStr = luceneQueryStr + " " + schema3Val;
   luceneQueryStr = luceneQueryStr + ")";
   return luceneQueryStr;
 }
@@ -32,40 +40,53 @@ function GetLuceneBoolOp(relOp) {
     return "";
 }
 function AttributeQuery() {
-  var luceneQuery = document.getElementById("luceneQuery");
-  var field1Val = document.queryDocuments.field1.value;
-  var field1QueryVal = document.queryDocuments.field1Query.value;
-  var relOp1Value = document.queryDocuments.relOp1.value;
+  var luceneQuery = document.getElementById("luceneQueryId2");
+  var sortBy = document.getElementById("sortById2");
+  var field1Val = document.getElementById("field1Id").value;
+  var field1QueryVal = document.getElementById("field1QueryId").value;
+  var relOp1Value = document.getElementById("relOp1Id").value;
   var relOp1ValueLucene = GetLuceneBoolOp(relOp1Value);
-  var field2Val = document.queryDocuments.field2.value;
-  var field2QueryVal = document.queryDocuments.field2Query.value;
-  var relOp2Value = document.queryDocuments.relOp2.value;
+  var field2Val = document.getElementById("field2Id").value;
+  var field2QueryVal = document.getElementById("field2QueryId").value;
+  var relOp2Value = document.getElementById("relOp2Id").value;
   var relOp2ValueLucene = GetLuceneBoolOp(relOp2Value);
   var luceneQueryStr = relOp1ValueLucene + field1Val + ":";
   luceneQueryStr = luceneQueryStr + field1QueryVal;
   if (field2QueryVal != "")
     luceneQueryStr = luceneQueryStr + " " + relOp2ValueLucene + field2Val + ":" + field2QueryVal;
   var schemaQueryStr = GetLuceneSchemaQuery();
+  var schema1checked = document.getElementById("schema1Id").checked;
+  var schema2checked = document.getElementById("schema2Id").checked;
+  var schema3checked = document.getElementById("schema3Id").checked;
+  if (schema1checked && schema2checked && schema3checked)
+    schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
   luceneQuery.value = luceneQueryStr;
+  sortBy.value = "author";
 }
 function FulltextQuery() {
-  var luceneQuery = document.getElementById("luceneQuery");
-  var translateElem = document.getElementById("translateId");
+  var luceneQuery = document.getElementById("luceneQueryId3");
+  var translateElem = document.getElementById("translateId3");
   translateElem.value = "false";
-  var isTranslateQuery = document.queryDocuments.isTranslateQuery.checked;
+  var isTranslateQuery = document.getElementById("isTranslateQueryId").checked;
   if (isTranslateQuery)
     translateElem.value = "true";
   var fulltextQueryFieldValue = "tokenOrig";
-  var isMorphQuery = document.queryDocuments.isMorphQuery.checked;
+  var isMorphQuery = document.getElementById("isMorphQueryId").checked;
   if (isMorphQuery)
-	fulltextQueryFieldValue = "tokenMorph";
-  var fulltextQueryVal = document.queryDocuments.fulltextQuery.value;
+    fulltextQueryFieldValue = "tokenMorph";
+  var fulltextQueryVal = document.getElementById("fulltextQueryId").value;
+  var luceneQueryStr = "+" + fulltextQueryFieldValue + ":(" + fulltextQueryVal + ")";
+  var languageValue = document.getElementById("languageId").value;
+  var language = document.getElementById("languageId3");
+  if (isMorphQuery && languageValue != "none")
+    language.value = languageValue;    
   var schemaQueryStr = GetLuceneSchemaQuery();
-  var luceneQueryStr = "+" + fulltextQueryFieldValue + ":" + fulltextQueryVal;
-  var language = document.queryDocuments.language.value;
-  if (isMorphQuery && language != "none")
-    luceneQueryStr = luceneQueryStr + " " + "+language:" + language;    
+  var schema1checked = document.getElementById("schema1Id").checked;
+  var schema2checked = document.getElementById("schema2Id").checked;
+  var schema3checked = document.getElementById("schema3Id").checked;
+  if (schema1checked && schema2checked && schema3checked)
+    schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
   luceneQuery.value = luceneQueryStr;
 }
@@ -79,9 +100,6 @@ function checkCR(event) {
 </script>
 </head>
 <body>
-  <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="post">
-  <input type="hidden" name="query" id="luceneQuery"/>
-  <input type="hidden" name="translate" id="translateId"/>
   <table height="60px">
     <colgroup>
       <col width="90%"/>
@@ -107,22 +125,27 @@ function checkCR(event) {
           <text style="margin-left:20px;">TEI</text><br/>
         </td>
         <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema1" value="TEI" checked="checked"/>
+          <text style="margin-left:1px;"></text><input type="checkbox" name="schema1" id="schema1Id" value="TEI" checked="checked"/>
         </td>
         <td valign="top">
           <text style="margin-left:20px;">HTML</text><br/>
         </td>
         <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema2" value="html" checked="checked"/>
+          <text style="margin-left:1px;"></text><input type="checkbox" name="schema2" id="schema2Id" value="html" checked="checked"/>
         </td>
         <td valign="top">
           <text style="margin-left:20px;">Diverse</text><br/>
         </td>
         <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema3" value="diverse" checked="checked"/>
+          <text style="margin-left:1px;"></text><input type="checkbox" name="schema3" id="schema3Id" value="diverse" checked="checked"/>
         </td>
-        <td valign="top"><text style="margin-left:40px;"></text><button type="submit" name="browse" onclick="Browse()">Browse</button></td>
-        <td valign="top"><a href="../query/info.html#docBases" target="_blank"><img src="../images/info.png" valign="bottom" width="15" height="15" border="0" alt="Info Document bases"/></a></td>
+        <td valign="top">
+          <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+          <input type="hidden" name="query" id="luceneQueryId1"/>
+          <input type="hidden" name="sortBy" id="sortById1" value="author"/>
+          <text style="margin-left:40px;"></text><button type="submit" onclick="Browse()">Browse</button>
+         </form>
+        </td>
       </tr>
       <tr>
       </tr>
@@ -135,7 +158,7 @@ function checkCR(event) {
       <table>
       <tr>
       <td>
-      <select name="field1">
+      <select name="field1" id="field1Id">
       <option value ="author" selected="true">Author</option>
       <option value ="title">Title</option>
       <option value ="place">Place</option>
@@ -145,7 +168,7 @@ function checkCR(event) {
       </select>          
       </td>
       <td>
-      <select name="relOp1">
+      <select name="relOp1" id="relOp1Id">
       <option value ="mustContain" selected="true">must contain</option>
       <option value ="mayContain">may contain</option>
       <option value ="mustNotContain">must not contain</option>
@@ -153,15 +176,20 @@ function checkCR(event) {
       </select>          
       </td>
       <td>
-      <input type="text" size="40" name="field1Query" onkeypress="return checkCR(event)"/>
-      <button type="submit" name="field1QuerySubmit" onclick="AttributeQuery()">Query</button>
-      <a href="info.html#metadataQuery" target="_blank"><img src="../images/info.png" valign="bottom" width="15" height="15" border="0" alt="Info Metadata search"/></a>
+      <input type="text" size="40" name="field1Query" id="field1QueryId" onkeypress="return checkCR(event)"/>
+      </td>
+      <td valign="middle">
+      <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+        <input type="hidden" name="query" id="luceneQueryId2"/>
+        <input type="hidden" name="sortBy" id="sortById2"/>
+        <button type="submit" onclick="AttributeQuery()">Query</button>
+      </form>
       </td>
       </tr>
 
       <tr>
       <td>
-      <select name="field2">
+      <select name="field2" id="field2Id">
       <option value ="author">Author</option>
       <option value ="title" selected="true">Title</option>
       <option value ="place">Place</option>
@@ -171,7 +199,7 @@ function checkCR(event) {
       </select>          
       </td>
       <td>
-      <select name="relOp2">
+      <select name="relOp2" id="relOp2Id">
       <option value ="mustContain" selected="true">must contain</option>
       <option value ="mayContain">may contain</option>
       <option value ="mustNotContain">must not contain</option>
@@ -179,7 +207,7 @@ function checkCR(event) {
       </select>          
       </td>
       <td>
-      <input type="text" size="40" name="field2Query" value="" onkeypress="return checkCR(event)"/>
+      <input type="text" size="40" name="field2Query" id="field2QueryId" value="" onkeypress="return checkCR(event)"/>
       </td>
       </tr>
       </table>
@@ -192,11 +220,15 @@ function checkCR(event) {
       <table>
         <tr>
         <td>
-        Document contains <input type="text" size="40" name="fulltextQuery" onkeypress="return checkCR(event)"/>
-        <button type="submit" name="fulltextQuerySubmit" onclick="FulltextQuery()">Query</button>
+        Document contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
         </td>
-        <td valign="bottom">
-        <a href="info.html#fulltextMorph" target="_blank"><img src="../images/info.png" width="15" height="15" border="0" alt="Info fulltext query"/></a>
+        <td valign="middle">
+        <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+          <input type="hidden" name="query" id="luceneQueryId3"/>
+          <input type="hidden" name="language" id="languageId3"/>
+          <input type="hidden" name="translate" id="translateId3"/>
+          <button type="submit" onclick="FulltextQuery()">Query</button>
+        </form>
         </td>
         </tr>
       </table>
@@ -206,14 +238,14 @@ function checkCR(event) {
             <text style="margin-left:30px;">morphological</text>
           </td>
           <td valign="top">
-            <text style="margin-left:1px;"></text><input type="checkbox" name="isMorphQuery" value="isMorphQuery"/>
+            <text style="margin-left:1px;"></text><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery"/>
           </td>
           <td valign="top">
             <text style="margin-left:3px;">language: </text>
           </td>
           <td valign="top" style="margin-left:3px;">
           <text style="margin-left:1px;"></text>
-          <select name="language">
+          <select name="language" id="languageId">
           <option value ="none" selected="true">None</option>
           <option value ="ara">Arabic</option>
           <option value ="zho">Chinese</option>
@@ -230,7 +262,7 @@ function checkCR(event) {
             <text style="margin-left:10px;">translate</text><br/>
           </td>
           <td valign="top">
-            <text style="margin-left:1px;"></text><input type="checkbox" name="isTranslateQuery" value="translate"/>
+            <text style="margin-left:1px;"></text><input type="checkbox" name="isTranslateQuery" id="isTranslateQueryId" value="translate"/>
           </td>
         </tr>
       </table>
