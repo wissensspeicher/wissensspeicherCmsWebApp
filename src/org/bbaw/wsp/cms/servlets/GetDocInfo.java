@@ -65,9 +65,15 @@ public class GetDocInfo extends HttpServlet {
         String language = mdRecord.getLanguage();
         if ((field == null || (field != null && field.equals("language"))) && language != null)
           out.print("<language>" + language + "</language>");
+        String publisher = mdRecord.getPublisher();
+        if ((field == null || (field != null && field.equals("publisher"))) && publisher != null)
+          out.print("<publisher>" + publisher + "</publisher>");
         String date = mdRecord.getYear();
         if ((field == null || (field != null && field.equals("date"))) && date != null)
           out.print("<date>" + date + "</date>");
+        String subject = mdRecord.getSubject();
+        if ((field == null || (field != null && field.equals("subject"))) && subject != null)
+          out.print("<subject>" + subject + "</subject>");
         String rights = mdRecord.getRights();
         if ((field == null || (field != null && field.equals("rights"))) && rights != null)
           out.print("<rights>" + rights + "</rights>");
