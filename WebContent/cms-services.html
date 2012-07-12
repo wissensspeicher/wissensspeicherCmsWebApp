@@ -126,7 +126,7 @@
       <li>Response output
         <ul>
           <li>Document page</li>
-          <li>Example: <a href="query/GetPage?docId=/joey/Test_1789.xml">Page 1 in test document</a></li>
+          <li>Example: <a href="query/GetPage?docId=/Test/test/Test_1789.xml">Page 1 in test document</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Page 1 in Humboldt - Ehrenberg letter</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized">Page 1 in Humboldt - Ehrenberg letter, tokenized</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 1 in in Humboldt - Ehrenberg letter, tokenized, morphological forms of "ist" are highlighted</a></li>
@@ -240,6 +240,7 @@
           <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all documents which morphological contains translated "house" in content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist">all documents which morphological contains translated "ist" in content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all documents which morphological contains translated "sur" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all documents which contains "durch grössere stoffliche Fülle"</a></li>
           <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all documents which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
           <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all documents which contains "alex*" in author and "ehren*" in title</a></li>
           <li>Example: <a href="query/QueryDocuments?query=%2BschemaName:(TEI html diverse)">Browse: all documents</a></li>
@@ -325,7 +326,7 @@
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:später&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "später" in content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/joey/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in /joey/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/Test/test/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in /Test/test/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=elementName:p">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all p elements (XML output)</a></li>
         </ul>
       </li>
