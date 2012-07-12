@@ -150,24 +150,47 @@
 	            <ul>
 	              <li>supported fields
 	                <ul>
-		              <li>docId</li>
-		              <li>identifier</li>
-		              <li>author</li>
-		              <li>title</li>
-		              <li>language</li>
-		              <li>date</li>
-		              <li>rights</li>
-		              <li>license</li>
-		              <li>accessRights</li>
-		              <li>tokenOrig</li>
-		              <li>tokenReg</li>
-		              <li>tokenNorm</li>
-		              <li>tokenMorph</li>
-		              <li>default: tokenOrig</li>
+	                  <li>docId</li>
+	                  <li>identifier</li>
+	                  <li>author</li>
+	                  <li>title</li>
+	                  <li>language</li>
+	                  <li>publisher (place)</li>
+	                  <li>date (year)</li>
+	                  <li>subject</li>
+	                  <li>rights</li>
+	                  <li>license</li>
+	                  <li>accessRights</li>
+	                  <li>tokenOrig</li>
+	                  <li>tokenReg</li>
+	                  <li>tokenNorm</li>
+	                  <li>tokenMorph</li>
+	                  <li>default: tokenOrig</li>
 		            </ul>
 		          </li>
 	            </ul>
 	          </li>
+            </ul>
+          </li>
+          <li>sortBy (optional)
+            <ul>
+              <li>fieldNames separated by blank
+              <ul>
+                <li>supported fields
+                  <ul>
+                  <li>author</li>
+                  <li>title</li>
+                  <li>language</li>
+                  <li>publisher (place)</li>
+                  <li>docId</li>
+                  <li>date (year)</li>
+                  <li>lastModified</li>
+                  <li>schemaName</li>
+                </ul>
+              </li>
+              <li>default: result is sorted by Lucene score (the most relevant result first)</li>
+              </ul>
+            </li>
             </ul>
           </li>
           <li>language (optional)
