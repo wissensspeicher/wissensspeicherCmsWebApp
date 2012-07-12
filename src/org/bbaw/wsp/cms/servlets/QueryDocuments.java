@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.search.Query;
 
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
@@ -36,6 +37,10 @@ public class QueryDocuments extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
+    String sortBy = request.getParameter("sortBy");
+    String[] sortFields = null;
+    if (sortBy != null && ! sortBy.trim().isEmpty())
+      sortFields = sortBy.split(" ");
     String language = request.getParameter("language");
     if (language != null && language.equals("none"))
       language = null;
@@ -75,7 +80,7 @@ public class QueryDocuments extends HttpServlet {
       boolean withHitHighlights = false;
       if (query.contains("tokenOrig:") || query.contains("tokenMorph:") || query.contains("tokenReg:") || query.contains("tokenNorm:"))
         withHitHighlights = true;
-      Hits hits = indexHandler.queryDocuments(query, language, from, to, withHitHighlights, translateBool);
+      Hits hits = indexHandler.queryDocuments(query, sortFields, language, from, to, withHitHighlights, translateBool);
       ArrayList<Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
@@ -118,7 +123,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
         htmlStrBuilder.append("<html>");
         htmlStrBuilder.append("<head>");
-        htmlStrBuilder.append("<title>Query: " + query + "\"</title>");
+        htmlStrBuilder.append("<title>Query: " + query + "</title>");
         htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
         htmlStrBuilder.append("</head>");
         htmlStrBuilder.append("<body>");
@@ -126,7 +131,23 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
         htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("<h4>Query: " + "\"" + query + "</h4>");
+        String luceneQueryStr = query;
+        Query luceneQuery = hits.getQuery();
+        if (query != null)
+          luceneQueryStr = luceneQuery.toString();
+        String sortByStr = sortBy;
+        if (sortBy == null)
+          sortByStr = "";
+        htmlStrBuilder.append("<h4>Query: " + luceneQueryStr + ", sorted by: " + sortByStr + "</h4>");
+        htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
+        if (translate != null)
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
+        if (language != null)
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"page\" id=\"pageId\" value=\"" + page + "\"/>");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"sortBy\" id=\"sortById\" value=\"" + sortByStr + "\"/>");
+        htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
         htmlStrBuilder.append("<table>");
         htmlStrBuilder.append("<colgroup>");
         htmlStrBuilder.append("<col width=\"3%\"/>");
@@ -137,34 +158,23 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</colgroup>");
         htmlStrBuilder.append("<tr>");
         int countPages = hitsSize / 10 + 1;
+        if (hitsSize % 10 == 0) // modulo operator: e.g. 280 % 10 is 0
+          countPages = hitsSize / 10;
         int pageLeft = page - 1;
         if (page == 1)
           pageLeft = 1;
         int pageRight = page + 1; 
         if (page == countPages)
           pageRight = countPages;
-        htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"post\">");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
-        if (translate != null)
-          htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
-        if (language != null)
-          htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button name=\"page\" value=\"" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
         htmlStrBuilder.append("<td align=\"middle\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button name=\"page\" value=\"" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
-        // String url = "/wspCmsWebApp/query/QueryDocuments?query=" + query;
-        // if (translate != null)
-        //   url = url + "&translate=" + translate;
-        // if (language != null)
-        //   url = url + "&language=" + language;
-        // String pageLeftUrl = url + "&page=" + pageLeft;
-        // String pageRightUrl = url + "&page=" + pageRight;
-        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><a href=\"" + pageLeftUrl + "\"><img src=\"/wspCmsWebApp/images/left.gif\"/></a></td>");
-        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
-        // htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><a href=\"" + pageRightUrl + "\"><img src=\"/wspCmsWebApp/images/right.gif\"/></a></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" name=\"page\" value=\"" + page + "\"/></td>");
-        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + (from+1) + " - " + (to+1) + " of " + hitsSize + " documents" + "</td>");
-        htmlStrBuilder.append("</form");  
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
+        int fromDisplay = from + 1;
+        int toDisplay = to + 1;
+        if (hitsSize < to)
+          toDisplay = hitsSize;
+        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " documents" + "</td>");
         htmlStrBuilder.append("</tr>");
         htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("<p/>");
@@ -183,14 +193,14 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<thead>");
         htmlStrBuilder.append("<tr>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "No" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Author" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Title" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Place" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Year" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Id" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Last modified" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Language" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "Schema" + "</td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='author'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Author" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='title'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Title" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='publisher'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Place" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='date'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Year" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='docId'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Id" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='lastModified'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Last modified" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='language'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Language" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='schemaName'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Schema" + "</button></td>");
         htmlStrBuilder.append("</tr>");
         htmlStrBuilder.append("</thead>");
         htmlStrBuilder.append("<tbody>");
@@ -206,11 +216,14 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + author + "</td>");
           Fieldable titleField = doc.getFieldable("title");
           String title = "";
-          if (authorField != null)
+          if (titleField != null)
             title = titleField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + title + "</td>");
-          String place = ""; // TODO
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + place + "</td>");
+          Fieldable publisherField = doc.getFieldable("publisher");
+          String publisher = "";
+          if (publisherField != null)
+            publisher = publisherField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + publisher + "</td>");
           Fieldable yearField = doc.getFieldable("date");
           String year = "";
           if (yearField != null)
@@ -260,7 +273,7 @@ public class QueryDocuments extends HttpServlet {
         }
         htmlStrBuilder.append("</tbody>");
         htmlStrBuilder.append("</table>");
-        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("</form>");
         htmlStrBuilder.append("<p/>");
         htmlStrBuilder.append("Elapsed time: " + elapsedTime + " ms");
         htmlStrBuilder.append("</body>");
