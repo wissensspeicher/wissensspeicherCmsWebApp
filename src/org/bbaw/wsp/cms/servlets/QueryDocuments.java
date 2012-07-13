@@ -330,46 +330,30 @@ public class QueryDocuments extends HttpServlet {
           if(additionalInfo != null) {
             if(additionalInfo.equals("true")) {
               JSONArray jsonNames = new JSONArray();
-              Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
-              ArrayList<Document> namesList = persHits.getHits();
-              for (Document nameDoc : namesList) {
-                Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
-                if (docPersNameField != null) {
-                  String docPersName = docPersNameField.stringValue();
-                  docPersName = docPersName.replaceAll("\\n", "");
-                  String persNameAttribute = docPersName; 
-                  if(persNameAttribute.contains("persName nymRef"))
-                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+?)\".+?</persName>", "$1");
-                  if(persNameAttribute.contains("persName name="))
-                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+?)\".+?</persName>", "$1");
-                  if(persNameAttribute.contains("persName key="))
-                    persNameAttribute = docPersName.replaceAll("<persName.*?>(.*?)</persName>", "$1");
-                  persNameAttribute = persNameAttribute.replaceAll("<persName.*?>(.*?)</persName>", "$1");
-                  persNameAttribute = persNameAttribute.replaceAll("&lt;|&gt;|<|>", "");
-                  persNameAttribute = persNameAttribute.trim();
-                  JSONObject nameAndLink = new JSONObject();
-                  //TODO was tun mit dupilaten?
-                  nameAndLink.put("name", persNameAttribute);
-                  nameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(persNameAttribute));
-                  jsonNames.add(nameAndLink);
+              Fieldable personsField = doc.getFieldable("persons");
+              if (personsField != null) {
+                String personsStr = personsField.stringValue();
+                String[] persons = personsStr.split("###");  // separator of persons
+                for (int j=0; j<persons.length; j++) {
+                  String personName = persons[j];
+                  JSONObject persNameAndLink = new JSONObject();
+                  persNameAndLink.put("name", personName);
+                  persNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(personName));
+                  jsonNames.add(persNameAndLink);
                 }
               }
               jsonWrapper.put("persNames", jsonNames);
               JSONArray jsonPlaces = new JSONArray();
-              Hits placeHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:placeName", 0, 100);
-              ArrayList<Document> placeList = placeHits.getHits();
-              for (Document placeDoc : placeList) {
-                Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
-                if (docPlaceField != null) {
-                  String docPlace = docPlaceField.stringValue();
-                  docPlace = docPlace.replaceAll("\\n", "");
-                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+?)\".+?</placeName>", "$1");
-                  placeAttribute = placeAttribute.replaceAll("<placeName.*?>(.*?)</placeName>", "$1");
-                  placeAttribute = placeAttribute.trim();
-                  //TODO was tun mit dupilaten?
-                  JSONObject placeObj = new JSONObject(); 
-                  placeObj.put("place", placeAttribute);
-                  jsonPlaces.add(placeObj);
+              Fieldable placesField = doc.getFieldable("places");
+              if (placesField != null) {
+                String placesStr = placesField.stringValue();
+                String[] places = placesStr.split("###");  // separator of places
+                for (int j=0; j<places.length; j++) {
+                  String placeName = places[j];
+                  JSONObject placeNameAndLink = new JSONObject();
+                  placeNameAndLink.put("name", placeName);
+                  placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName));
+                  jsonNames.add(placeNameAndLink);
                 }
               }
               jsonWrapper.put("placeNames", jsonPlaces);
