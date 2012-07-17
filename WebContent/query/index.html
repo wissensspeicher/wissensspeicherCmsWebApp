@@ -50,7 +50,7 @@ function AttributeQuery() {
   var field2QueryVal = document.getElementById("field2QueryId").value;
   var relOp2Value = document.getElementById("relOp2Id").value;
   var relOp2ValueLucene = GetLuceneBoolOp(relOp2Value);
-  var luceneQueryStr = relOp1ValueLucene + field1Val + ":";
+  var luceneQueryStr = "*:* " + relOp1ValueLucene + field1Val + ":";  // *:* so that the minus-Operator works correct when it is alone
   luceneQueryStr = luceneQueryStr + field1QueryVal;
   if (field2QueryVal != "")
     luceneQueryStr = luceneQueryStr + " " + relOp2ValueLucene + field2Val + ":" + field2QueryVal;
@@ -161,18 +161,17 @@ function checkCR(event) {
       <select name="field1" id="field1Id">
       <option value ="author" selected="true">Author</option>
       <option value ="title">Title</option>
-      <option value ="place">Place</option>
+      <option value ="publisher">Place</option>
       <option value ="date">Year</option>
+      <option value ="docId">Id</option>
       <option value ="language">Language</option>
-      <option value ="identifier">Identifier</option>
       </select>          
       </td>
       <td>
       <select name="relOp1" id="relOp1Id">
       <option value ="mustContain" selected="true">must contain</option>
       <option value ="mayContain">may contain</option>
-      <option value ="mustNotContain">must not contain</option>
-      <option value ="equal"> = </option>
+      <option value ="mustNotContain">does not contain</option>
       </select>          
       </td>
       <td>
@@ -192,18 +191,17 @@ function checkCR(event) {
       <select name="field2" id="field2Id">
       <option value ="author">Author</option>
       <option value ="title" selected="true">Title</option>
-      <option value ="place">Place</option>
+      <option value ="publisher">Place</option>
       <option value ="date">Year</option>
+      <option value ="docId">Id</option>
       <option value ="language">Language</option>
-      <option value ="identifier">Identifier</option>
       </select>          
       </td>
       <td>
       <select name="relOp2" id="relOp2Id">
       <option value ="mustContain" selected="true">must contain</option>
       <option value ="mayContain">may contain</option>
-      <option value ="mustNotContain">must not contain</option>
-      <option value ="equal"> = </option>
+      <option value ="mustNotContain">does not contain</option>
       </select>          
       </td>
       <td>
