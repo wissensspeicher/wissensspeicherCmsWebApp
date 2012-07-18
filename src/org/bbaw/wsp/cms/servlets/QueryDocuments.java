@@ -15,6 +15,8 @@ import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
 
+import org.bbaw.wsp.cms.confmanager.CollectionReader;
+import org.bbaw.wsp.cms.confmanager.Collection;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -289,8 +291,10 @@ public class QueryDocuments extends HttpServlet {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          String docCollectionNameStr = null;
           if (docCollectionNamesField != null) {
-            jsonWrapper.put("collectionName", docCollectionNamesField.stringValue());
+            docCollectionNameStr = docCollectionNamesField.stringValue();
+            jsonWrapper.put("collectionName", docCollectionNameStr);
           }
           Fieldable docIdField = doc.getFieldable("docId");
           if(docIdField != null){
@@ -331,6 +335,7 @@ public class QueryDocuments extends HttpServlet {
             if(additionalInfo.equals("true")) {
               JSONArray jsonNames = new JSONArray();
               Fieldable personsField = doc.getFieldable("persons");
+              Collection collection = CollectionReader.getInstance().getCollection(docCollectionNameStr);
               if (personsField != null) {
                 String personsStr = personsField.stringValue();
                 String[] persons = personsStr.split("###");  // separator of persons
@@ -339,6 +344,10 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject persNameAndLink = new JSONObject();
                   persNameAndLink.put("name", personName);
                   persNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(personName));
+                  if (collection != null) {
+                    String registerLink = collection.getRegisterLink("persName", personName);
+                    persNameAndLink.put("internallink", registerLink);
+                  }
                   jsonNames.add(persNameAndLink);
                 }
               }
@@ -353,6 +362,10 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject placeNameAndLink = new JSONObject();
                   placeNameAndLink.put("name", placeName);
                   placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName));
+                  if (collection != null) {
+                    String registerLink = collection.getRegisterLink("persName", placeName);
+                    placeNameAndLink.put("internallink", registerLink);
+                  }
                   jsonNames.add(placeNameAndLink);
                 }
               }
