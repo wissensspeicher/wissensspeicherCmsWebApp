@@ -77,10 +77,7 @@ function FulltextQuery() {
     fulltextQueryFieldValue = "tokenMorph";
   var fulltextQueryVal = document.getElementById("fulltextQueryId").value;
   var luceneQueryStr = "+" + fulltextQueryFieldValue + ":(" + fulltextQueryVal + ")";
-  var languageValue = document.getElementById("languageId").value;
-  var language = document.getElementById("languageId3");
-  if (isMorphQuery && languageValue != "none")
-    language.value = languageValue;    
+  changeIsMorph();
   var schemaQueryStr = GetLuceneSchemaQuery();
   var schema1checked = document.getElementById("schema1Id").checked;
   var schema2checked = document.getElementById("schema2Id").checked;
@@ -89,6 +86,30 @@ function FulltextQuery() {
     schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
   luceneQuery.value = luceneQueryStr;
+}
+function changeIsMorph() {
+  var isMorphQuery = document.getElementById("isMorphQueryId").checked;
+  var language = document.getElementById("languageId3");
+  if (isMorphQuery) {
+    var languageValue = document.getElementById("languageId").value;
+    if (languageValue == "none") {
+      if (language != null)	
+        language.parentNode.removeChild(language);	
+    } else if (language == null) {
+      var queryDocumentsForm = document.getElementById("queryDocumentsId");
+      var languageElement = document.createElement("input");
+      languageElement.setAttribute("type", "hidden");
+      languageElement.setAttribute("name", "language");
+      languageElement.setAttribute("id", "languageId3");
+      languageElement.value = languageValue;
+      queryDocumentsForm.appendChild(languageElement);
+    } else if (language != null) {
+      language.value = languageValue;
+    }
+  } else {
+    if (language != null)	
+      language.parentNode.removeChild(language);
+  }
 }
 function checkCR(event) {
   var keyCode = event.keyCode
@@ -221,7 +242,7 @@ function checkCR(event) {
         Document contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
         </td>
         <td valign="middle">
-        <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+        <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
           <input type="hidden" name="query" id="luceneQueryId3"/>
           <input type="hidden" name="language" id="languageId3"/>
           <input type="hidden" name="translate" id="translateId3"/>
@@ -236,7 +257,7 @@ function checkCR(event) {
             <text style="margin-left:30px;">morphological</text>
           </td>
           <td valign="top">
-            <text style="margin-left:1px;"></text><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery"/>
+            <text style="margin-left:1px;"></text><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery" onchange="ChangeIsMorph()"/>
           </td>
           <td valign="top">
             <text style="margin-left:3px;">language: </text>
