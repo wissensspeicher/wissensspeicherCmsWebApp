@@ -9,6 +9,8 @@ import org.bbaw.wsp.cms.servlets.CmsWebServletContextListener;
 import de.mpg.mpiwg.berlin.mpdl.lt.dict.db.LexHandler;
 import de.mpg.mpiwg.berlin.mpdl.lt.morph.app.MorphologyCache;
 import de.mpg.mpiwg.berlin.mpdl.xml.transform.FragmentTransformer;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
+
 import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
@@ -20,6 +22,7 @@ public class CmsWebServletContextListener implements ServletContextListener {
   private FragmentTransformer fragmentTransformer = null;
   private PageTransformer pageTransformer = null;
   private XslResourceTransformer highlightTransformer = null;
+  private XQueryEvaluator xQueryEvaluator = null;  
   
   public void contextInitialized(ServletContextEvent event) {
     try {
@@ -42,6 +45,9 @@ public class CmsWebServletContextListener implements ServletContextListener {
       highlightTransformer = new XslResourceTransformer("highlight.xsl");
       context.setAttribute("highlightTransformer", highlightTransformer);
       System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (highlightTransformer)");
+      xQueryEvaluator = new XQueryEvaluator();
+      context.setAttribute("xQueryEvaluator", xQueryEvaluator);
+      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
     } catch (Exception e) {
       e.printStackTrace();
     }
