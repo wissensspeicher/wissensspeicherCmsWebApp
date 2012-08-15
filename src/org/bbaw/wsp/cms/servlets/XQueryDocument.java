@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import de.mpg.mpiwg.berlin.mpdl.cms.document.DocumentHandler;
-import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hits;
-import de.mpg.mpiwg.berlin.mpdl.cms.document.MetadataRecord;
-import de.mpg.mpiwg.berlin.mpdl.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.document.DocumentHandler;
+import org.bbaw.wsp.cms.document.MetadataRecord;
+import org.bbaw.wsp.cms.lucene.IndexHandler;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hits;
 
 public class XQueryDocument extends HttpServlet {
   private static final long serialVersionUID = 1L;
