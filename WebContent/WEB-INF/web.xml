@@ -45,6 +45,16 @@
     <url-pattern>/query/QueryDocument</url-pattern>
   </servlet-mapping>
   <servlet>
+    <description>XQueryDocument</description>
+    <display-name>XQueryDocument</display-name>
+    <servlet-name>XQueryDocument</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.XQueryDocument</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>XQueryDocument</servlet-name>
+    <url-pattern>/query/XQueryDocument</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>GetToken</description>
     <display-name>GetToken</display-name>
     <servlet-name>GetToken</servlet-name>
