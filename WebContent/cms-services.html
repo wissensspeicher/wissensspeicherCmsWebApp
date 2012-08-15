@@ -340,6 +340,50 @@
     </ul>
   </li>
 
+  <li><b>Url: /mpiwg-mpdl-cms-web/query/XQueryDocument</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>docId (required)
+            <ul>
+              <li>document identifier (e.g. "/test/test/Test_1789.xml"</li>
+            </ul>
+          </li>
+          <li>query (required)
+            <ul>
+              <li><a href="http://www.saxonica.com/documentation/javadoc/net/sf/saxon/s9api/package-summary.html">Saxon's</a> <a href="http://www.w3.org/TR/xquery">XQuery</a>/<a href="http://www.w3.org/TR/xpath20">XPath</a></li>
+            </ul>
+          </li>
+          <li>page (optional)
+            <ul>
+              <li>result page number</li>
+              <li>default: 1</li>
+            </ul>
+          </li>
+          <li>pageSize (optional)
+            <ul>
+              <li>result page size</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>xml</li>
+              <li>html</li>
+              <li>default: xml</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=//*:s">in /test/test/Test_1789.xml: all sentences (XML output)</a></li>
+          <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=//*:note[@n = 1 or @n=2]&outputFormat=html">in /test/test/Test_1789.xml: note with number 1 or 2 (HTML output)</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
   <li><b>Url: /wspCmsWebApp/query/MoreLikeThis</b>
     <ul>
       <li>Request parameters
