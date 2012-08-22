@@ -16,6 +16,8 @@ import org.bbaw.wsp.cms.document.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
+import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hit;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hits;
 
@@ -73,7 +75,7 @@ public class XQueryDocument extends HttpServlet {
       if (outputFormat.equals("xml"))
         resultStr = createXmlString(docMetadataRecord, query, page, pageSize, hits);
       else if (outputFormat.equals("html"))
-        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, hits);
+        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, hits, request);
       out.print(resultStr);
       out.close();
     } catch (ApplicationException e) {
@@ -83,29 +85,48 @@ public class XQueryDocument extends HttpServlet {
 
   private String createXmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, Hits hits) throws ApplicationException {
     String docId = docMetadataRecord.getDocId();
-    ArrayList<String> xmlStrHits = null;
+    ArrayList<Hit> hitsArray = null;
     if (hits != null)
-      xmlStrHits = hits.getHits();
+      hitsArray = hits.getHits();
     int hitsSize = -1;
-    int xmlStrHitsSize = -1;
+    int hitsArraySize = -1;
     if (hits != null)
       hitsSize = hits.getSize();
-    if (xmlStrHits != null)
-      xmlStrHitsSize = xmlStrHits.size();
+    if (hitsArray != null)
+      hitsArraySize = hitsArray.size();
     StringBuilder xmlStrBuilder = new StringBuilder();
     xmlStrBuilder.append("<document>");
     xmlStrBuilder.append("<id>" + docId + "</id>");
     xmlStrBuilder.append("<query>");
-    xmlStrBuilder.append("<queryText>" + query + "</queryText>");
+    String queryXml = StringUtils.deresolveXmlEntities(query);
+    xmlStrBuilder.append("<queryText>" + queryXml + "</queryText>");
     xmlStrBuilder.append("<resultPage>" + page + "</resultPage>");
     xmlStrBuilder.append("<resultPageSize>" + pageSize + "</resultPageSize>");
     xmlStrBuilder.append("</query>");
     xmlStrBuilder.append("<hitsSize>" + hitsSize + "</hitsSize>");
     xmlStrBuilder.append("<hits>");
-    for (int i=0; i<xmlStrHitsSize; i++) {
-      xmlStrBuilder.append("<hit>");
-      String xmlStrHit = xmlStrHits.get(i);
-      xmlStrBuilder.append(xmlStrHit);
+    for (int i=0; i<hitsArraySize; i++) {
+      int num = (page - 1) * pageSize + i + 1;
+      xmlStrBuilder.append("<hit n=\"" + num + "\">");
+      Hit hit = hitsArray.get(i);
+      String name = hit.getName();
+      String typeStr = "ELEMENT";
+      int type = hit.getType();
+      if (type == Hit.TYPE_ATTRIBUTE)
+        typeStr = "ATTRIBUTE";
+      else if (type == Hit.TYPE_ATOMIC_VALUE)
+        typeStr = "ATOMIV_VALUE";
+      int docPage = hit.getPage();
+      int hitPagePosition = hit.getHitPagePosition();
+      String xmlContent = hit.getContent();
+      if (name != null)
+        xmlStrBuilder.append("<name>" + name + "</name>");
+      xmlStrBuilder.append("<type>" + typeStr + "</type>");
+      if (docPage != -1) {
+        xmlStrBuilder.append("<page>" + docPage + "</page>");
+        xmlStrBuilder.append("<posInPage>" + hitPagePosition + "</posInPage>");
+      }
+      xmlStrBuilder.append("<content>" + xmlContent + "</content>");
       xmlStrBuilder.append("</hit>");
     }
     xmlStrBuilder.append("</hits>");
@@ -113,14 +134,21 @@ public class XQueryDocument extends HttpServlet {
     return xmlStrBuilder.toString();   
   }
   
-  private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, Hits hits) throws ApplicationException {
+  private String createHtmlString(MetadataRecord docMetadataRecord, String query, int page, int pageSize, Hits hits, HttpServletRequest request) throws ApplicationException {
     String docId = docMetadataRecord.getDocId();
-    ArrayList<String> xmlStrHits = null;
+    ArrayList<Hit> hitsArray = null;
     if (hits != null)
-      xmlStrHits = hits.getHits();
-    int xmlStrHitsSize = -1;
-    if (xmlStrHits != null)
-      xmlStrHitsSize = xmlStrHits.size();
+      hitsArray = hits.getHits();
+    int hitsArraySize = -1;
+    if (hitsArray != null)
+      hitsArraySize = hitsArray.size();
+    int hitsSize = hits.getSize();
+    int from = (page * pageSize) - pageSize;  // e.g. 0
+    int to = page * pageSize - 1;  // e.g. 9
+    int fromDisplay = from + 1;
+    int toDisplay = to + 1;
+    if (hitsSize < to)
+      toDisplay = hitsSize;
     StringBuilder xmlStrBuilder = new StringBuilder();
     xmlStrBuilder.append("<html>");
     xmlStrBuilder.append("<head>");
@@ -131,22 +159,60 @@ public class XQueryDocument extends HttpServlet {
     xmlStrBuilder.append("<td>[<i>This is a MPIWG CMS technology service</i>] <a href=\"/mpiwg-mpdl-cms-web/index.html\"><img src=\"/mpiwg-mpdl-cms-web/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
     xmlStrBuilder.append("</table>");
     xmlStrBuilder.append("<p/>");
-    xmlStrBuilder.append("<h1>Query: " + "\"" + query + "</h1>");
-    xmlStrBuilder.append("<h3>Document: " + docId + "</h3>");
+    xmlStrBuilder.append("<h3>XQuery (in document: " + docId + "):</h3>");
+    xmlStrBuilder.append(query);
+    xmlStrBuilder.append("<h3>Result: (" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits)</h3>");
     xmlStrBuilder.append("<table>");
-    for (int i=0; i<xmlStrHitsSize; i++) {
-      xmlStrBuilder.append("<tr valign=\"top\">");
-      String xmlStrHit = xmlStrHits.get(i);
-      int num = (page - 1) * pageSize + i + 1;
-      xmlStrBuilder.append("<td>" + num + ". " + "</td>");
-      xmlStrBuilder.append("<td align=\"left\">");
-      xmlStrBuilder.append(xmlStrHit);
-      xmlStrBuilder.append("</td>");
-      xmlStrBuilder.append("</tr>");
+    if (hitsSize == 1 && hitsArray.get(0).getType() == Hit.TYPE_ATOMIC_VALUE) {
+      Hit hit = hitsArray.get(0);
+      String xmlContent = hit.getContent();
+      xmlContent = StringUtils.deresolveXmlEntities(xmlContent);
+      xmlStrBuilder.append(xmlContent);
+    } else {
+      for (int i=0; i<hitsArraySize; i++) {
+        xmlStrBuilder.append("<tr valign=\"top\">");
+        Hit hit = hitsArray.get(i);
+        int docPage = hit.getPage();
+        String hitName = hit.getName();
+        int hitType = hit.getType();
+        int hitPagePosition = hit.getHitPagePosition();
+        String baseUrl = getBaseUrl(request);
+        String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + docPage + "&outputFormat=" + "xmlDisplay" + "&highlightElem=" + hitName + "&highlightElemPos=" + hitPagePosition;
+        String hitPres = hitName + "[" + hitPagePosition + "]";
+        if (hitType == Hit.TYPE_ATTRIBUTE) {
+          hitPres = "@" + hitName;
+          getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + docPage;
+        }
+        String posStr = "Page " + docPage + ", " + hitPres + ":";
+        int num = (page - 1) * pageSize + i + 1;
+        xmlStrBuilder.append("<td>" + num + ". " + "</td>");
+        xmlStrBuilder.append("<td align=\"left\">");
+        if (docPage != -1) {
+          xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
+          xmlStrBuilder.append("</br>");
+        }
+        String xmlContent = hit.getContent();
+        xmlContent = StringUtils.deresolveXmlEntities(xmlContent);
+        xmlStrBuilder.append(xmlContent);
+        xmlStrBuilder.append("</td>");
+        xmlStrBuilder.append("</tr>");
+      }
     }
     xmlStrBuilder.append("</table>");
     xmlStrBuilder.append("</body>");
     xmlStrBuilder.append("</html>");
     return xmlStrBuilder.toString();   
   }
+
+  private String getBaseUrl(HttpServletRequest request) {
+    return getServerUrl(request) + request.getContextPath();
+  }
+
+  private String getServerUrl(HttpServletRequest request) {
+    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
+      return request.getScheme() + "://" + request.getServerName();
+    else
+      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+  }
+
 }
