@@ -75,7 +75,7 @@ public class GetPage extends HttpServlet {
       page = Integer.parseInt(pageStr);
     if (outputFormat.equals("xml"))
       response.setContentType("text/xml");
-    else if (outputFormat.equals("html"))
+    else if (outputFormat.equals("html") || outputFormat.equals("xmlDisplay"))
       response.setContentType("text/html");
     PrintWriter out = response.getWriter();
     try {
@@ -102,37 +102,37 @@ public class GetPage extends HttpServlet {
         String hiQueryType = "orig";
         if (highlightQueryType.equals("morph"))
           hiQueryType = "morph";
-        else 
+        else
           hiQueryType = normalization;
         String language = mdRecord.getLanguage();
         fragment = highlight(fragment, highlightElem, highlightElemPos, hiQueryType, highlightQuery, language);
       }
-      if (outputFormat.equals("html")) {
+      if (outputFormat.equals("html") || outputFormat.equals("xmlDisplay")) {
         String schemaName = mdRecord.getSchemaName();
         String title = docId + ", Page: " + page;
         String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
         String head = "<head><title>" + title + "</title><link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/></head>";
         String namespace = "";
-        String htmlRenderedPage = pageTransformer.transform(fragment, mdRecord, mode, pageStr, normalization);
+        String htmlRenderedPage = pageTransformer.transform(fragment, mdRecord, mode, pageStr, normalization, outputFormat);
         if (schemaName != null && schemaName.equals("echo")) {
           namespace = "xmlns:echo=\"http://www.mpiwg-berlin.mpg.de/ns/echo/1.0/\" xmlns:de=\"http://www.mpiwg-berlin.mpg.de/ns/de/1.0/\" " +
-          		"xmlns:dcterms=\"http://purl.org/dc/terms\" " + "xmlns:xhtml=\"http://www.w3.org/1999/xhtml\" xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" " +
-          		"xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
+                  "xmlns:dcterms=\"http://purl.org/dc/terms\" " + "xmlns:xhtml=\"http://www.w3.org/1999/xhtml\" xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" " +
+                  "xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
         }
         result = xmlHeader + "<html " + namespace + ">" + head + "<body>" + htmlRenderedPage + "</body>" + "</html>";
       } else {
         result = fragment;
       }
-      out.print(result); 
-      out.close(); 
+      out.print(result);
+      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    // TODO Auto-generated method stub
-  }
+    doGet(request, response);
+  }  
 
   private String getBaseUrl(HttpServletRequest request) {
     return getServerUrl(request) + request.getContextPath();
