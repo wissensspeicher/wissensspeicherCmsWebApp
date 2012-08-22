@@ -110,8 +110,9 @@
           </li>
           <li>outputFormat (optional)
             <ul>
-              <li>xml</li>
               <li>html</li>
+              <li>xml (pure xml)</li>
+              <li>xmlDisplay (xml like display through html)</li>
               <li>default: html</li>
             </ul>
           </li>
@@ -133,6 +134,7 @@
           <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA document</a></li>
           <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA document, tokenized</a></li>
           <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA document, first paragraph highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA document, first paragraph highlighted (XML output)</a></li>
           <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA document, morphological forms of "ist" are highlighted</a></li>
         </ul>
       </li>
@@ -377,8 +379,10 @@
       </li>
       <li>Response output
         <ul>
+          <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=count(//*:s)">in /test/test/Test_1789.xml: count all sentences (XML output)</a></li>
           <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=//*:s">in /test/test/Test_1789.xml: all sentences (XML output)</a></li>
           <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=//*:note[@n = 1 or @n=2]&outputFormat=html">in /test/test/Test_1789.xml: note with number 1 or 2 (HTML output)</a></li>
+          <li>Example: <a href="query/XQueryDocument?docId=/test/test/Test_1789.xml&query=//*:note/@n">in /test/test/Test_1789.xml: "n" attributes of all notes (XML output)</a></li>
         </ul>
       </li>
     </ul>
