@@ -344,11 +344,6 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject persNameAndLink = new JSONObject();
                   persNameAndLink.put("name", personName);
                   persNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName));
-                  if (collection != null) {
-                    String registerLink = collection.getRegisterLink("persName", personName);
-                    if (registerLink != null)
-                      persNameAndLink.put("internallink", registerLink);
-                  }
                   jsonNames.add(persNameAndLink);
                 }
               }
@@ -363,11 +358,6 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject placeNameAndLink = new JSONObject();
                   placeNameAndLink.put("name", placeName);
                   placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName));
-                  if (collection != null) {
-                    String registerLink = collection.getRegisterLink("placeName", placeName);
-                    if (registerLink != null)
-                      placeNameAndLink.put("internallink", registerLink);
-                  }
                   jsonNames.add(placeNameAndLink);
                 }
               }
