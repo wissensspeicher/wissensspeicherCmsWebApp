@@ -15,8 +15,6 @@ import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
 
-import org.bbaw.wsp.cms.confmanager.CollectionReader;
-import org.bbaw.wsp.cms.confmanager.Collection;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -335,7 +333,6 @@ public class QueryDocuments extends HttpServlet {
             if(additionalInfo.equals("true")) {
               JSONArray jsonNames = new JSONArray();
               Fieldable personsField = doc.getFieldable("persons");
-              Collection collection = CollectionReader.getInstance().getCollection(docCollectionNameStr);
               if (personsField != null) {
                 String personsStr = personsField.stringValue();
                 String[] persons = personsStr.split("###");  // separator of persons
