@@ -14,7 +14,7 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmValue;
 
-import org.bbaw.wsp.cms.document.DocumentHandler;
+import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
