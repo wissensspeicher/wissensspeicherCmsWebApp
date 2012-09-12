@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bbaw.wsp.cms.document.DocumentHandler;
+import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
