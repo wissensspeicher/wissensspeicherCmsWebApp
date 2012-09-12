@@ -19,7 +19,7 @@ import org.xml.sax.XMLReader;
 
 import com.sun.org.apache.xerces.internal.parsers.SAXParser;
 
-import org.bbaw.wsp.cms.document.DocumentHandler;
+import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.HighlightContentHandler;
