@@ -23,6 +23,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import org.bbaw.wsp.cms.dochandler.DocumentHandler;
+
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
   public QueryDocuments() {
@@ -248,11 +250,15 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
           htmlStrBuilder.append("</tr>");
           // Link row
+          DocumentHandler docHandler = new DocumentHandler();
+          boolean docIsXml = docHandler.isDocXml(docId); 
           htmlStrBuilder.append("<tr valign=\"top\">");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+          if (docIsXml)
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-          htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + "<a href=\"/wspCmsWebApp/query/GetPage?docId=" + docId + "\">View</a>");
-          htmlStrBuilder.append(", <img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " Download: <a href=\"/wspCmsWebApp/doc/DocumentOperation?operation=get&docId=" + docId + "\">XML</a>");
+          if (docIsXml)
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docId + "\">View</a>, ");
+          htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/doc/DocumentOperation?operation=get&docId=" + docId + "\">Download</a>");
           htmlStrBuilder.append("</td>");
           htmlStrBuilder.append("</tr>");
           // hit fragments row
