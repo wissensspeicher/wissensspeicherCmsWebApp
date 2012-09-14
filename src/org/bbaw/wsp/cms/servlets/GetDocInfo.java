@@ -83,9 +83,6 @@ public class GetDocInfo extends HttpServlet {
         String accessRights = mdRecord.getAccessRights();
         if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
-        String echoId = mdRecord.getEchoId();
-        if ((field == null || (field != null && field.equals("echoId"))) && echoId != null)
-          out.print("<echoId>" + echoId + "</echoId>");
         if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
           out.print("<system>");
         int pageCount = mdRecord.getPageCount();
