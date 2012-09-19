@@ -61,7 +61,13 @@ public class XQueryDocument extends HttpServlet {
       DocumentHandler docHandler = new DocumentHandler();
       String docFileName = docHandler.getDocFullFileName(docId);
       URL docFileUrl = new URL("file:" + docFileName);
-      Hits hits = xQueryEvaluator.evaluate(docFileUrl, query, from, to);
+      Hits hits = null;
+      String errorStr = null;
+      try {
+        hits = xQueryEvaluator.evaluate(docFileUrl, query, from, to);
+      } catch (ApplicationException e) {
+        errorStr = e.getLocalizedMessage();
+      }
       IndexHandler indexHandler = IndexHandler.getInstance();
       MetadataRecord docMetadataRecord = indexHandler.getDocMetadata(docId);
       if (outputFormat.equals("xml"))
@@ -72,10 +78,14 @@ public class XQueryDocument extends HttpServlet {
         response.setContentType("text/xml");
       PrintWriter out = response.getWriter();
       String resultStr = "";
-      if (outputFormat.equals("xml"))
-        resultStr = createXmlString(docMetadataRecord, query, page, pageSize, hits);
-      else if (outputFormat.equals("html"))
-        resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, hits, request);
+      if (errorStr == null) {
+        if (outputFormat.equals("xml"))
+          resultStr = createXmlString(docMetadataRecord, query, page, pageSize, hits);
+        else if (outputFormat.equals("html"))
+          resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, hits, request);
+      } else {
+        resultStr = "Saxon XQuery Error: " + errorStr;
+      }
       out.print(resultStr);
       out.close();
     } catch (ApplicationException e) {
