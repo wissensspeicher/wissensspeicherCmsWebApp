@@ -253,11 +253,16 @@ public class QueryDocuments extends HttpServlet {
           DocumentHandler docHandler = new DocumentHandler();
           boolean docIsXml = docHandler.isDocXml(docId); 
           htmlStrBuilder.append("<tr valign=\"top\">");
-          if (docIsXml)
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+          Fieldable webUriField = doc.getFieldable("webUri");
+          String webUri = null;
+          if (webUriField != null)
+            webUri = webUriField.stringValue();
+          if (webUri != null)
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
           if (docIsXml)
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docId + "\">View</a>, ");
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docId + "\">WSP-View</a>, ");
           htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/doc/DocumentOperation?operation=get&docId=" + docId + "\">Download</a>");
           htmlStrBuilder.append("</td>");
           htmlStrBuilder.append("</tr>");
@@ -308,6 +313,11 @@ public class QueryDocuments extends HttpServlet {
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
             jsonWrapper.put("uri", docUri);
+          }
+          Fieldable webUriField = doc.getFieldable("webUri");
+          if (webUriField != null) {
+            String webUri = webUriField.stringValue();
+            jsonWrapper.put("webUri", webUri);
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
