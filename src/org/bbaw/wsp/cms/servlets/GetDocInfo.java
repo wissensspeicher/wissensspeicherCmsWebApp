@@ -53,6 +53,9 @@ public class GetDocInfo extends HttpServlet {
         String uri = mdRecord.getUri();
         if ((field == null || (field != null && field.equals("uri"))) && uri != null)
           out.print("<uri>" + uri + "</uri>");
+        String webUri = mdRecord.getWebUri();
+        if ((field == null || (field != null && field.equals("webUri"))) && webUri != null)
+          out.print("<webUri>" + webUri + "</webUri>");
         String collectionNames = mdRecord.getCollectionNames();
         if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
           out.print("<collectionNames>" + collectionNames + "</collectionNames>");
