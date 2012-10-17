@@ -15,6 +15,8 @@ import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
 
+import org.bbaw.wsp.cms.collections.Collection;
+import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -208,6 +210,11 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<tbody>");
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
+          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          String docCollectionName = null;
+          if (docCollectionNamesField != null) {
+            docCollectionName = docCollectionNamesField.stringValue();
+          }
           htmlStrBuilder.append("<tr valign=\"top\">");
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
@@ -259,6 +266,14 @@ public class QueryDocuments extends HttpServlet {
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
+          if (webUri == null) {
+            if (docCollectionName != null) {
+              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+              String webBaseUrl = coll.getWebBaseUrl();
+              if (webBaseUrl != null)
+                webUri = webBaseUrl;
+            }
+          }
           if (webUri != null)
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
           if (docIsXml)
@@ -300,10 +315,10 @@ public class QueryDocuments extends HttpServlet {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
-          String docCollectionNameStr = null;
+          String docCollectionName = null;
           if (docCollectionNamesField != null) {
-            docCollectionNameStr = docCollectionNamesField.stringValue();
-            jsonWrapper.put("collectionName", docCollectionNameStr);
+            docCollectionName = docCollectionNamesField.stringValue();
+            jsonWrapper.put("collectionName", docCollectionName);
           }
           Fieldable docIdField = doc.getFieldable("docId");
           if(docIdField != null){
@@ -318,6 +333,12 @@ public class QueryDocuments extends HttpServlet {
           if (webUriField != null) {
             String webUri = webUriField.stringValue();
             jsonWrapper.put("webUri", webUri);
+          }
+          if (docCollectionName != null) {
+            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+            String webBaseUrl = coll.getWebBaseUrl();
+            if (webBaseUrl != null)
+              jsonWrapper.put("webBaseUri", webBaseUrl);
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
