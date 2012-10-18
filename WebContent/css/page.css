@@ -1,27 +1,34 @@
 /* general */
-.it        { font-style:italic }                    /* DESpecs: _ _ and attribute "it" */
-.bf        { font-weight:bold }                     /* DESpecs: <bf> */
-.sc        { font-variant:small-caps }              /* DESpecs: <sc> */
-.sub       { vertical-align:sub; font-size:.8em }   /* DESpecs: <_>  */ /* line-height:1em; ? */
-.super     { vertical-align:super; font-size:.8em } /* DESpecs: <^> */
-.sm        { font-size:smaller }                    /* DESpecs: <sm>, if within <p> */
-.ul        { text-decoration:underline }            /* DESpecs: <ul> */
-.ol        { text-decoration:overline }             /* DESpecs: <ol> */
-.st        { text-decoration:line-through }         /* DESpecs: <st> */
-.red       { color:red }                            /* DESpecs: <red> */
-.sp        { letter-spacing:0.3em }                 /* DESpecs: <sp> */  /* "font-stretch:wider;" is deprecated */
+.it        { font-style:italic }                    
+.i         { font-style:italic }                    
+.helv      { font-family:helvetica }                    
+.gothic    { font-family:'century gothic' }                    
+.bf        { font-weight:bold }                     
+.b         { font-weight:bold }                     
+.sc        { font-variant:small-caps }              
+.sub       { vertical-align:sub; font-size:.8em }   
+.diagonal  { vertical-align:sub; font-size:.8em }   
+.super     { vertical-align:super; font-size:.8em } 
+.sup       { vertical-align:super; font-size:.8em } 
+.sm        { font-size:smaller }                    
+.ul        { text-decoration:underline }           
+.underlined { text-decoration:underline }           
+.ol        { text-decoration:overline }           
+.st        { text-decoration:line-through }    
+.red       { color:red }                       
+.sp        { letter-spacing:0.3em }            
 .center    { text-align:center }
+.left      { text-align:left }
+.right     { text-align:right }
 .fr        { font-family:'Lucida blackletter'}     /* preliminary representation of Fraktur */
-.rom       { font-family:'default'}
-
-/* unused */
-.setoff    { margin-left:2cm; margin-right:2cm }
 
 /* highlighting    */
 .highlight { background-color:#D3D3D3; }  /* LightGrey    */
 div.highlight.elem { background-color:#D3D3D3; }  /* LightGrey    */
 span.highlight.elem { background-color:#D3D3D3; }  /* LightGrey    */
 span.highlight.hit { background-color:#77DD77; }  /* pastell green  */
+span.hit.highlight { background-color:#77DD77; }  /* pastell green  */
+
 
 /* xml presentation    */
 span.xml.elementName { font-weight:bold;color:purple; }
@@ -55,12 +62,15 @@ span.dc-unmodified {
    padding-top: 1px;
 }
 
+/* indentation at the beginning of a paragraph: <emph class="sc it"> */
+span.sc { font-weight:bold; }
+span.sc.it {font-weight:bold; font-style:italic; }
+
 /* variables and numbers */
 span.var { font-style:italic; }
 span.var.segment { font-style:italic; text-decoration:overline; }
 span.var.line    { font-style:italic; text-decoration:underline; }
 span.var.gnomon  { font-style:italic; text-decoration:line-through; }
-span.num   { color:maroon }
 
 /* foreign languages     */
 span.foreign { color:#006400; }
@@ -71,24 +81,6 @@ span.foreign.en span.foreign.english { color:#006400; }
 span.foreign.fr span.foreign.french { color:#006400; } 
 span.foreign.la span.foreign.latin { color:#006400; } 
 /*  .....    */
-
-/* XPointer highligting    */
-span.seg.highlight { background-color:#D3D3D3; }  /* LightGrey    */
-span.seg.highlight:before {
-  content: url('../images/linkto.png');
-  margin-left: 0.1em;
-  margin-right: 0.1em;
-}
-span.seg.highlightPoint {
-  background: url('../images/linkto.png') no-repeat center center;
-  padding: 0.1em 0.5em 0.1em 0.1em;
-  margin-left: 0.5em;
-  margin-right: 0.1em;
-}
-
-/* indentation at the beginning of a paragraph: <emph class="sc it"> */
-span.sc { font-weight:bold; }
-span.sc.it {font-weight:bold; font-style:italic; }
 
 /* ref               */
 span.ref a:link {text-decoration: underline; color: blue;}
@@ -120,19 +112,10 @@ span.organization  { color:#0000FF; }  /* Blue   */
 span.time  { color:#0000FF; }  /* Blue   */
 span.event  { color:#0000FF; }  /* Blue  */
 
-/* preliminary representations of single/double/wavy/circled lines in Chinese text */
-span.sl { text-decoration:underline; }        /* DESpecs for Chinese: <sl> */
-span.dl { text-decoration:underline; }        /* DESpecs for Chinese: <dl> */
-span.wl { text-decoration:underline; }        /* DESpecs for Chinese: <wl> */
-span.cl { text-decoration:underline; }        /* DESpecs for Chinese: <cl> */
-
 /* sentence    */
 span.s.highlight { background-color:#D3D3D3; }  /* LightGrey    */
 span.s:hover { background-color:#D3D3D3; }      /* LightGrey    */
 span.s.it { font-style:italic; }
-
-/* highlighting    */
-span.hit.highlight { background-color:#77DD77; }  /* pastell green  */
 
 /* Links   */
 a.dictionary:link {text-decoration: none; color: #892B06;}
@@ -163,12 +146,6 @@ a.noteRef:before {
 a.noteRef:link { text-decoration: none; }
 a.noteRef:visited { text-decoration: none; }
 a.noteRef:hover { text-decoration: underline; }
-/*
-a:link {text-decoration: none;}
-a:visited {text-decoration: none}
-a:active {text-decoration: none}
-a:hover {text-decoration: underline; color: red;}
- */
 
 /* table     */
 table { margin-left:30px; }
