@@ -14,10 +14,12 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmValue;
 
+import org.apache.commons.httpclient.util.URIUtil;
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
+
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
 
@@ -86,6 +88,32 @@ public class GetDocInfo extends HttpServlet {
         String accessRights = mdRecord.getAccessRights();
         if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
+        String personsStr = mdRecord.getPersons();
+        if (personsStr != null) {
+          out.print("<persons>");
+          String[] persons = personsStr.split("###");  // separator of persons
+          for (int i=0; i<persons.length; i++) {
+            String personName = persons[i];
+            out.print("<person>");
+            out.print("<name>" + personName + "</name>");
+            out.print("<link>" + "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName) + "</link>");
+            out.print("</person>");
+          }
+          out.print("</persons>");
+        }
+        String placesStr = mdRecord.getPlaces();
+        if (placesStr != null) {
+          out.print("<places>");
+          String[] places = placesStr.split("###");  // separator of persons
+          for (int i=0; i<places.length; i++) {
+            String placeName = places[i];
+            out.print("<place>");
+            out.print("<name>" + placeName + "</name>");
+            out.print("<link>" + "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName) + "</link>");
+            out.print("</place>");
+          }
+          out.print("</places>");
+        }
         if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
           out.print("<system>");
         int pageCount = mdRecord.getPageCount();
