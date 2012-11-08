@@ -7,7 +7,7 @@
   <property name="lib" location="WebContent/WEB-INF/lib"/>
   <property name="libTomcat" location="/opt/apache-tomcat-7.0.27/lib"/>
   <property name="webappTomcat" location="/opt/apache-tomcat-7.0.27/webapps"/>
-  <property name="build" location="build/classes"/>
+  <property name="build" location="WebContent/WEB-INF/classes"/>
   <property name="dist" location="dist"/>
 
   <path id="classpath">
@@ -21,6 +21,16 @@
     <mkdir dir="${build}"/>
     <mkdir dir="${dist}"/>
     <copy file="${baseLibFile}" todir="${lib}"/>
+    <copy todir="WebContent/WEB-INF/lib">
+      <fileset dir="../wspCmsCore/lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </copy>
+    <copy todir="WebContent/WEB-INF/config">
+      <fileset dir="../wspCmsCore/config">
+        <include name="**/*.*"/>
+      </fileset>
+    </copy>
   </target>
 
   <target name="compile" depends="init" description="compile">
