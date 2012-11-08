@@ -27,9 +27,11 @@ public class CmsWebServletContextListener implements ServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     try {
       this.context = event.getServletContext();
-      String documentsDirectory = Constants.getInstance().getDocumentsDir();
-      String luceneDocumentsDirectory = Constants.getInstance().getLuceneDocumentsDir();
-      String luceneNodesDirectory = Constants.getInstance().getLuceneNodesDir();
+      String webInfDir = context.getRealPath("/WEB-INF");
+      Constants constants = Constants.getInstance(webInfDir);
+      String documentsDirectory = constants.getDocumentsDir();
+      String luceneDocumentsDirectory = constants.getLuceneDocumentsDir();
+      String luceneNodesDirectory = constants.getLuceneNodesDir();
       context.setAttribute("documentDirectory", documentsDirectory);
       context.setAttribute("luceneDocumentsDirectory", luceneDocumentsDirectory);
       context.setAttribute("luceneNodesDirectory", luceneNodesDirectory);
