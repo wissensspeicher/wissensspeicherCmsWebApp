@@ -40,6 +40,7 @@ public class DocumentOperation extends HttpServlet {
     } else { 
       response.setContentType("text/html");
     }
+    PrintWriter out = response.getWriter();
     CmsDocOperation docOperation = new CmsDocOperation(operation, srcUrlStr, null, docId); 
     if (mainLanguage != null)
       docOperation.setMainLanguage(mainLanguage);
@@ -49,7 +50,7 @@ public class DocumentOperation extends HttpServlet {
     docOperation.setElementNames(elementNamesArray);
     try {
       if (docId == null || docId.isEmpty()) {
-        write(response, "Parameter: \"docId\" is not set. Please set parameter \"docId\".");
+        out.write("Parameter: \"docId\" is not set. Please set parameter \"docId\".");
         return;
       }
       if (operation.equals("create") || operation.equals("delete")) {
@@ -59,30 +60,28 @@ public class DocumentOperation extends HttpServlet {
         String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
         String docJobUrlStr = baseUrl + "/doc/GetDocumentJobs?id=" + jobId;
         if (outputFormat.equals("xml")) {
-          write(response, "<result>");
-          write(response, "<docJob>");
-          write(response, "<id>" + jobId + "</id>");
-          write(response, "<url>" + docJobUrlStr + "</url>");
-          write(response, "</docJob>");
-          write(response, "</result>");
+          out.write("<result>");
+          out.write("<docJob>");
+          out.write("<id>" + jobId + "</id>");
+          out.write("<url>" + docJobUrlStr + "</url>");
+          out.write("</docJob>");
+          out.write("</result>");
         } else { 
-          write(response, "<html>");
-          write(response, "<h2>" + "Document operation result" + "</h2>");
-          write(response, "See your document operation " + jobId + " <a href=\"" + docJobUrlStr + "\">" + "here" + "</a>");
-          write(response, "<html>");
+          out.write("<html>");
+          out.write("<h2>" + "Document operation result" + "</h2>");
+          out.write("See your document operation " + jobId + " <a href=\"" + docJobUrlStr + "\">" + "here" + "</a>");
+          out.write("<html>");
         }
       } else {
         String errorStr = "Error: Operation: " + operation + " is not supported";
         if (outputFormat.equals("xml")) {
-          write(response, "<error>" + errorStr + "</error>");
+          out.write("<error>" + errorStr + "</error>");
         } else { 
-          write(response, "<html>");
-          write(response, "<h2>" + "Error" + "</h2>");
-          write(response, errorStr);
+          out.write("<html>");
+          out.write("<h2>" + "Error" + "</h2>");
+          out.write(errorStr);
         }
       }
-      PrintWriter out = response.getWriter();
-      out.close();
     } catch (Exception e) {
       throw new ServletException(e);
     }
@@ -92,9 +91,4 @@ public class DocumentOperation extends HttpServlet {
     // TODO Auto-generated method stub
   }
 
-  private void write(HttpServletResponse response, String str) throws IOException {
-    PrintWriter out = response.getWriter();
-    out.write(str);
-  }
-  
 }
