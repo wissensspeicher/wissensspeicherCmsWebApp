@@ -72,7 +72,6 @@ public class QueryDocuments extends HttpServlet {
     PrintWriter out = response.getWriter();
     if (query == null) {
       out.print("no query specified: please set parameter \"query\"");
-      out.close();
       return;
     }
     try {
@@ -132,7 +131,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</head>");
         htmlStrBuilder.append("<body>");
         htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
-        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
+        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
         htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("<p/>");
         String luceneQueryStr = query;
@@ -403,7 +402,6 @@ public class QueryDocuments extends HttpServlet {
         jsonEncoder.putJsonObj("hits", jsonArray);
         out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       }
-      out.close();
     } catch (Exception e) {
       throw new ServletException(e);
     }
