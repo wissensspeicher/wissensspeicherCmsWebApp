@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.URLConnection;
 
 import javax.servlet.ServletConfig;
@@ -18,6 +17,7 @@ import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 
 public class GetDocument extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private OutputStream out = null;
 
   public GetDocument() {
     super();
@@ -34,12 +34,11 @@ public class GetDocument extends HttpServlet {
     DocumentHandler docHandler = new DocumentHandler();
     String fullFileName = docHandler.getDocFullFileName(id);
     File file = new File(fullFileName);
-    if (file.exists())
+    if (file.exists()) {
       write(response, file);
-    else
+    } else {
       write(response, "Document: " + id + " does not exist");
-    PrintWriter out = response.getWriter();
-    out.close();
+    }
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -48,12 +47,12 @@ public class GetDocument extends HttpServlet {
 
   private void write(HttpServletResponse response, File file) throws IOException {
     String fileName = file.getName();
-    OutputStream out = response.getOutputStream();
     BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
     String contentType = URLConnection.guessContentTypeFromName(fileName);  // other methods: URLConnection.guessContentTypeFromStream(is); or MIMEUtils.getMIMEType(file);
     if (contentType != null)
       response.setContentType(contentType);
     response.setHeader("Content-Disposition", "filename=" + fileName);
+    out = response.getOutputStream();
     byte[] buf = new byte[20000*1024]; // 20MB buffer
     int bytesRead;
     while ((bytesRead = is.read(buf)) != -1) {
@@ -64,8 +63,9 @@ public class GetDocument extends HttpServlet {
   }
 
   private void write(HttpServletResponse response, String str) throws IOException {
-    PrintWriter out = response.getWriter();
-    out.write(str);
+    out = response.getOutputStream();
+    byte[] strBytes = str.getBytes("utf-8");
+    out.write(strBytes, 0, strBytes.length);
+    out.flush();
   }
-  
 }
