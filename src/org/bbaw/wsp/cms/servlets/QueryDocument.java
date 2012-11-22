@@ -88,7 +88,6 @@ public class QueryDocument extends HttpServlet {
       else if (outputFormat.equals("json")) 
         resultStr = createJsonString(docMetadataRecord, query, page, pageSize, normFunctions, outputOptions, hits, request);
       out.print(resultStr);
-      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
