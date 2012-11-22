@@ -75,7 +75,6 @@ public class GetToken extends HttpServlet {
       }
       out.print("</result>");
       out.print("</result>");
-      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
