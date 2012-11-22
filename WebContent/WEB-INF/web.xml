@@ -5,6 +5,16 @@
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
   <servlet>
+    <description>GetDocument</description>
+    <display-name>GetDocument</display-name>
+    <servlet-name>GetDocument</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.GetDocument</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetDocument</servlet-name>
+    <url-pattern>/doc/GetDocument</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>DocumentOperation</description>
     <display-name>DocumentOperation</display-name>
     <servlet-name>DocumentOperation</servlet-name>
