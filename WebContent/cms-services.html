@@ -8,13 +8,31 @@
 <h2>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</h2>
 
 <ul>
+  <li><b>Url: /wspCmsWebApp/doc/GetDocument</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>id (required)
+            <ul>
+              <li>identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Example: <a href="doc/GetDocument?id=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Get test document</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
   <li><b>Url: /wspCmsWebApp/doc/DocumentOperation</b>
     <ul>
       <li>Request parameters
         <ul>
           <li>srcUrl (optional)
             <ul>
-              <li>url of the source document (if operation is create or update)</li>
+              <li>url of the source document (if operation is create)</li>
             </ul>
           </li>
           <li>docId (required)
@@ -30,7 +48,6 @@
           </li>
           <li>operation (required)
             <ul>
-              <li>get</li>
               <li>create</li>
               <li>delete</li>
             </ul>
@@ -46,7 +63,6 @@
       <li>Response output
         <ul>
           <li>Link to document job</li>
-          <li>Example: <a href="doc/DocumentOperation?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=get">Get test document</a></li>
           <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test document</a></li>
         </ul>
       </li>
