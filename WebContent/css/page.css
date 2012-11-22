@@ -30,6 +30,17 @@ span.highlight.hit { background-color:#77DD77; }  /* pastell green  */
 span.hit.highlight { background-color:#77DD77; }  /* pastell green  */
 
 
+/* about      */
+span.about {float:right;}
+
+/* query results  */
+span.query { font-weight:bold; font-size:150%; }
+span.result { display:none }
+tr.hit { vertical-align: top; }
+td.hitNum { display:inline-block; }
+td.hitLink { margin-left:1%; display:inline-block; width:30%; }
+td.hitContent { display:inline-block; width:90%; }
+
 /* xml presentation    */
 span.xml.elementName { font-weight:bold;color:purple; }
 span.xml.attributeName { font-weight:bold; }
