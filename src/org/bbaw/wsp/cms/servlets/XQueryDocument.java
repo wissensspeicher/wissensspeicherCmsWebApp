@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.transform.PageTransformer;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hit;
@@ -24,6 +25,7 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.Hits;
 public class XQueryDocument extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private XQueryEvaluator xQueryEvaluator = null;
+  private PageTransformer pageTransformer = null;
   
   public XQueryDocument() {
     super();
@@ -33,6 +35,7 @@ public class XQueryDocument extends HttpServlet {
     super.init(config);
     ServletContext context = getServletContext();
     xQueryEvaluator = (XQueryEvaluator) context.getAttribute("xQueryEvaluator");
+    pageTransformer = (PageTransformer) context.getAttribute("pageTransformer");
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -84,7 +87,7 @@ public class XQueryDocument extends HttpServlet {
         else if (outputFormat.equals("html"))
           resultStr = createHtmlString(docMetadataRecord, query, page, pageSize, hits, request);
       } else {
-        resultStr = "Saxon XQuery Error: " + errorStr;
+        resultStr = "Saxon XQuery error: " + errorStr;
       }
       out.print(resultStr);
       out.close();
@@ -153,25 +156,22 @@ public class XQueryDocument extends HttpServlet {
     if (hitsArray != null)
       hitsArraySize = hitsArray.size();
     int hitsSize = hits.getSize();
-    int from = (page * pageSize) - pageSize;  // e.g. 0
-    int to = page * pageSize - 1;  // e.g. 9
-    int fromDisplay = from + 1;
-    int toDisplay = to + 1;
-    if (hitsSize < to)
-      toDisplay = hitsSize;
     StringBuilder xmlStrBuilder = new StringBuilder();
     xmlStrBuilder.append("<html>");
     xmlStrBuilder.append("<head>");
     xmlStrBuilder.append("<title>Document: \"" + query + "\"</title>");
+    String baseUrl = getBaseUrl(request);
+    String cssUrl = baseUrl + "/css/page.css";
+    xmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
     xmlStrBuilder.append("</head>");
     xmlStrBuilder.append("<body>");
-    xmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
-    xmlStrBuilder.append("<td>[<i>This is a MPIWG CMS technology service</i>] <a href=\"/mpiwg-mpdl-cms-web/index.html\"><img src=\"/mpiwg-mpdl-cms-web/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"MPIWG CMS service\"/></a></td>");
-    xmlStrBuilder.append("</table>");
-    xmlStrBuilder.append("<p/>");
-    xmlStrBuilder.append("<h3>XQuery (in document: " + docId + "):</h3>");
-    xmlStrBuilder.append(query);
-    xmlStrBuilder.append("<h3>Result: (" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits)</h3>");
+    xmlStrBuilder.append("<span class=\"about\">[<span class=\"it\">This is a BBAW WSP CMS technology service</span>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></span>");
+    xmlStrBuilder.append("<span class=\"query\">XQuery: " + query + "</span>");
+    xmlStrBuilder.append("<span class=\"result\">");
+    xmlStrBuilder.append("<span class=\"resultPage\">" + page + "</span>");
+    xmlStrBuilder.append("<span class=\"resultPageSize\">" + pageSize + "</span>");
+    xmlStrBuilder.append("<span class=\"hitsSize\">" + hitsSize + "</span>");
+    xmlStrBuilder.append("</span>");
     xmlStrBuilder.append("<table>");
     if (hitsSize == 1 && hitsArray.get(0).getType() == Hit.TYPE_ATOMIC_VALUE) {
       Hit hit = hitsArray.get(0);
@@ -180,13 +180,12 @@ public class XQueryDocument extends HttpServlet {
       xmlStrBuilder.append(xmlContent);
     } else {
       for (int i=0; i<hitsArraySize; i++) {
-        xmlStrBuilder.append("<tr valign=\"top\">");
+        xmlStrBuilder.append("<tr class=\"hit\">");
         Hit hit = hitsArray.get(i);
         int docPage = hit.getPage();
         String hitName = hit.getName();
         int hitType = hit.getType();
         int hitPagePosition = hit.getHitPagePosition();
-        String baseUrl = getBaseUrl(request);
         String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + docPage + "&outputFormat=" + "xmlDisplay" + "&highlightElem=" + hitName + "&highlightElemPos=" + hitPagePosition;
         String hitPres = hitName + "[" + hitPagePosition + "]";
         if (hitType == Hit.TYPE_ATTRIBUTE) {
@@ -195,15 +194,17 @@ public class XQueryDocument extends HttpServlet {
         }
         String posStr = "Page " + docPage + ", " + hitPres + ":";
         int num = (page - 1) * pageSize + i + 1;
-        xmlStrBuilder.append("<td>" + num + ". " + "</td>");
-        xmlStrBuilder.append("<td align=\"left\">");
+        xmlStrBuilder.append("<td class=\"hitNum\">" + num + ". " + "</td>");
+        xmlStrBuilder.append("<td class=\"hitLink\">");
         if (docPage != -1) {
           xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
-          xmlStrBuilder.append("</br>");
         }
+        xmlStrBuilder.append("</td>");
         String xmlContent = hit.getContent();
-        xmlContent = StringUtils.deresolveXmlEntities(xmlContent);
-        xmlStrBuilder.append(xmlContent);
+        String docPageStr = String.valueOf(docPage);
+        String htmlContent = pageTransformer.transform(xmlContent, docMetadataRecord, "untokenized", docPageStr, "orig", "xmlDisplay");  // TODO performance: do not transform each single hit but transform then all in one step
+        xmlStrBuilder.append("<td class=\"hitContent\">");
+        xmlStrBuilder.append(htmlContent);
         xmlStrBuilder.append("</td>");
         xmlStrBuilder.append("</tr>");
       }
