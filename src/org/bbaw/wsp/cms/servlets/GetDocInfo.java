@@ -116,6 +116,9 @@ public class GetDocInfo extends HttpServlet {
         }
         if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
           out.print("<system>");
+        String type = mdRecord.getType();
+        if ((field == null || (field != null && field.equals("type"))) && type != null)
+          out.print("<type>" + type + "</type>");
         int pageCount = mdRecord.getPageCount();
         if (field == null || (field != null && field.equals("countPages")))
           out.print("<countPages>" + pageCount + "</countPages>");
