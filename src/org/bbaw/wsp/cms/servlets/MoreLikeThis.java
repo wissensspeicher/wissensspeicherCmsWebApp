@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
+import org.bbaw.wsp.cms.collections.Collection;
+import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -140,7 +142,9 @@ public class MoreLikeThis extends HttpServlet {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          String docCollectionName = null;
           if (docCollectionNamesField != null) {
+            docCollectionName = docCollectionNamesField.stringValue();
             jsonWrapper.put("collectionName", docCollectionNamesField.stringValue());
           }
           Fieldable docIdField = doc.getFieldable("docId");
@@ -151,6 +155,17 @@ public class MoreLikeThis extends HttpServlet {
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
             jsonWrapper.put("uri", docUri);
+          }
+          Fieldable webUriField = doc.getFieldable("webUri");
+          if (webUriField != null) {
+            String webUri = webUriField.stringValue();
+            jsonWrapper.put("webUri", webUri);
+          }
+          if (docCollectionName != null) {
+            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+            String webBaseUrl = coll.getWebBaseUrl();
+            if (webBaseUrl != null)
+              jsonWrapper.put("webBaseUri", webBaseUrl);
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
