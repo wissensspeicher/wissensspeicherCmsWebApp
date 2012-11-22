@@ -143,7 +143,6 @@ public class GetPage extends HttpServlet {
         result = fragment;
       }
       out.print(result);
-      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
