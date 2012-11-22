@@ -56,7 +56,6 @@ public class GetDocumentJobs extends HttpServlet {
         resultStr = createHtmlString(docOperations);
       }
       out.print(resultStr);
-      out.close();
     } catch (Exception e) {
       throw new ServletException(e);
     }
@@ -119,7 +118,6 @@ public class GetDocumentJobs extends HttpServlet {
   }
   
   String createHtmlString(ArrayList<CmsDocOperation> docOperations) {
-    // TODO all
     StringBuilder result = new StringBuilder();
     result.append("<html>");
     result.append("<head>");
