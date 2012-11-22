@@ -150,7 +150,6 @@ public class GetDocInfo extends HttpServlet {
       } else {
         out.print("<result>" + "no document found with id: " + docId + "</result>");
       }
-      out.close();
     } catch (ApplicationException e) {
       throw new ServletException(e);
     }
