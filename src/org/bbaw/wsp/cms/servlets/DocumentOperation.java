@@ -1,12 +1,7 @@
 package org.bbaw.wsp.cms.servlets;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URLConnection;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -14,7 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.scheduler.CmsDocOperation;
 import org.bbaw.wsp.cms.servlets.util.ServletUtil;
@@ -58,15 +52,7 @@ public class DocumentOperation extends HttpServlet {
         write(response, "Parameter: \"docId\" is not set. Please set parameter \"docId\".");
         return;
       }
-      if (operation.equals("get")) {
-        DocumentHandler docHandler = new DocumentHandler();
-        String docFileName = docHandler.getDocFullFileName(docId);
-        File docFile = new File(docFileName);
-        if (docFile.exists())
-          write(response, docFile);
-        else
-          write(response, "Document: " + docId + " does not exist");
-      } else if (operation.equals("create") || operation.equals("delete")) {
+      if (operation.equals("create") || operation.equals("delete")) {
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         docOperation = scheduler.doOperation(docOperation);
         String jobId = "" + docOperation.getOrderId();
@@ -104,23 +90,6 @@ public class DocumentOperation extends HttpServlet {
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     // TODO Auto-generated method stub
-  }
-
-  private void write(HttpServletResponse response, File file) throws IOException {
-    String fileName = file.getName();
-    OutputStream out = response.getOutputStream();
-    BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
-    String contentType = URLConnection.guessContentTypeFromName(fileName);  // other methods: URLConnection.guessContentTypeFromStream(is); or MIMEUtils.getMIMEType(file);
-    if (contentType != null)
-      response.setContentType(contentType);
-    response.setHeader("Content-Disposition", "filename=" + fileName);
-    byte[] buf = new byte[20000*1024]; // 20MB buffer
-    int bytesRead;
-    while ((bytesRead = is.read(buf)) != -1) {
-      out.write(buf, 0, bytesRead);
-    }
-    is.close();
-    out.flush();
   }
 
   private void write(HttpServletResponse response, String str) throws IOException {
