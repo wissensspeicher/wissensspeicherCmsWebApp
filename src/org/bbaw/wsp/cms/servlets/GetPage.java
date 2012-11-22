@@ -80,8 +80,27 @@ public class GetPage extends HttpServlet {
     PrintWriter out = response.getWriter();
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
-      MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
       DocumentHandler docHandler = new DocumentHandler();
+      MetadataRecord mdRecord = indexHandler.getDocMetadata(docId);
+      String mimeType = mdRecord.getType();
+      if (mimeType == null)
+        mimeType = docHandler.getMimeType(docId);
+      if (mimeType != null && mimeType.equals("application/pdf")) {
+        String title = docId;
+        String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+        String head = "<head><title>" + title + "</title><link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/></head>";
+        String htmlStr = "<h2>Document page view</h2>";
+        htmlStr = htmlStr +	"There is no single page preview for document type: " + mimeType + ". Please download the whole file: ";
+        String docUrl = getBaseUrl(request) + "/doc/GetDocument?id=" + docId;
+        String webUri = mdRecord.getWebUri();
+        if (webUri != null)
+          docUrl = webUri;
+        htmlStr = htmlStr + "<ul><li><a href=\"" + docUrl + "\">" + docUrl + "</a></li></ul>";
+        result = xmlHeader + "<html>" + head + "<body>" + htmlStr + "</body>" + "</html>";
+        out.print(result);
+        out.close();
+        return;
+      }
       String docDir = docHandler.getDocDir(docId);
       String docPageDir = docDir + "/" + "pages";
       String pageFileName = docPageDir + "/page-" + page + "-morph.xml";
