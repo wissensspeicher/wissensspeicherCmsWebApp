@@ -85,16 +85,6 @@
     <url-pattern>/query/GetDocInfo</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>QueryDocumentByXsl</description>
-    <display-name>QueryDocumentByXsl</display-name>
-    <servlet-name>QueryDocumentByXsl</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.QueryDocumentByXsl</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>QueryDocumentByXsl</servlet-name>
-    <url-pattern>/query/QueryDocumentByXsl</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <description>GetDocumentJobs</description>
     <display-name>GetDocumentJobs</display-name>
     <servlet-name>GetDocumentJobs</servlet-name>
