@@ -79,6 +79,12 @@ public class GetDocInfo extends HttpServlet {
         String subject = mdRecord.getSubject();
         if ((field == null || (field != null && field.equals("subject"))) && subject != null)
           out.print("<subject>" + subject + "</subject>");
+        String swd = mdRecord.getSwd();
+        if ((field == null || (field != null && field.equals("swd"))) && swd != null)
+          out.print("<swd>" + swd + "</swd>");
+        String ddc = mdRecord.getDdc();
+        if ((field == null || (field != null && field.equals("ddc"))) && ddc != null)
+          out.print("<ddc>" + ddc + "</ddc>");
         String rights = mdRecord.getRights();
         if ((field == null || (field != null && field.equals("rights"))) && rights != null)
           out.print("<rights>" + rights + "</rights>");
