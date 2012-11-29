@@ -19,6 +19,7 @@ import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
+import org.bbaw.wsp.cms.document.SubjectHandler;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
@@ -26,6 +27,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
+
+import de.mpg.mpiwg.berlin.mpdl.lt.general.Language;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -198,7 +201,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "No" + "</td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='author'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Author" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='title'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Title" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='publisher'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Place" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='publisher'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Publisher" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='date'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Year" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='docId'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Id" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='lastModified'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Last modified" + "</button></td>");
@@ -255,6 +258,99 @@ public class QueryDocuments extends HttpServlet {
             schemaName = schemaNameField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
           htmlStrBuilder.append("</tr>");
+          // Knowledge rows
+          Fieldable personsField = doc.getFieldable("persons");
+          if (personsField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("Persons: ");
+            String personsStr = personsField.stringValue();
+            String[] persons = personsStr.split("###");  // separator of persons
+            for (int j=0; j<persons.length; j++) {
+              String personName = persons[j];
+              String personLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName);
+              htmlStrBuilder.append("<a href=\"" + personLink + "\">" + personName +"</a>");
+              if (j != persons.length - 1)
+                htmlStrBuilder.append(", ");
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          Fieldable placesField = doc.getFieldable("places");
+          if (placesField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("Places: ");
+            String placesStr = placesField.stringValue();
+            String[] places = placesStr.split("###");  // separator of persons
+            for (int j=0; j<places.length; j++) {
+              String placeName = places[j];
+              String placeLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName);
+              htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
+              if (j != places.length - 1)
+                htmlStrBuilder.append(", ");
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          Fieldable subjectField = doc.getFieldable("subject");
+          if (subjectField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("Subjects: ");
+            String subjectStr = subjectField.stringValue();
+            String[] subjects = subjectStr.split("[,]");  // separator of subjects
+            for (int j=0; j<subjects.length; j++) {
+              String subjectName = subjects[j].trim();
+              if (! subjectName.isEmpty()) {
+                String langId = Language.getInstance().getLanguageId(lang);
+                String subjectLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(subjectName);
+                htmlStrBuilder.append("<a href=\"" + subjectLink + "\">" + subjectName +"</a>");
+                if (j != subjects.length - 1)
+                  htmlStrBuilder.append(", ");
+              }
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          Fieldable swdField = doc.getFieldable("swd");
+          if (swdField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("SWD: ");
+            String swdStr = swdField.stringValue();
+            String[] swds = swdStr.split("[,]");  // separator of subjects
+            for (int j=0; j<swds.length; j++) {
+              String swdName = swds[j].trim();
+              if (! swdName.isEmpty()) {
+                String swdLink = "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName);
+                htmlStrBuilder.append("<a href=\"" + swdLink + "\">" + swdName +"</a>");
+                if (j != swds.length - 1)
+                  htmlStrBuilder.append(", ");
+              }
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          Fieldable ddcField = doc.getFieldable("ddc");
+          if (ddcField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("DDC: ");
+            String ddcStr = ddcField.stringValue();
+            if (! ddcStr.isEmpty()) {
+              String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
+              String ddcLink = "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode;
+              htmlStrBuilder.append("<a href=\"" + ddcLink + "\">" + ddcStr +"</a>");
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
           // Link row
           DocumentHandler docHandler = new DocumentHandler();
           boolean docIsXml = docHandler.isDocXml(docId); 
@@ -347,9 +443,25 @@ public class QueryDocuments extends HttpServlet {
           if (docTitleField != null) {
             jsonWrapper.put("title", docTitleField.stringValue());
           }
+          Fieldable languageField = doc.getFieldable("language");
+          String lang = "";
+          if (languageField != null) {
+            lang = languageField.stringValue();
+            jsonWrapper.put("language", lang);
+          }
+          Fieldable descriptionField = doc.getFieldable("description");
+          if (descriptionField != null) {
+            String description = descriptionField.stringValue();
+            jsonWrapper.put("description", description);
+          }
           Fieldable docDateField = doc.getFieldable("date");
           if (docDateField != null) {
             jsonWrapper.put("date", docDateField.stringValue());
+          }
+          Fieldable typeField = doc.getFieldable("type");
+          if (typeField != null) {
+            String type = typeField.stringValue();
+            jsonWrapper.put("type", type);
           }
           Fieldable docPageCountField = doc.getFieldable("pageCount");
           if (docPageCountField != null) {
@@ -367,7 +479,7 @@ public class QueryDocuments extends HttpServlet {
           
           if(additionalInfo != null) {
             if(additionalInfo.equals("true")) {
-              JSONArray jsonNames = new JSONArray();
+              JSONArray jsonPersons = new JSONArray();
               Fieldable personsField = doc.getFieldable("persons");
               if (personsField != null) {
                 String personsStr = personsField.stringValue();
@@ -377,10 +489,10 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject persNameAndLink = new JSONObject();
                   persNameAndLink.put("name", personName);
                   persNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName));
-                  jsonNames.add(persNameAndLink);
+                  jsonPersons.add(persNameAndLink);
                 }
               }
-              jsonWrapper.put("persNames", jsonNames);
+              jsonWrapper.put("persNames", jsonPersons);
               JSONArray jsonPlaces = new JSONArray();
               Fieldable placesField = doc.getFieldable("places");
               if (placesField != null) {
@@ -391,10 +503,56 @@ public class QueryDocuments extends HttpServlet {
                   JSONObject placeNameAndLink = new JSONObject();
                   placeNameAndLink.put("name", placeName);
                   placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName));
-                  jsonNames.add(placeNameAndLink);
+                  jsonPlaces.add(placeNameAndLink);
                 }
               }
               jsonWrapper.put("placeNames", jsonPlaces);
+              JSONArray jsonSubjects = new JSONArray();
+              Fieldable subjectField = doc.getFieldable("subject");
+              if (subjectField != null) {
+                String subjectStr = subjectField.stringValue();
+                String[] subjects = subjectStr.split("[,]");  // separator of subjects
+                for (int j=0; j<subjects.length; j++) {
+                  String subjectName = subjects[j].trim();
+                  if (! subjectName.isEmpty()) {
+                    JSONObject subjectNameAndLink = new JSONObject();
+                    subjectNameAndLink.put("name", subjectName);
+                    String langId = Language.getInstance().getLanguageId(lang);
+                    subjectNameAndLink.put("link", "http://" + langId + ".wikipedia.org/wiki/"+URIUtil.encodeQuery(subjectName));
+                    jsonSubjects.add(subjectNameAndLink);
+                  }
+                }
+              }
+              jsonWrapper.put("subjects", jsonSubjects);
+              JSONArray jsonSwd = new JSONArray();
+              Fieldable swdField = doc.getFieldable("swd");
+              if (swdField != null) {
+                String swdStr = swdField.stringValue();
+                String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
+                for (int j=0; j<swdEntries.length; j++) {
+                  String swdName = swdEntries[j].trim();
+                  if (! swdName.isEmpty()) {
+                    JSONObject swdNameAndLink = new JSONObject();
+                    swdNameAndLink.put("name", swdName);
+                    swdNameAndLink.put("link", "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName));  // alternativ evtl. noch http://www.hbz-nrw.de/angebote/
+                    jsonSwd.add(swdNameAndLink);
+                  }
+                }
+              }
+              jsonWrapper.put("swd", jsonSwd);
+              JSONArray jsonDdc = new JSONArray();
+              Fieldable ddcField = doc.getFieldable("ddc");
+              if (ddcField != null) {
+                String ddcStr = ddcField.stringValue();
+                if (! ddcStr.isEmpty()) {
+                  JSONObject ddcNameAndLink = new JSONObject();
+                  ddcNameAndLink.put("name", ddcStr);
+                  String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
+                  ddcNameAndLink.put("link", "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode);
+                  jsonDdc.add(ddcNameAndLink);
+                }
+              }
+              jsonWrapper.put("ddc", jsonDdc);
             }
           }
           jsonArray.add(jsonWrapper);
