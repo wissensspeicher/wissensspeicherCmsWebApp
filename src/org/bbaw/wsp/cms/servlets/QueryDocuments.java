@@ -29,6 +29,7 @@ import org.json.simple.JSONValue;
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 
 import de.mpg.mpiwg.berlin.mpdl.lt.general.Language;
+import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -437,11 +438,15 @@ public class QueryDocuments extends HttpServlet {
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
-            jsonWrapper.put("author", docAuthorField.stringValue());
+            String docAuthor = docAuthorField.stringValue();
+            docAuthor = StringUtils.resolveXmlEntities(docAuthor);
+            jsonWrapper.put("author", docAuthor);
           }
           Fieldable docTitleField = doc.getFieldable("title");
           if (docTitleField != null) {
-            jsonWrapper.put("title", docTitleField.stringValue());
+            String docTitle = docTitleField.stringValue();
+            docTitle = StringUtils.resolveXmlEntities(docTitle);
+            jsonWrapper.put("title", docTitle);
           }
           Fieldable languageField = doc.getFieldable("language");
           String lang = "";
@@ -452,6 +457,7 @@ public class QueryDocuments extends HttpServlet {
           Fieldable descriptionField = doc.getFieldable("description");
           if (descriptionField != null) {
             String description = descriptionField.stringValue();
+            description = StringUtils.resolveXmlEntities(description);
             jsonWrapper.put("description", description);
           }
           Fieldable docDateField = doc.getFieldable("date");
