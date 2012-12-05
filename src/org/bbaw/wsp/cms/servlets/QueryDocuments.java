@@ -259,6 +259,18 @@ public class QueryDocuments extends HttpServlet {
             schemaName = schemaNameField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
           htmlStrBuilder.append("</tr>");
+          // description row
+          Fieldable descriptionField = doc.getFieldable("description");
+          if (descriptionField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("Description: ");
+            String description = descriptionField.stringValue();
+            htmlStrBuilder.append(description);
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
           // Knowledge rows
           Fieldable personsField = doc.getFieldable("persons");
           if (personsField != null) {
