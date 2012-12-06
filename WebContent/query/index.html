@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>BBAW Digital Knowledge Store: Query Documents</title>
+<title>BBAW Digital Knowledge Store: Query Resources</title>
 <script type="text/javascript">
 <!--
 function Browse() {
@@ -128,7 +128,7 @@ function checkCR(event) {
     </colgroup>
     <tr>
     <td align="left" valign="top">
-      <text style="font-weight:bold;font-size:30px">Query documents <a href="info.html#queryDocuments" target="_blank"><img src="../images/info.png" valign="bottom" width="18" height="18" border="0" alt="Info Query Documents"/></a></text>
+      <text style="font-weight:bold;font-size:30px">Query resources <a href="info.html#queryDocuments" target="_blank"><img src="../images/info.png" valign="bottom" width="18" height="18" border="0" alt="Info Query Resources"/></a></text>
     </td>
     <td align="left" valign="top">
       Release 0.5, July, 2012
@@ -141,7 +141,7 @@ function checkCR(event) {
     <td valign="top" height="50px">
       <table>
       <tr>
-        <td valign="top"><b>Document formats:</b></td>
+        <td valign="top"><b>Resource formats:</b></td>
         <td valign="top">
           <text style="margin-left:20px;">TEI</text><br/>
         </td>
@@ -155,7 +155,7 @@ function checkCR(event) {
           <text style="margin-left:1px;"></text><input type="checkbox" name="schema2" id="schema2Id" value="html" checked="checked"/>
         </td>
         <td valign="top">
-          <text style="margin-left:20px;">Diverse</text><br/>
+          <text style="margin-left:20px;">Other</text><br/>
         </td>
         <td valign="top">
           <text style="margin-left:1px;"></text><input type="checkbox" name="schema3" id="schema3Id" value="diverse" checked="checked"/>
@@ -184,7 +184,7 @@ function checkCR(event) {
       <option value ="author" selected="true">Author</option>
       <option value ="title">Title</option>
       <option value ="publisher">Publisher</option>
-      <option value ="date">Year</option>
+      <option value ="date">Publication date</option>
       <option value ="docId">Id</option>
       <option value ="language">Language</option>
       <option value ="description">Description</option>
@@ -221,7 +221,7 @@ function checkCR(event) {
       <option value ="author">Author</option>
       <option value ="title" selected="true">Title</option>
       <option value ="publisher">Publisher</option>
-      <option value ="date">Year</option>
+      <option value ="date">Publication date</option>
       <option value ="docId">Id</option>
       <option value ="language">Language</option>
       <option value ="description">Description</option>
@@ -253,7 +253,7 @@ function checkCR(event) {
       <table>
         <tr>
         <td>
-        Document contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
+        Resource contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
         </td>
         <td valign="middle">
         <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
