@@ -14,7 +14,7 @@
         <ul>
           <li>id (required)
             <ul>
-              <li>identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
+              <li>resource identifier, e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
             </ul>
           </li>
         </ul>
@@ -32,18 +32,18 @@
         <ul>
           <li>srcUrl (optional)
             <ul>
-              <li>url of the source document (if operation is create)</li>
+              <li>source url of resource (if operation is create)</li>
             </ul>
           </li>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml")</li>
+              <li>resource identifier, e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
             </ul>
           </li>
           <li>elementNames (optional)
             <ul>
               <li>list of xml element names which should be indexed</li>
-              <li>default: "p s head caption variables description"</li>
+              <li>default: "p s head"</li>
             </ul>
           </li>
           <li>operation (required)
@@ -62,8 +62,8 @@
       </li>
       <li>Response output
         <ul>
-          <li>Link to document job</li>
-          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test document</a></li>
+          <li>Link to job</li>
+          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test resource</a></li>
         </ul>
       </li>
     </ul>
@@ -75,12 +75,12 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier of the document (e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml")</li>
+              <li>resource identifier, e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
             </ul>
           </li>
           <li>page (optional)
             <ul>
-              <li>page number in document</li>
+              <li>page number in resource</li>
               <li>default: 1</li>
             </ul>
           </li>
@@ -142,16 +142,16 @@
       </li>
       <li>Response output
         <ul>
-          <li>Document page</li>
-          <li>Example: <a href="query/GetPage?docId=/test/test/Test_1789.xml">Page 1 in test document</a></li>
+          <li>Page of resource</li>
+          <li>Example: <a href="query/GetPage?docId=/test/test/Test_1789.xml">Page 1 in test resource</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Page 1 in Humboldt - Ehrenberg letter</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized">Page 1 in Humboldt - Ehrenberg letter, tokenized</a></li>
           <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 1 in in Humboldt - Ehrenberg letter, tokenized, morphological forms of "ist" are highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA document</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA document, tokenized</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA document, first paragraph highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA document, first paragraph highlighted (XML output)</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA document, morphological forms of "ist" are highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA resource</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA resource, tokenized</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted (XML output)</a></li>
+          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA resource, morphological forms of "ist" are highlighted</a></li>
         </ul>
       </li>
     </ul>
@@ -168,21 +168,34 @@
 	            <ul>
 	              <li>supported fields
 	                <ul>
-	                  <li>docId</li>
-	                  <li>identifier</li>
-	                  <li>author</li>
-	                  <li>title</li>
-	                  <li>language</li>
-	                  <li>publisher (place)</li>
-	                  <li>date (year)</li>
-	                  <li>subject</li>
-	                  <li>rights</li>
-	                  <li>license</li>
-	                  <li>accessRights</li>
-	                  <li>tokenOrig</li>
-	                  <li>tokenReg</li>
-	                  <li>tokenNorm</li>
-	                  <li>tokenMorph</li>
+	                  <li>docId (local id: resource identifier in index system, e.g. "/edoc/2011/1591/pdf/08_VI.Dokumente.pdf")</li>
+	                  <li>identifier (local id: identifier field in resources metadata: e.g. "47114711")</li>
+	                  <li>uri (global id: resource URI (uniform resource identifier), e.g. http://de.wikipedia.org/wiki/Ramones)</li>
+	                  <li>webUri (global web url, e.g. "http://edoc.bbaw.de/volltexte/2011/1769/")</li>
+	                  <li>collectionNames (project name(s), e.g. "edoc" or "ig")</li>
+	                  <li>schemaName (schema name of resource, e.g. TEI, html, quran etc.)</li>
+	                  <li>author (author(s) of resource)</li>
+	                  <li>title (title(s) of resource)</li>
+	                  <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
+	                  <li>publisher (publisher(s) with place(s), e.g. Springer, New York )</li>
+	                  <li>date (publication date, e.g. 1958)</li>
+	                  <li>description (description, abstract etc.)</li>
+	                  <li>subject (free subject keywords)</li>
+	                  <li>ddc (subject keywords from DDC (Dewey Decimal Classification), e.g. "Philosophie")</li>
+	                  <li>swd (subject keywords from SWD (Schlagwortnormdatei), normally separated by commas)</li>
+	                  <li>persons (main persons in resource)</li>
+	                  <li>places (main places in resource)</li>
+	                  <li>type (mime type: e.g. text/xml)</li>
+	                  <li>rights (rights string, e.g. open access)</li>
+	                  <li>license (license string, e.g. "CC-BY-SA"))</li>
+	                  <li>accessRights (access rights string, e.g. free)</li>
+	                  <li>lastModified (last modification date in index system)</li>
+	                  <li>pageCount (number of pages)</li>
+	                  <li>tokenOrig (original fulltext tokens of resource)</li>
+	                  <li>tokenReg (regularized fulltext tokens of resource)</li>
+	                  <li>tokenNorm (normalized fulltext tokens of resource)</li>
+	                  <li>tokenMorph (morphological base forms of fulltext tokens of resource)</li>
+	                  <li>content (original text content of the resources file (without xml tags))</li>
 	                  <li>default: tokenOrig</li>
 		            </ul>
 		          </li>
@@ -196,14 +209,14 @@
               <ul>
                 <li>supported fields
                   <ul>
+                  <li>docId</li>
+                  <li>schemaName</li>
+                  <li>language</li>
                   <li>author</li>
                   <li>title</li>
-                  <li>language</li>
-                  <li>publisher (place)</li>
-                  <li>docId</li>
-                  <li>date (year)</li>
+                  <li>publisher</li>
+                  <li>date</li>
                   <li>lastModified</li>
-                  <li>schemaName</li>
                 </ul>
               </li>
               <li>default: result is sorted by Lucene score (the most relevant result first)</li>
@@ -249,20 +262,20 @@
       </li>
       <li>Response output
         <ul>
-          <li>Documents matching the query</li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all documents which contains "körper" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ">all documents which contains "καὶ" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus">all documents which contains "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&translate=true">all documents which contains translated "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus">all documents which morphological contains "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all documents which morphological contains translated "house" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist">all documents which morphological contains translated "ist" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all documents which morphological contains translated "sur" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all documents which contains "durch grössere stoffliche Fülle"</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all documents which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all documents which contains "alex*" in author and "ehren*" in title</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=*&sortBy=author">Browse: all documents</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=%2Blanguage:deu">Browse: all german documents</a></li>
+          <li>Resources matching the query</li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all resources which contains "körper" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ">all resources which contains "καὶ" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus">all resources which contains "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&translate=true">all resources which contains translated "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus">all resources which morphological contains "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all resources which morphological contains translated "house" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist">all resources which morphological contains translated "ist" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all resources which morphological contains translated "sur" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=*&sortBy=author">Browse: all resources</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=%2Blanguage:ger">Browse: all german resources</a></li>
         </ul>
       </li>
     </ul>
@@ -274,7 +287,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+              <li>resource identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
             </ul>
           </li>
           <li>query (required)
@@ -283,19 +296,19 @@
 	            <ul>
 	              <li>supported fields
 	                <ul>
-		              <li>language</li>
-		              <li>pageNumber</li>
-		              <li>lineNumber</li>
-		              <li>elementName</li>
-		              <li>elementPosition</li>
-		              <li>elementAbsolutePosition</li>
-		              <li>elementPagePosition</li>
-		              <li>xmlId</li>
-		              <li>xpath</li>
-		              <li>tokenOrig</li>
-		              <li>tokenReg</li>
-		              <li>tokenNorm</li>
-		              <li>tokenMorph</li>
+		              <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
+		              <li>pageNumber (page number of node in resource)</li>
+		              <li>lineNumber (line number of node in resource)</li>
+		              <li>elementName (element name of node, e.g. "s")</li>
+		              <li>elementPosition (position of node)</li>
+		              <li>elementAbsolutePosition (absolute position of node)</li>
+		              <li>elementPagePosition (position of node on page)</li>
+		              <li>xmlId (xml id of node)</li>
+		              <li>xpath (xpath of node, e.g. "/TEI[1]/text[1]/p[1]/s[5]")</li>
+		              <li>tokenOrig (original fulltext tokens of node)</li>
+		              <li>tokenReg (regularized fulltext tokens of node)</li>
+		              <li>tokenNorm (normalized fulltext tokens of node)</li>
+		              <li>tokenMorph (morphological base forms of fulltext tokens of node)</li>
 		              <li>default: tokenOrig</li>
 		            </ul>
 		          </li>
@@ -346,7 +359,7 @@
       </li>
       <li>Response output
         <ul>
-          <li>nodes in document which matches the query, word tokens are extracted and hits are highlighted</li>
+          <li>nodes in resource which matches the query, hits are highlighted</li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (XML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
@@ -364,7 +377,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/test/test/Test_1789.xml"</li>
+              <li>resource identifier (e.g. "/test/test/Test_1789.xml"</li>
             </ul>
           </li>
           <li>query (required)
@@ -410,7 +423,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+              <li>resource identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
             </ul>
           </li>
           <li>page (optional)
@@ -445,8 +458,8 @@
       </li>
       <li>Response output
         <ul>
-          <li>Similar documents of documents with that id</li>
-          <li>Example: <a href="query/MoreLikeThis?docId=/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml">similar documents of "/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml"</a></li>
+          <li>Similar resources of resources with that id</li>
+          <li>Example: <a href="query/MoreLikeThis?docId=/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml">similar resources of "/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml"</a></li>
         </ul>
       </li>
     </ul>
@@ -458,24 +471,12 @@
         <ul>
           <li>docId (optional)
             <ul>
-              <li>document identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
+              <li>resource identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>attribute (optional)
             <ul>
-              <li>identifier</li>
-              <li>author</li>
-              <li>title</li>
-              <li>language</li>
-              <li>date</li>
-              <li>rights</li>
-              <li>license</li>
-              <li>accessRights</li>
-              <li>tokenOrig</li>
-              <li>tokenReg</li>
-              <li>tokenNorm</li>
-              <li>tokenMorph</li>
-              <li>default: tokenOrig</li>
+              <li>see below: supported fields in /wspCmsWebApp/query/QueryDocuments</li>
             </ul>
           </li>
           <li>query (optional)
@@ -503,7 +504,7 @@
           <li>Tokens of the attribute</li>
           <li>Example: <a href="query/GetToken?attribute=docId">all token in docId field (starting from beginning)</a></li>
           <li>Example: <a href="query/GetToken?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenMorph&query=a">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
-          <li>Example: <a href="query/GetToken?attribute=tokenMorph&query=a">in all documents: all token beginning with "a" in morphological content (starting from "a")</a></li>
+          <li>Example: <a href="query/GetToken?attribute=tokenMorph&query=a">in all resources: all token beginning with "a" in morphological content (starting from "a")</a></li>
         </ul>
       </li>
     </ul>
@@ -515,25 +516,15 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>document identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
+              <li>resource identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>field (optional)
             <ul>
-              <li>author</li>
-              <li>title</li>
-              <li>language</li>
-              <li>date</li>
-              <li>rights</li>
-              <li>license</li>
-              <li>accessRights</li>
-              <li>countPages</li>
-              <li>lastModified</li>
-              <li>schema</li>
-              <li>echoId</li>
+              <li>see below: all supported fields in /wspCmsWebApp/query/QueryDocuments</li>
               <li>toc (table of contents)</li>
               <li>figures</li>
-              <li>handwrittens</li>
+              <li>pages</li>
               <li>default: null (all fields except automatic generated lists such as toc, figures, etc.)</li>
             </ul>
           </li>
@@ -547,8 +538,8 @@
       </li>
       <li>Response output
         <ul>
-          <li>Meta info of the document</li>
-          <li>Example: <a href="query/GetDocInfo?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of document /AvH/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
+          <li>Meta info of resource</li>
+          <li>Example: <a href="query/GetDocInfo?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /AvH/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
         </ul>
       </li>
     </ul>
@@ -560,7 +551,7 @@
         <ul>
           <li>id (optional)
             <ul>
-              <li>id of the document job</li>
+              <li>id of the resource job</li>
             </ul>
           </li>
           <li>outputFormat (optional)
@@ -573,8 +564,8 @@
       </li>
       <li>Response output
         <ul>
-          <li>all document jobs (when parameter id is not set) or document job with the specified id</li>
-          <li>Example: <a href="doc/GetDocumentJobs">get all document jobs</a></li>
+          <li>all resource jobs (when parameter id is not set) or resource job with the specified id</li>
+          <li>Example: <a href="doc/GetDocumentJobs">get all resource jobs</a></li>
         </ul>
       </li>
     </ul>
