@@ -38,6 +38,7 @@
   </target>
 
   <target name="dist" depends="compile" description="generate the distribution">
+    <copy overwrite="true" file="conf/constants.properties" tofile="WebContent/WEB-INF/config/core/constants.properties"/>
     <jar jarfile="${dist}/wspCmsWebApp.jar" basedir="${build}"/>
     <copy file="dist/wspCmsWebApp.jar" todir="${lib}"/>
     <war destfile="dist/wspCmsWebApp.war" webxml="WebContent/WEB-INF/web.xml">
@@ -48,7 +49,7 @@
   </target>
 
   <target name="distRemote" depends="compile" description="generate the distribution">
-    <copy file="conf/constantsWspDev.properties" tofile="WebContent/WEB-INF/config/core/constants.properties"/>
+    <copy overwrite="true" file="conf/constantsWspDev.properties" tofile="WebContent/WEB-INF/config/core/constants.properties"/>
     <jar jarfile="dist-remote/wspCmsWebApp.jar" basedir="${build}"/>
     <copy file="dist-remote/wspCmsWebApp.jar" todir="${lib}"/>
     <war destfile="dist-remote/wspCmsWebApp.war" webxml="WebContent/WEB-INF/web.xml">
