@@ -139,9 +139,9 @@ public class GetDocInfo extends HttpServlet {
         String schemaName = mdRecord.getSchemaName();
         if ((field == null || (field != null && field.equals("schema"))) && schemaName != null)
           out.print("<schema>" + schemaName + "</schema>");
-        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
+        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("pages")))
           out.print("</system>");
-        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("handwritten") || field.equals("pages"))) { 
+        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("pages"))) { 
           XslResourceTransformer tocTransformer = new XslResourceTransformer("tocOut.xsl");
           DocumentHandler docHandler = new DocumentHandler();
           String docDir = docHandler.getDocDir(docId);
@@ -157,7 +157,7 @@ public class GetDocInfo extends HttpServlet {
         // TODO
         
       } else {
-        out.print("<result>" + "no document found with id: " + docId + "</result>");
+        out.print("<result>" + "no resource found with id: " + docId + "</result>");
       }
     } catch (ApplicationException e) {
       throw new ServletException(e);
