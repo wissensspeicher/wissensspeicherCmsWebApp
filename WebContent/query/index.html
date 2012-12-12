@@ -21,14 +21,23 @@ function GetLuceneSchemaQuery() {
   var schema1checked = document.getElementById("schema1Id").checked;
   var schema2checked = document.getElementById("schema2Id").checked;
   var schema3checked = document.getElementById("schema3Id").checked;
-  var luceneQueryStr = "+" + schemaFieldValue + ":" + "(";
-  if (schema1checked)
-    luceneQueryStr = luceneQueryStr + schema1Val;
-  if (schema2checked)
-    luceneQueryStr = luceneQueryStr + " " + schema2Val;
-  if (schema3checked)
-    luceneQueryStr = luceneQueryStr + " " + schema3Val;
-  luceneQueryStr = luceneQueryStr + ")";
+  var luceneQueryStr = "";
+  if (schema1checked && schema2checked && schema3checked)
+    luceneQueryStr = "*:*";
+  if (!schema1checked && schema2checked && schema3checked)
+    luceneQueryStr = "*:*" + " -" + schemaFieldValue + ":" + schema1Val;
+  if (schema1checked && !schema2checked && schema3checked)
+    luceneQueryStr = "*:*" + " -" + schemaFieldValue + ":" + schema2Val;
+  if (schema1checked && schema2checked && !schema3checked)
+    luceneQueryStr = "*:*" + " +" + schemaFieldValue + ":(" + schema1Val + " " + schema2Val + ")";
+  if (!schema1checked && schema2checked && !schema3checked)
+    luceneQueryStr = "*:*" + " +" + schemaFieldValue + ":" + schema2Val;
+  if (schema1checked && !schema2checked && !schema3checked)
+    luceneQueryStr = "*:*" + " +" + schemaFieldValue + ":" + schema1Val;
+  if (!schema1checked && !schema2checked && schema3checked)
+    luceneQueryStr = "*:*" + " -" + schemaFieldValue + ":(" + schema1Val + " " + schema2Val + ")";
+  if (!schema1checked && !schema2checked && !schema3checked)
+    luceneQueryStr = "-*:*";
   return luceneQueryStr;
 }
 function GetLuceneBoolOp(relOp) {
@@ -50,15 +59,16 @@ function AttributeQuery() {
   var field2QueryVal = document.getElementById("field2QueryId").value;
   var relOp2Value = document.getElementById("relOp2Id").value;
   var relOp2ValueLucene = GetLuceneBoolOp(relOp2Value);
-  var luceneQueryStr = "*:* " + relOp1ValueLucene + field1Val + ":";  // *:* so that the minus-Operator works correct when it is alone
-  luceneQueryStr = luceneQueryStr + field1QueryVal;
+  var luceneQueryStr = "";
+  if (field1QueryVal != "")
+	luceneQueryStr = relOp1ValueLucene + field1Val + ":" + field1QueryVal;
   if (field2QueryVal != "")
     luceneQueryStr = luceneQueryStr + " " + relOp2ValueLucene + field2Val + ":" + field2QueryVal;
   var schemaQueryStr = GetLuceneSchemaQuery();
   var schema1checked = document.getElementById("schema1Id").checked;
   var schema2checked = document.getElementById("schema2Id").checked;
   var schema3checked = document.getElementById("schema3Id").checked;
-  if (schema1checked && schema2checked && schema3checked)
+  if (schema1checked && schema2checked && schema3checked && !(relOp1ValueLucene == "-" || relOp2ValueLucene == "-"))
     schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
   luceneQuery.value = luceneQueryStr;
@@ -121,18 +131,16 @@ function checkCR(event) {
 </script>
 </head>
 <body>
-  <table height="60px">
+  <table style="height:60px">
     <colgroup>
       <col width="90%"/>
       <col width="10%"/>
     </colgroup>
     <tr>
-    <td align="left" valign="top">
-      <text style="font-weight:bold;font-size:30px">Query resources <a href="info.html#queryDocuments" target="_blank"><img src="../images/info.png" valign="bottom" width="18" height="18" border="0" alt="Info Query Resources"/></a></text>
+    <td align="left" valign="top" style="font-weight:bold;font-size:30px">
+      Query resources <a href="info.html" target="_blank"><img src="../images/info.png" width="18" height="18" border="0" alt="Info Query Resources"/></a>
     </td>
-    <td align="left" valign="top">
-      Release 0.5, July, 2012
-    </td>
+    <td align="right" valign="top"></td>
     </tr>
   </table>
   <hr/>
@@ -142,29 +150,23 @@ function checkCR(event) {
       <table>
       <tr>
         <td valign="top"><b>Resource formats:</b></td>
+        <td valign="top"><span style="margin-left:20px;">TEI</span><br/></td>
         <td valign="top">
-          <text style="margin-left:20px;">TEI</text><br/>
+          <input type="checkbox" name="schema1" id="schema1Id" value="TEI" checked="checked" style="margin-left:1px;"/>
         </td>
+        <td valign="top"><span style="margin-left:20px;">HTML</span><br/></td>
         <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema1" id="schema1Id" value="TEI" checked="checked"/>
+          <input type="checkbox" name="schema2" id="schema2Id" value="html" checked="checked" style="margin-left:1px;"/>
         </td>
+        <td valign="top"><span style="margin-left:20px;">Other</span><br/></td>
         <td valign="top">
-          <text style="margin-left:20px;">HTML</text><br/>
-        </td>
-        <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema2" id="schema2Id" value="html" checked="checked"/>
-        </td>
-        <td valign="top">
-          <text style="margin-left:20px;">Other</text><br/>
-        </td>
-        <td valign="top">
-          <text style="margin-left:1px;"></text><input type="checkbox" name="schema3" id="schema3Id" value="diverse" checked="checked"/>
+          <input type="checkbox" name="schema3" id="schema3Id" value="diverse" checked="checked" style="margin-left:1px;"/>
         </td>
         <td valign="top">
           <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
           <input type="hidden" name="query" id="luceneQueryId1"/>
           <input type="hidden" name="sortBy" id="sortById1" value="author"/>
-          <text style="margin-left:40px;"></text><button type="submit" onclick="Browse()">Browse</button>
+          <button type="submit" onclick="Browse()" style="margin-left:20px;"><span>Browse</span></button>
          </form>
         </td>
       </tr>
@@ -178,14 +180,14 @@ function checkCR(event) {
     <td valign="top" height="70px">
       <table>
       <tr>
-      <td>
+      <td valign="top">
       <select name="field1" id="field1Id">
+      <option value ="docId">Id</option>
       <option value ="collectionNames">Project</option>
-      <option value ="author" selected="true">Author</option>
+      <option value ="author" selected>Author</option>
       <option value ="title">Title</option>
       <option value ="publisher">Publisher</option>
       <option value ="date">Publication date</option>
-      <option value ="docId">Id</option>
       <option value ="language">Language</option>
       <option value ="description">Description</option>
       <option value ="subject">Subject</option>
@@ -193,19 +195,21 @@ function checkCR(event) {
       <option value ="ddc">DDC</option>
       <option value ="persons">Persons</option>
       <option value ="places">Places</option>
+      <option value ="type">Mime type</option>
+      <option value ="schemaName">Schema name</option>
       </select>          
       </td>
-      <td>
+      <td valign="top">
       <select name="relOp1" id="relOp1Id">
-      <option value ="mustContain" selected="true">must contain</option>
+      <option value ="mustContain" selected>must contain</option>
       <option value ="mayContain">may contain</option>
       <option value ="mustNotContain">does not contain</option>
       </select>          
       </td>
-      <td>
+      <td valign="top">
       <input type="text" size="40" name="field1Query" id="field1QueryId" onkeypress="return checkCR(event)"/>
       </td>
-      <td valign="middle">
+      <td valign="top">
       <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
         <input type="hidden" name="query" id="luceneQueryId2"/>
         <input type="hidden" name="sortBy" id="sortById2"/>
@@ -215,14 +219,14 @@ function checkCR(event) {
       </tr>
 
       <tr>
-      <td>
+      <td valign="top">
       <select name="field2" id="field2Id">
+      <option value ="docId">Id</option>
       <option value ="collectionNames">Project</option>
       <option value ="author">Author</option>
-      <option value ="title" selected="true">Title</option>
+      <option value ="title" selected>Title</option>
       <option value ="publisher">Publisher</option>
       <option value ="date">Publication date</option>
-      <option value ="docId">Id</option>
       <option value ="language">Language</option>
       <option value ="description">Description</option>
       <option value ="subject">Subject</option>
@@ -230,16 +234,18 @@ function checkCR(event) {
       <option value ="ddc">DDC</option>
       <option value ="persons">Persons</option>
       <option value ="places">Places</option> 
+      <option value ="type">Mime type</option>
+      <option value ="schemaName">Schema name</option>
       </select>          
       </td>
-      <td>
+      <td valign="top">
       <select name="relOp2" id="relOp2Id">
-      <option value ="mustContain" selected="true">must contain</option>
+      <option value ="mustContain" selected>must contain</option>
       <option value ="mayContain">may contain</option>
       <option value ="mustNotContain">does not contain</option>
       </select>          
       </td>
-      <td>
+      <td valign="top">
       <input type="text" size="40" name="field2Query" id="field2QueryId" value="" onkeypress="return checkCR(event)"/>
       </td>
       </tr>
@@ -249,64 +255,51 @@ function checkCR(event) {
     </tr>
     
     <tr>
-    <td valign="top" height="60px">
-      <table>
+    <td height="60px">
+      <table style="vertical-align:bottom">
         <tr>
         <td>
         Resource contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
         </td>
-        <td valign="middle">
-        <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
-          <input type="hidden" name="query" id="luceneQueryId3"/>
-          <input type="hidden" name="language" id="languageId3"/>
-          <input type="hidden" name="translate" id="translateId3"/>
-          <button type="submit" onclick="FulltextQuery()">Query</button>
-        </form>
+        <td>
+          <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+            <input type="hidden" name="query" id="luceneQueryId3"/>
+            <input type="hidden" name="language" id="languageId3"/>
+            <input type="hidden" name="translate" id="translateId3"/>
+            <button type="submit" onclick="FulltextQuery()">Query</button>
+          </form>
         </td>
         </tr>
       </table>
-      <table>
+      <table style="vertical-align:top">
         <tr>
-          <td valign="top">
-            <text style="margin-left:30px;">morphological</text>
+          <td><span style="margin-left:30px;">morphological</span></td>
+          <td><span style="margin-left:1px;"></span><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery" onchange="ChangeIsMorph()"/></td>
+          <td><span style="margin-left:3px;">language: </span></td>
+          <td style="margin-left:3px;">
+            <span style="margin-left:1px;"></span>
+            <select name="language" id="languageId">
+              <option value ="none" selected>None</option>
+              <option value ="ara">Arabic</option>
+              <option value ="zho">Chinese</option>
+              <option value ="nld">Dutch</option>
+              <option value ="eng">English</option>
+              <option value ="fra">French</option>
+              <option value ="deu">German</option>
+              <option value ="grc">Greek</option>
+              <option value ="ita">Italian</option>
+              <option value ="lat">Latin</option>
+            </select>
           </td>
-          <td valign="top">
-            <text style="margin-left:1px;"></text><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery" onchange="ChangeIsMorph()"/>
-          </td>
-          <td valign="top">
-            <text style="margin-left:3px;">language: </text>
-          </td>
-          <td valign="top" style="margin-left:3px;">
-          <text style="margin-left:1px;"></text>
-          <select name="language" id="languageId">
-          <option value ="none" selected="true">None</option>
-          <option value ="ara">Arabic</option>
-          <option value ="zho">Chinese</option>
-          <option value ="nld">Dutch</option>
-          <option value ="eng">English</option>
-          <option value ="fra">French</option>
-          <option value ="deu">German</option>
-          <option value ="grc">Greek</option>
-          <option value ="ita">Italian</option>
-          <option value ="lat">Latin</option>
-          </select>
-          </td>
-          <td valign="top">
-            <text style="margin-left:10px;">translate</text><br/>
-          </td>
-          <td valign="top">
-            <text style="margin-left:1px;"></text><input type="checkbox" name="isTranslateQuery" id="isTranslateQueryId" value="translate"/>
-          </td>
+          <td><span style="margin-left:10px;">translate</span><br/></td>
+          <td><span style="margin-left:1px;"></span><input type="checkbox" name="isTranslateQuery" id="isTranslateQueryId" value="translate"/></td>
         </tr>
       </table>
     </td>
     </tr>
-
   </table> 
   <hr/>
   <p/>
-  See the <a href="../cms-services.html">CMS Services Page</a>
-  <br/>Last software update: November, 2012
-</form>
+  Release 0.5, December, 2012
 </body>
 </html>
