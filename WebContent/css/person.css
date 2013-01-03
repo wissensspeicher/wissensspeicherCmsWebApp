@@ -1,0 +1,24 @@
+/* about      */
+span.about {float:right;}
+
+/* query  */
+span.query { font-weight:bold; font-size:150%; }
+div.hits { margin-left:0.2em; display:inline-block; }
+
+/* persons    */
+div.person { margin-left:0.2em; }
+div.name { font-weight:bold; }
+div.otherNames:before { content: 'Other names: '; margin-left: 0.2em; }
+div.description:before { content: 'Description: '; margin-left: 0.2em; }
+div.birth:before { content: 'Birth: '; margin-left: 0.2em; }
+div.death:before { content: 'Death: '; margin-left: 0.2em; }
+div.wikiUrl:before { content: 'Wiki: '; margin-left: 0.2em; }
+ul.furtherProviders { margin-top:0; margin-left:0.2em; padding:0; list-style-type: none; }
+ul.furtherProviders:before { content: 'Further person providers: '; }
+li.provider { margin-left:0.4em; }
+
+
+/* links   */
+a.url:link {text-decoration: none; color: #892B06;}
+a.url:visited {text-decoration: none; color: #892B06;}
+a.url:hover {text-decoration: underline; color: #892B06;}
