@@ -85,6 +85,16 @@
     <url-pattern>/query/GetDocInfo</url-pattern>
   </servlet-mapping>
   <servlet>
+    <description>GetPerson</description>
+    <display-name>GetPerson</display-name>
+    <servlet-name>GetPerson</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.GetPerson</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetPerson</servlet-name>
+    <url-pattern>/query/GetPerson</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>GetDocumentJobs</description>
     <display-name>GetDocumentJobs</display-name>
     <servlet-name>GetDocumentJobs</servlet-name>
