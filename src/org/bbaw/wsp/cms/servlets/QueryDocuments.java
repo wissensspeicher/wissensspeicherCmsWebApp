@@ -99,6 +99,7 @@ public class QueryDocuments extends HttpServlet {
         docsSize = docs.size();
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
+      String baseUrl = getBaseUrl(request);
       if (outputFormat.equals("xml")) {
         out.print("<result>");
         out.print("<query>");
@@ -125,7 +126,6 @@ public class QueryDocuments extends HttpServlet {
         out.print("</result>");
       } else if (outputFormat.equals("html")) {
         StringBuilder htmlStrBuilder = new StringBuilder();
-        String baseUrl = getBaseUrl(request);
         String cssUrl = baseUrl + "/css/page.css";
         htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
         htmlStrBuilder.append("<html>");
@@ -276,13 +276,13 @@ public class QueryDocuments extends HttpServlet {
           if (personsField != null) {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
             htmlStrBuilder.append("Persons: ");
             String personsStr = personsField.stringValue();
             String[] persons = personsStr.split("###");  // separator of persons
             for (int j=0; j<persons.length; j++) {
               String personName = persons[j];
-              String personLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName);
+              String personLink = "/wspCmsWebApp/query/GetPerson?n=" + URIUtil.encodeQuery(personName);
               htmlStrBuilder.append("<a href=\"" + personLink + "\">" + personName +"</a>");
               if (j != persons.length - 1)
                 htmlStrBuilder.append(", ");
@@ -297,11 +297,12 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
             htmlStrBuilder.append("Places: ");
             String placesStr = placesField.stringValue();
-            String[] places = placesStr.split("###");  // separator of persons
+            String[] places = placesStr.split("###");  // separator of places
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
-              String placeLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName);
-              htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
+              // String placeLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName); // TODO korrekten link erzeugen
+              // htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
+              htmlStrBuilder.append(placeName);
               if (j != places.length - 1)
                 htmlStrBuilder.append(", ");
             }
@@ -496,84 +497,82 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonWrapper.put("fragments", jasonFragments);
           
-          if(additionalInfo != null) {
-            if(additionalInfo.equals("true")) {
-              JSONArray jsonPersons = new JSONArray();
-              Fieldable personsField = doc.getFieldable("persons");
-              if (personsField != null) {
-                String personsStr = personsField.stringValue();
-                String[] persons = personsStr.split("###");  // separator of persons
-                for (int j=0; j<persons.length; j++) {
-                  String personName = persons[j];
-                  JSONObject persNameAndLink = new JSONObject();
-                  persNameAndLink.put("name", personName);
-                  persNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName));
-                  jsonPersons.add(persNameAndLink);
-                }
-              }
-              jsonWrapper.put("persNames", jsonPersons);
-              JSONArray jsonPlaces = new JSONArray();
-              Fieldable placesField = doc.getFieldable("places");
-              if (placesField != null) {
-                String placesStr = placesField.stringValue();
-                String[] places = placesStr.split("###");  // separator of places
-                for (int j=0; j<places.length; j++) {
-                  String placeName = places[j];
-                  JSONObject placeNameAndLink = new JSONObject();
-                  placeNameAndLink.put("name", placeName);
-                  placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName));
-                  jsonPlaces.add(placeNameAndLink);
-                }
-              }
-              jsonWrapper.put("placeNames", jsonPlaces);
-              JSONArray jsonSubjects = new JSONArray();
-              Fieldable subjectField = doc.getFieldable("subject");
-              if (subjectField != null) {
-                String subjectStr = subjectField.stringValue();
-                String[] subjects = subjectStr.split("[,]");  // separator of subjects
-                for (int j=0; j<subjects.length; j++) {
-                  String subjectName = subjects[j].trim();
-                  if (! subjectName.isEmpty()) {
-                    JSONObject subjectNameAndLink = new JSONObject();
-                    subjectNameAndLink.put("name", subjectName);
-                    String langId = Language.getInstance().getLanguageId(lang);
-                    subjectNameAndLink.put("link", "http://" + langId + ".wikipedia.org/wiki/"+URIUtil.encodeQuery(subjectName));
-                    jsonSubjects.add(subjectNameAndLink);
-                  }
-                }
-              }
-              jsonWrapper.put("subjects", jsonSubjects);
-              JSONArray jsonSwd = new JSONArray();
-              Fieldable swdField = doc.getFieldable("swd");
-              if (swdField != null) {
-                String swdStr = swdField.stringValue();
-                String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
-                for (int j=0; j<swdEntries.length; j++) {
-                  String swdName = swdEntries[j].trim();
-                  if (! swdName.isEmpty()) {
-                    JSONObject swdNameAndLink = new JSONObject();
-                    swdNameAndLink.put("name", swdName);
-                    swdNameAndLink.put("link", "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName));  // alternativ evtl. noch http://www.hbz-nrw.de/angebote/
-                    jsonSwd.add(swdNameAndLink);
-                  }
-                }
-              }
-              jsonWrapper.put("swd", jsonSwd);
-              JSONArray jsonDdc = new JSONArray();
-              Fieldable ddcField = doc.getFieldable("ddc");
-              if (ddcField != null) {
-                String ddcStr = ddcField.stringValue();
-                if (! ddcStr.isEmpty()) {
-                  JSONObject ddcNameAndLink = new JSONObject();
-                  ddcNameAndLink.put("name", ddcStr);
-                  String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
-                  ddcNameAndLink.put("link", "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode);
-                  jsonDdc.add(ddcNameAndLink);
-                }
-              }
-              jsonWrapper.put("ddc", jsonDdc);
+          JSONArray jsonPersons = new JSONArray();
+          Fieldable personsField = doc.getFieldable("persons");
+          if (personsField != null) {
+            String personsStr = personsField.stringValue();
+            String[] persons = personsStr.split("###");  // separator of persons
+            for (int j=0; j<persons.length; j++) {
+              String personName = persons[j];
+              JSONObject persNameAndLink = new JSONObject();
+              persNameAndLink.put("name", personName);
+              String link = baseUrl + "/query/GetPerson?n=" + URIUtil.encodeQuery(personName);
+              persNameAndLink.put("link", link);
+              jsonPersons.add(persNameAndLink);
             }
           }
+          jsonWrapper.put("persNames", jsonPersons);
+          JSONArray jsonPlaces = new JSONArray();
+          Fieldable placesField = doc.getFieldable("places");
+          if (placesField != null) {
+            String placesStr = placesField.stringValue();
+            String[] places = placesStr.split("###");  // separator of places
+            for (int j=0; j<places.length; j++) {
+              String placeName = places[j];
+              JSONObject placeNameAndLink = new JSONObject();
+              placeNameAndLink.put("name", placeName);
+              // placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName)); // TODO korrekten link erzeugen 
+              jsonPlaces.add(placeNameAndLink);
+            }
+          }
+          jsonWrapper.put("placeNames", jsonPlaces);
+          JSONArray jsonSubjects = new JSONArray();
+          Fieldable subjectField = doc.getFieldable("subject");
+          if (subjectField != null) {
+            String subjectStr = subjectField.stringValue();
+            String[] subjects = subjectStr.split("[,]");  // separator of subjects
+            for (int j=0; j<subjects.length; j++) {
+              String subjectName = subjects[j].trim();
+              if (! subjectName.isEmpty()) {
+                JSONObject subjectNameAndLink = new JSONObject();
+                subjectNameAndLink.put("name", subjectName);
+                String langId = Language.getInstance().getLanguageId(lang);
+                subjectNameAndLink.put("link", "http://" + langId + ".wikipedia.org/wiki/"+URIUtil.encodeQuery(subjectName));
+                jsonSubjects.add(subjectNameAndLink);
+              }
+            }
+          }
+          jsonWrapper.put("subjects", jsonSubjects);
+          JSONArray jsonSwd = new JSONArray();
+          Fieldable swdField = doc.getFieldable("swd");
+          if (swdField != null) {
+            String swdStr = swdField.stringValue();
+            String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
+            for (int j=0; j<swdEntries.length; j++) {
+              String swdName = swdEntries[j].trim();
+              if (! swdName.isEmpty()) {
+                JSONObject swdNameAndLink = new JSONObject();
+                swdNameAndLink.put("name", swdName);
+                swdNameAndLink.put("link", "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName));  // alternativ evtl. noch http://www.hbz-nrw.de/angebote/
+                jsonSwd.add(swdNameAndLink);
+              }
+            }
+          }
+          jsonWrapper.put("swd", jsonSwd);
+          JSONArray jsonDdc = new JSONArray();
+          Fieldable ddcField = doc.getFieldable("ddc");
+          if (ddcField != null) {
+            String ddcStr = ddcField.stringValue();
+            if (! ddcStr.isEmpty()) {
+              JSONObject ddcNameAndLink = new JSONObject();
+              ddcNameAndLink.put("name", ddcStr);
+              String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
+              ddcNameAndLink.put("link", "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode);
+              jsonDdc.add(ddcNameAndLink);
+            }
+          }
+          jsonWrapper.put("ddc", jsonDdc);
+
           jsonArray.add(jsonWrapper);
         }
         jsonEncoder.putJsonObj("hits", jsonArray);
