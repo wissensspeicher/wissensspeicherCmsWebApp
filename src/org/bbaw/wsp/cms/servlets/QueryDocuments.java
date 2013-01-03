@@ -52,7 +52,6 @@ public class QueryDocuments extends HttpServlet {
     String language = request.getParameter("language");
     if (language != null && language.equals("none"))
       language = null;
-    String additionalInfo = request.getParameter("addInf");
     String translate = request.getParameter("translate");
     String pageStr = request.getParameter("page");
     if (pageStr == null)
