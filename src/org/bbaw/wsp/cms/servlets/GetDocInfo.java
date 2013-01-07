@@ -14,13 +14,14 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmValue;
 
-import org.apache.commons.httpclient.util.URIUtil;
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
+import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
+import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
 
 public class GetDocInfo extends HttpServlet {
@@ -97,6 +98,7 @@ public class GetDocInfo extends HttpServlet {
         String accessRights = mdRecord.getAccessRights();
         if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
+        String baseUrl = getBaseUrl(request);
         String personsStr = mdRecord.getPersons();
         if (personsStr != null) {
           out.print("<persons>");
@@ -105,7 +107,11 @@ public class GetDocInfo extends HttpServlet {
             String personName = persons[i];
             out.print("<person>");
             out.print("<name>" + personName + "</name>");
-            out.print("<link>" + "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(personName) + "</link>");
+            Person person = new Person(personName);
+            String pdrQuery = person.buildPdrQuery();
+            pdrQuery = StringUtils.deresolveXmlEntities(pdrQuery);
+            String personLink = baseUrl + "/query/GetPerson?" + pdrQuery;
+            out.print("<link>" + personLink + "</link>");
             out.print("</person>");
           }
           out.print("</persons>");
@@ -113,12 +119,11 @@ public class GetDocInfo extends HttpServlet {
         String placesStr = mdRecord.getPlaces();
         if (placesStr != null) {
           out.print("<places>");
-          String[] places = placesStr.split("###");  // separator of persons
+          String[] places = placesStr.split("###");  // separator of places
           for (int i=0; i<places.length; i++) {
             String placeName = places[i];
             out.print("<place>");
             out.print("<name>" + placeName + "</name>");
-            out.print("<link>" + "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName) + "</link>");
             out.print("</place>");
           }
           out.print("</places>");
@@ -165,6 +170,17 @@ public class GetDocInfo extends HttpServlet {
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    // TODO Auto-generated method stub
+    doGet(request, response);
+  }
+
+  private String getBaseUrl(HttpServletRequest request) {
+    return getServerUrl(request) + request.getContextPath();
+  }
+
+  private String getServerUrl(HttpServletRequest request) {
+    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
+      return request.getScheme() + "://" + request.getServerName();
+    else
+      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
   }
 }
