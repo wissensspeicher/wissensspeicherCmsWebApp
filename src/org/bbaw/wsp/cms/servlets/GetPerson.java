@@ -1,6 +1,5 @@
 package org.bbaw.wsp.cms.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -41,7 +40,7 @@ public class GetPerson extends HttpServlet {
     String result = "";
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
-    String name = request.getParameter("n"); // principal name (surname, common forenames, an official name)
+    String name = request.getParameter("n"); // name (surname, official name)
     String otherNames = request.getParameter("on"); // other names (forenames, less official names, uncommon names)
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
@@ -57,9 +56,9 @@ public class GetPerson extends HttpServlet {
       response.setContentType("text/html");
     PrintWriter out = response.getWriter();
     try {
-      String pdrXmlStr = getPdrXmlStr(name);
+      String pdrXmlStr = getPdrXmlStr(name, otherNames);
       if (outputFormat.equals("html")) {
-        String title = "GetPerson: " + name;
+        String title = "Persons";
         String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
         String head = "<head><title>" + title + "</title><link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/></head>";
         String pdrHtmlStr = personTransformer.transformStr(pdrXmlStr);
@@ -77,11 +76,13 @@ public class GetPerson extends HttpServlet {
     doGet(request, response);
   }  
 
-  private String getPdrXmlStr(String personName) throws ApplicationException {
+  private String getPdrXmlStr(String personName, String otherNames) throws ApplicationException {
     String protocol = "http"; 
     String host = "pdrdev.bbaw.de"; 
     String port = "80"; 
     String request = "/concord/1-4/?n=" + personName;
+    if (otherNames != null)
+      request = request + "&on=" + otherNames;
     String pdrXmlStr = performGetRequest(protocol, host, port, request);
     return pdrXmlStr;
   }
