@@ -19,6 +19,7 @@ import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
+import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.document.SubjectHandler;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
@@ -276,12 +277,14 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("Persons: ");
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/persons.png\" width=\"15\" height=\"15\" border=\"0\"/> ");
             String personsStr = personsField.stringValue();
             String[] persons = personsStr.split("###");  // separator of persons
             for (int j=0; j<persons.length; j++) {
               String personName = persons[j];
-              String personLink = "/wspCmsWebApp/query/GetPerson?n=" + URIUtil.encodeQuery(personName);
+              Person person = new Person(personName);
+              String pdrQuery = person.buildPdrQuery();
+              String personLink = "/wspCmsWebApp/query/GetPerson?" + pdrQuery;
               htmlStrBuilder.append("<a href=\"" + personLink + "\">" + personName +"</a>");
               if (j != persons.length - 1)
                 htmlStrBuilder.append(", ");
@@ -294,14 +297,16 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("Places: ");
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/place.png\" width=\"15\" height=\"15\" border=\"0\"/> ");
             String placesStr = placesField.stringValue();
             String[] places = placesStr.split("###");  // separator of places
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
-              // String placeLink = "http://pdrdev.bbaw.de/concord/1-4/?n=" + URIUtil.encodeQuery(placeName); // TODO korrekten link erzeugen
-              // htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
-              htmlStrBuilder.append(placeName);
+              String langId = Language.getInstance().getLanguageId(lang);
+              String placeLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(placeName);
+              if (Language.getInstance().isGreek(lang) || Language.getInstance().isLatin(lang))
+                placeLink = "http://pleiades.stoa.org/search?portal_type=Place&submit=Search&SearchableText=" + URIUtil.encodeQuery(placeName);
+              htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
               if (j != places.length - 1)
                 htmlStrBuilder.append(", ");
             }
@@ -505,8 +510,10 @@ public class QueryDocuments extends HttpServlet {
               String personName = persons[j];
               JSONObject persNameAndLink = new JSONObject();
               persNameAndLink.put("name", personName);
-              String link = baseUrl + "/query/GetPerson?n=" + URIUtil.encodeQuery(personName);
-              persNameAndLink.put("link", link);
+              Person person = new Person(personName);
+              String pdrQuery = person.buildPdrQuery();
+              String personLink = baseUrl + "/query/GetPerson?" + pdrQuery;
+              persNameAndLink.put("link", personLink);
               jsonPersons.add(persNameAndLink);
             }
           }
@@ -519,8 +526,12 @@ public class QueryDocuments extends HttpServlet {
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
               JSONObject placeNameAndLink = new JSONObject();
+              String langId = Language.getInstance().getLanguageId(lang);
+              String placeLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(placeName);
+              if (Language.getInstance().isGreek(lang) || Language.getInstance().isLatin(lang))
+                placeLink = "http://pleiades.stoa.org/search?portal_type=Place&submit=Search&SearchableText=" + URIUtil.encodeQuery(placeName);
               placeNameAndLink.put("name", placeName);
-              // placeNameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(placeName)); // TODO korrekten link erzeugen 
+              placeNameAndLink.put("link", placeLink);  
               jsonPlaces.add(placeNameAndLink);
             }
           }
