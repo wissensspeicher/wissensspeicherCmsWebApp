@@ -14,7 +14,7 @@ div.birth:before { content: 'Birth: '; margin-left: 0.2em; }
 div.death:before { content: 'Death: '; margin-left: 0.2em; }
 div.wikiUrl:before { content: 'Wiki: '; margin-left: 0.2em; }
 ul.furtherProviders { margin-top:0; margin-left:0.2em; padding:0; list-style-type: none; }
-ul.furtherProviders:before { content: 'Further person providers: '; }
+ul.furtherProviders:before { content: 'See also: '; }
 li.provider { margin-left:0.4em; }
 
 
