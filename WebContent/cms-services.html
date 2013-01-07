@@ -537,6 +537,38 @@
     </ul>
   </li>
 
+  <li><b>Url: /wspCmsWebApp/query/GetPerson</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>n (required)
+            <ul>
+              <li>name: surname, official name (e.g. Kennedy))</li>
+            </ul>
+          </li>
+          <li>on (required)
+            <ul>
+              <li>other names: forenames, less official names, uncommon names (e.g. John Fitzgerald)</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>html</li>
+              <li>json</li>
+              <li>default: html</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Persons</li>
+          <li>Example: <a href="query/GetPerson?n=Kennedy&on=John%2BFitzgerald">All persons which contains "Kennedy" in field "n" and "John Fitzgerald" in "on"</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
   <li><b>Url: /wspCmsWebApp/doc/GetDocumentJobs</b>
     <ul>
       <li>Request parameters
