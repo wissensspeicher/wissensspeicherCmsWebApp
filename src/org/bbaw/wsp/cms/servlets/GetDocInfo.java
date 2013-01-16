@@ -16,12 +16,10 @@ import net.sf.saxon.s9api.XdmValue;
 
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
-import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
-import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
 
 public class GetDocInfo extends HttpServlet {
@@ -107,10 +105,7 @@ public class GetDocInfo extends HttpServlet {
             String personName = persons[i];
             out.print("<person>");
             out.print("<name>" + personName + "</name>");
-            Person person = new Person(personName);
-            String pdrQuery = person.buildPdrQuery();
-            pdrQuery = StringUtils.deresolveXmlEntities(pdrQuery);
-            String personLink = baseUrl + "/query/GetPerson?" + pdrQuery;
+            String personLink = baseUrl + "/query/About?query=" + personName + "&type=person";
             out.print("<link>" + personLink + "</link>");
             out.print("</person>");
           }
