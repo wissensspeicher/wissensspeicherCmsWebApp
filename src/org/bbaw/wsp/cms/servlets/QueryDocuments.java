@@ -19,8 +19,6 @@ import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
-import org.bbaw.wsp.cms.document.Person;
-import org.bbaw.wsp.cms.document.SubjectHandler;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
@@ -29,7 +27,6 @@ import org.json.simple.JSONValue;
 
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 
-import de.mpg.mpiwg.berlin.mpdl.lt.general.Language;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 
 public class QueryDocuments extends HttpServlet {
@@ -282,9 +279,9 @@ public class QueryDocuments extends HttpServlet {
             String[] persons = personsStr.split("###");  // separator of persons
             for (int j=0; j<persons.length; j++) {
               String personName = persons[j];
-              Person person = new Person(personName);
-              String pdrQuery = person.buildPdrQuery();
-              String personLink = "/wspCmsWebApp/query/GetPerson?" + pdrQuery;
+              String personLink = "/wspCmsWebApp/query/About?query=" + personName + "&type=person";
+              if (lang != null && ! lang.isEmpty())
+                personLink = personLink + "&language=" + lang;
               htmlStrBuilder.append("<a href=\"" + personLink + "\">" + personName +"</a>");
               if (j != persons.length - 1)
                 htmlStrBuilder.append(", ");
@@ -302,10 +299,9 @@ public class QueryDocuments extends HttpServlet {
             String[] places = placesStr.split("###");  // separator of places
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
-              String langId = Language.getInstance().getLanguageId(lang);
-              String placeLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(placeName);
-              if (Language.getInstance().isGreek(lang) || Language.getInstance().isLatin(lang))
-                placeLink = "http://pleiades.stoa.org/search?portal_type=Place&submit=Search&SearchableText=" + URIUtil.encodeQuery(placeName);
+              String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
+              if (lang != null && ! lang.isEmpty())
+                placeLink = placeLink + "&language=" + lang;
               htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
               if (j != places.length - 1)
                 htmlStrBuilder.append(", ");
@@ -324,8 +320,9 @@ public class QueryDocuments extends HttpServlet {
             for (int j=0; j<subjects.length; j++) {
               String subjectName = subjects[j].trim();
               if (! subjectName.isEmpty()) {
-                String langId = Language.getInstance().getLanguageId(lang);
-                String subjectLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(subjectName);
+                String subjectLink = "/wspCmsWebApp/query/About?query=" + subjectName + "&type=subject";
+                if (lang != null && ! lang.isEmpty())
+                  subjectLink = subjectLink + "&language=" + lang;
                 htmlStrBuilder.append("<a href=\"" + subjectLink + "\">" + subjectName +"</a>");
                 if (j != subjects.length - 1)
                   htmlStrBuilder.append(", ");
@@ -345,7 +342,9 @@ public class QueryDocuments extends HttpServlet {
             for (int j=0; j<swds.length; j++) {
               String swdName = swds[j].trim();
               if (! swdName.isEmpty()) {
-                String swdLink = "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName);
+                String swdLink = "/wspCmsWebApp/query/About?query=" + swdName + "&type=swd";
+                if (lang != null && ! lang.isEmpty())
+                  swdLink = swdLink + "&language=" + lang;
                 htmlStrBuilder.append("<a href=\"" + swdLink + "\">" + swdName +"</a>");
                 if (j != swds.length - 1)
                   htmlStrBuilder.append(", ");
@@ -362,8 +361,9 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("DDC: ");
             String ddcStr = ddcField.stringValue();
             if (! ddcStr.isEmpty()) {
-              String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
-              String ddcLink = "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode;
+              String ddcLink = "/wspCmsWebApp/query/About?query=" + ddcStr + "&type=ddc";
+              if (lang != null && ! lang.isEmpty())
+                ddcLink = ddcLink + "&language=" + lang;
               htmlStrBuilder.append("<a href=\"" + ddcLink + "\">" + ddcStr +"</a>");
             }
             htmlStrBuilder.append("</td>");
@@ -510,9 +510,9 @@ public class QueryDocuments extends HttpServlet {
               String personName = persons[j];
               JSONObject persNameAndLink = new JSONObject();
               persNameAndLink.put("name", personName);
-              Person person = new Person(personName);
-              String pdrQuery = person.buildPdrQuery();
-              String personLink = baseUrl + "/query/GetPerson?" + pdrQuery;
+              String personLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+              if (lang != null && ! lang.isEmpty())
+                personLink = personLink + "&language=" + lang;
               persNameAndLink.put("link", personLink);
               jsonPersons.add(persNameAndLink);
             }
@@ -526,10 +526,9 @@ public class QueryDocuments extends HttpServlet {
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
               JSONObject placeNameAndLink = new JSONObject();
-              String langId = Language.getInstance().getLanguageId(lang);
-              String placeLink = "http://" + langId + ".wikipedia.org/wiki/" + URIUtil.encodeQuery(placeName);
-              if (Language.getInstance().isGreek(lang) || Language.getInstance().isLatin(lang))
-                placeLink = "http://pleiades.stoa.org/search?portal_type=Place&submit=Search&SearchableText=" + URIUtil.encodeQuery(placeName);
+              String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
+              if (lang != null && ! lang.isEmpty())
+                placeLink = placeLink + "&language=" + lang;
               placeNameAndLink.put("name", placeName);
               placeNameAndLink.put("link", placeLink);  
               jsonPlaces.add(placeNameAndLink);
@@ -546,8 +545,10 @@ public class QueryDocuments extends HttpServlet {
               if (! subjectName.isEmpty()) {
                 JSONObject subjectNameAndLink = new JSONObject();
                 subjectNameAndLink.put("name", subjectName);
-                String langId = Language.getInstance().getLanguageId(lang);
-                subjectNameAndLink.put("link", "http://" + langId + ".wikipedia.org/wiki/"+URIUtil.encodeQuery(subjectName));
+                String subjectLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(subjectName) + "&type=subject";
+                if (lang != null && ! lang.isEmpty())
+                  subjectLink = subjectLink + "&language=" + lang;
+                subjectNameAndLink.put("link", subjectLink);
                 jsonSubjects.add(subjectNameAndLink);
               }
             }
@@ -563,7 +564,10 @@ public class QueryDocuments extends HttpServlet {
               if (! swdName.isEmpty()) {
                 JSONObject swdNameAndLink = new JSONObject();
                 swdNameAndLink.put("name", swdName);
-                swdNameAndLink.put("link", "http://melvil.dnb.de/swd-search?term="+URIUtil.encodeQuery(swdName));  // alternativ evtl. noch http://www.hbz-nrw.de/angebote/
+                String swdLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(swdName) + "&type=swd";
+                if (lang != null && ! lang.isEmpty())
+                  swdLink = swdLink + "&language=" + lang;
+                swdNameAndLink.put("link", swdLink);  
                 jsonSwd.add(swdNameAndLink);
               }
             }
@@ -576,8 +580,10 @@ public class QueryDocuments extends HttpServlet {
             if (! ddcStr.isEmpty()) {
               JSONObject ddcNameAndLink = new JSONObject();
               ddcNameAndLink.put("name", ddcStr);
-              String ddcCode = SubjectHandler.getInstance().getDdcCode(ddcStr);
-              ddcNameAndLink.put("link", "http://vzopc4.gbv.de/DB=38/CMD?ACT=SRCHA&IKT=8562&TRM=" + ddcCode);
+              String ddcLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(ddcStr) + "&type=ddc";
+              if (lang != null && ! lang.isEmpty())
+                ddcLink = ddcLink + "&language=" + lang;
+              ddcNameAndLink.put("link", ddcLink);
               jsonDdc.add(ddcNameAndLink);
             }
           }
