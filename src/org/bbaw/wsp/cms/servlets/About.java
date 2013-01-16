@@ -39,6 +39,8 @@ public class About extends HttpServlet {
   public void init(ServletConfig config) throws ServletException  {
     super.init(config);
     httpClient = new HttpClient();
+    int timeout = 2 * 1000;
+    httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(timeout);  // TODO does that work ?
     try {
       aboutTransformer = new XslResourceTransformer("about.xsl");
     } catch (ApplicationException e) {
@@ -146,15 +148,17 @@ public class About extends HttpServlet {
     String host = language + ".dbpedia.org";
     if (language.equals("en"))
       host = "dbpedia.org"; 
-    String port = "80"; 
+    String port = "80";
+    String dbPediaResource = protocol + "://" + host + "/resource/" + key;
     try {
-      key = URLEncoder.encode(key, "utf-8");
-      String request = "/data/" + key + ".rdf";
+      String keyEncoded = URLEncoder.encode(key, "utf-8");
+      String request = "/data/" + keyEncoded + ".rdf";
       dbPediaXmlStr = performGetRequest(protocol, host, port, request);
       // redirection if necessary
       if (dbPediaXmlStr.contains("wikiPageRedirects")) {
         XQueryEvaluator xQueryEvaluator = new XQueryEvaluator();
-        String redirectUrl = xQueryEvaluator.evaluateAsString(dbPediaXmlStr, "//*:wikiPageRedirects/@*:resource");  // TODO better path
+        String redirectXPath = "string(/*:RDF/*:Description[@*:about = '" + dbPediaResource + "']/*:wikiPageRedirects/@*:resource)";
+        String redirectUrl = xQueryEvaluator.evaluateAsString(dbPediaXmlStr, redirectXPath);
         if (redirectUrl != null) {
           int index = redirectUrl.lastIndexOf("/");
           if (index != -1) {
@@ -179,11 +183,9 @@ public class About extends HttpServlet {
     String port = "80"; 
     try {
       String personNameEncoded = URLEncoder.encode(personName, "utf-8");
-      // String personNameEncoded = personName.replaceAll(" ", "%2B");
       String request = "/concord/1-4/?n=" + personNameEncoded;
       if (otherNames != null) {
         String otherNamesEncoded = URLEncoder.encode(otherNames, "utf-8");
-        // String otherNamesEncoded = otherNames.replaceAll(" ", "%2B");
         request = request + "&on=" + otherNamesEncoded;
       }
       pdrXmlStr = performGetRequest(protocol, host, port, request);
@@ -210,10 +212,11 @@ public class About extends HttpServlet {
       String portPart = ":" + port;
       String urlStr = protocol + "://" + host + portPart + requestName;
       GetMethod method = new GetMethod(urlStr);
-      // TODO timeout setzen
-      httpClient.executeMethod(method);
-      byte[] resultBytes = method.getResponseBody();
-      resultStr = new String(resultBytes, "utf-8");
+      int statusCode = httpClient.executeMethod(method);
+      if (statusCode < 400) {
+        byte[] resultBytes = method.getResponseBody();
+        resultStr = new String(resultBytes, "utf-8");
+      }
       method.releaseConnection();
     } catch (HttpException e) {
       throw new ApplicationException(e);
