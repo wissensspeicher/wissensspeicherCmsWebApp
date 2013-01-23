@@ -1,6 +1,6 @@
 <!DOCTYPE project>
 <project name="wspCmsWebApp" default="dist" basedir="../">
-  <description>mpiwg-mpdl-cms-web</description>
+  <description>wspCmsWebApp</description>
   <!-- global properties -->
   <property name="baseLibFile" location="../wspCmsCore/dist/wspCmsCore.jar"/>
   <property name="src" location="src"/>
