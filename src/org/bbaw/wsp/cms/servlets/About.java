@@ -16,8 +16,8 @@ import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmValue;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang3.text.WordUtils;
 
 import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.document.SubjectHandler;
@@ -75,8 +75,9 @@ public class About extends HttpServlet {
     PrintWriter out = response.getWriter();
     try {
       Person person = null;
-      String dbpediaKey = query.replaceAll(" ", "_");
-      dbpediaKey = dbpediaKey.replaceAll("[,.:;]", "");
+      String dbpediaKey = WordUtils.capitalize(query);
+      dbpediaKey = dbpediaKey.replaceAll(" ", "_");
+      dbpediaKey = dbpediaKey.replaceAll("[,.;]", "");
       if (type.equals("person")) {
         person = new Person(query);
         String surname = person.getSurname();
@@ -89,6 +90,8 @@ public class About extends HttpServlet {
         }
       }
       String dbPediaXmlStr = getDBpediaXmlStr(dbpediaKey, language);
+      if (dbPediaXmlStr == null)
+        dbPediaXmlStr = "";
       dbPediaXmlStr = dbPediaXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
       StringBuilder aboutXmlStrBuilder = new StringBuilder();
       aboutXmlStrBuilder.append("<about>");
@@ -108,6 +111,8 @@ public class About extends HttpServlet {
         String surName = person.getSurname();
         String foreName = person.getForename();
         String pdrXmlStr = getPdrXmlStr(surName, foreName);
+        if (pdrXmlStr == null)
+          pdrXmlStr = "";
         pdrXmlStr = pdrXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         aboutXmlStrBuilder.append("<pdr>");
         aboutXmlStrBuilder.append(pdrXmlStr);
@@ -155,7 +160,7 @@ public class About extends HttpServlet {
       String request = "/data/" + keyEncoded + ".rdf";
       dbPediaXmlStr = performGetRequest(protocol, host, port, request);
       // redirection if necessary
-      if (dbPediaXmlStr.contains("wikiPageRedirects")) {
+      if (dbPediaXmlStr != null && dbPediaXmlStr.contains("wikiPageRedirects")) {
         XQueryEvaluator xQueryEvaluator = new XQueryEvaluator();
         String redirectXPath = "string(/*:RDF/*:Description[@*:about = '" + dbPediaResource + "']/*:wikiPageRedirects/@*:resource)";
         String redirectUrl = xQueryEvaluator.evaluateAsString(dbPediaXmlStr, redirectXPath);
@@ -218,10 +223,8 @@ public class About extends HttpServlet {
         resultStr = new String(resultBytes, "utf-8");
       }
       method.releaseConnection();
-    } catch (HttpException e) {
-      throw new ApplicationException(e);
-    } catch (IOException e) {
-      throw new ApplicationException(e);
+    } catch (Exception e) {
+      // nothing
     }
     return resultStr;
   }
