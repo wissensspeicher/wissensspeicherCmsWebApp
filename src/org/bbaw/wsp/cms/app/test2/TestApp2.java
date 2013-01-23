@@ -23,5 +23,6 @@ public class TestApp2 extends Application {
           }
        }));
     setMainWindow(mainWindow);
+    
   }
 }
