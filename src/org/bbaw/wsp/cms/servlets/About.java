@@ -157,6 +157,11 @@ public class About extends HttpServlet {
     String dbPediaResource = protocol + "://" + host + "/resource/" + key;
     try {
       String keyEncoded = URLEncoder.encode(key, "utf-8");
+      if (key.startsWith("Category:")) {  // english server does not recognize encoded ":" in query string
+        String keyTmp = key.substring(9);
+        String keyTmpEncoded = URLEncoder.encode(keyTmp, "utf-8");
+        keyEncoded = "Category:" + keyTmpEncoded;
+      }
       String request = "/data/" + keyEncoded + ".rdf";
       dbPediaXmlStr = performGetRequest(protocol, host, port, request);
       // redirection if necessary
@@ -201,14 +206,7 @@ public class About extends HttpServlet {
   }
   
   private String getBaseUrl(HttpServletRequest request) {
-    return getServerUrl(request) + request.getContextPath();
-  }
-
-  private String getServerUrl(HttpServletRequest request) {
-    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
-      return request.getScheme() + "://" + request.getServerName();
-    else
-      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+    return request.getContextPath();
   }
 
   private String performGetRequest(String protocol, String host, String port, String requestName) throws ApplicationException {
