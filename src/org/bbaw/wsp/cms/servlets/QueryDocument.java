@@ -338,10 +338,7 @@ public class QueryDocument extends HttpServlet {
   }
 
   private String getServerUrl(HttpServletRequest request) {
-    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
-      return request.getScheme() + "://" + request.getServerName();
-    else
-      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+    return request.getScheme() + "://" + request.getServerName();
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
