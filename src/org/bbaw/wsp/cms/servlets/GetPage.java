@@ -157,10 +157,7 @@ public class GetPage extends HttpServlet {
   }
 
   private String getServerUrl(HttpServletRequest request) {
-    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
-      return request.getScheme() + "://" + request.getServerName();
-    else
-      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+    return request.getScheme() + "://" + request.getServerName();
   }
 
   private String normalizeWords(String xmlStr) throws ApplicationException {
