@@ -20,6 +20,7 @@ import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
+import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
 
 public class GetDocInfo extends HttpServlet {
@@ -52,32 +53,44 @@ public class GetDocInfo extends HttpServlet {
         out.print("<doc>");
         out.print("<id>" + docId + "</id>");
         String uri = mdRecord.getUri();
-        if ((field == null || (field != null && field.equals("uri"))) && uri != null)
+        if ((field == null || (field != null && field.equals("uri"))) && uri != null) {
+          uri = StringUtils.deresolveXmlEntities(uri);
           out.print("<uri>" + uri + "</uri>");
+        }
         String webUri = mdRecord.getWebUri();
-        if ((field == null || (field != null && field.equals("webUri"))) && webUri != null)
+        if ((field == null || (field != null && field.equals("webUri"))) && webUri != null) {
+          webUri = StringUtils.deresolveXmlEntities(webUri);
           out.print("<webUri>" + webUri + "</webUri>");
+        }
         String collectionNames = mdRecord.getCollectionNames();
         if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
           out.print("<collectionNames>" + collectionNames + "</collectionNames>");
         String author = mdRecord.getCreator();
-        if ((field == null || (field != null && field.equals("author"))) && author != null)
+        if ((field == null || (field != null && field.equals("author"))) && author != null) {
+          author = StringUtils.deresolveXmlEntities(author);
           out.print("<author>" + author + "</author>");
+        }
         String title = mdRecord.getTitle();
-        if ((field == null || (field != null && field.equals("title"))) && title != null)
+        if ((field == null || (field != null && field.equals("title"))) && title != null) {
+          title = StringUtils.deresolveXmlEntities(title);
           out.print("<title>" + title + "</title>");
+        }
         String language = mdRecord.getLanguage();
         if ((field == null || (field != null && field.equals("language"))) && language != null)
           out.print("<language>" + language + "</language>");
         String publisher = mdRecord.getPublisher();
-        if ((field == null || (field != null && field.equals("publisher"))) && publisher != null)
+        if ((field == null || (field != null && field.equals("publisher"))) && publisher != null) {
+          publisher = StringUtils.deresolveXmlEntities(publisher);
           out.print("<publisher>" + publisher + "</publisher>");
+        }
         String date = mdRecord.getYear();
         if ((field == null || (field != null && field.equals("date"))) && date != null)
           out.print("<date>" + date + "</date>");
         String description = mdRecord.getDescription();
-        if ((field == null || (field != null && field.equals("description"))) && description != null)
+        if ((field == null || (field != null && field.equals("description"))) && description != null) {
+          description = StringUtils.deresolveXmlEntities(description);
           out.print("<description>" + description + "</description>");
+        }
         String subject = mdRecord.getSubject();
         if ((field == null || (field != null && field.equals("subject"))) && subject != null)
           out.print("<subject>" + subject + "</subject>");
@@ -106,6 +119,7 @@ public class GetDocInfo extends HttpServlet {
             out.print("<person>");
             out.print("<name>" + personName + "</name>");
             String personLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+            personLink = StringUtils.deresolveXmlEntities(personLink);
             out.print("<link>" + personLink + "</link>");
             out.print("</person>");
           }
@@ -117,6 +131,7 @@ public class GetDocInfo extends HttpServlet {
           String[] places = placesStr.split("###");  // separator of places
           for (int i=0; i<places.length; i++) {
             String placeName = places[i];
+            placeName = StringUtils.deresolveXmlEntities(placeName);
             out.print("<place>");
             out.print("<name>" + placeName + "</name>");
             out.print("</place>");
@@ -173,9 +188,6 @@ public class GetDocInfo extends HttpServlet {
   }
 
   private String getServerUrl(HttpServletRequest request) {
-    if ( ( request.getServerPort() == 80 ) || ( request.getServerPort() == 443 ) )
-      return request.getScheme() + "://" + request.getServerName();
-    else
-      return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+    return request.getScheme() + "://" + request.getServerName();
   }
 }
