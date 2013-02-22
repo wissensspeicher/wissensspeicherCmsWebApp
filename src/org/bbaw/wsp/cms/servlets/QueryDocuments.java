@@ -2,6 +2,8 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -24,8 +26,6 @@ import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-
-import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 
@@ -370,8 +370,10 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</tr>");
           }
           // Link row
-          DocumentHandler docHandler = new DocumentHandler();
-          boolean docIsXml = docHandler.isDocXml(docId); 
+          boolean docIsXml = false; 
+          String mimeType = getMimeType(docId);
+          if (mimeType != null && mimeType.contains("xml"))
+            docIsXml = true;
           htmlStrBuilder.append("<tr valign=\"top\">");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
@@ -601,6 +603,13 @@ public class QueryDocuments extends HttpServlet {
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
+  }
+
+  private String getMimeType(String docId) {
+    String mimeType = null;
+    FileNameMap fileNameMap = URLConnection.getFileNameMap();  // map with 53 entries such as "application/xml"
+    mimeType = fileNameMap.getContentTypeFor(docId);
+    return mimeType;
   }
 
   private String getBaseUrl(HttpServletRequest request) {
