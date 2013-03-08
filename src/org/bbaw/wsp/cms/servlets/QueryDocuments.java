@@ -257,6 +257,26 @@ public class QueryDocuments extends HttpServlet {
             schemaName = schemaNameField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
           htmlStrBuilder.append("</tr>");
+          // project link row
+          String projectUrl = null;
+          if (docCollectionName != null) {
+            Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+            projectUrl = projectColl.getWebBaseUrl();
+            String projectName = projectColl.getName();
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+            htmlStrBuilder.append("Project: ");
+            String projectStr = docCollectionName;
+            if (projectName != null)
+              projectStr = projectName + " (Id: " + docCollectionName + ")";
+            if (projectUrl != null) {
+              projectStr = "<a href=\"" + projectUrl + "\">" + projectStr + "</a>";
+            }
+            htmlStrBuilder.append(projectStr);
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
           // description row
           Fieldable descriptionField = doc.getFieldable("description");
           if (descriptionField != null) {
@@ -382,14 +402,6 @@ public class QueryDocuments extends HttpServlet {
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
-          if (webUri == null) {
-            if (docCollectionName != null) {
-              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-              String webBaseUrl = coll.getWebBaseUrl();
-              if (webBaseUrl != null)
-                webUri = webBaseUrl;
-            }
-          }
           if (webUri != null)
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
@@ -438,6 +450,26 @@ public class QueryDocuments extends HttpServlet {
           if (docCollectionNamesField != null) {
             docCollectionName = docCollectionNamesField.stringValue();
             jsonWrapper.put("collectionName", docCollectionName);
+          }
+          if (docCollectionName != null) {
+            JSONArray jsonProject = new JSONArray();
+            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+            JSONObject jsonProjectId = new JSONObject();
+            jsonProjectId.put("id", docCollectionName);
+            jsonProject.add(jsonProjectId);
+            String projectName = coll.getName();
+            if (projectName != null) {
+              JSONObject jsonProjectName = new JSONObject();
+              jsonProjectName.put("name", projectName);
+              jsonProject.add(jsonProjectName);
+            }
+            String projectUrl = coll.getWebBaseUrl();
+            if (projectUrl != null) {
+              JSONObject jsonProjectUrl = new JSONObject();
+              jsonProjectUrl.put("url", projectUrl);
+              jsonProject.add(jsonProjectUrl);
+            }
+            jsonWrapper.put("project", jsonProject);
           }
           Fieldable docIdField = doc.getFieldable("docId");
           if(docIdField != null){
