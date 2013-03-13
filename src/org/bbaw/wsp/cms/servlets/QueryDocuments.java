@@ -261,21 +261,23 @@ public class QueryDocuments extends HttpServlet {
           String projectUrl = null;
           if (docCollectionName != null) {
             Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-            projectUrl = projectColl.getWebBaseUrl();
-            String projectName = projectColl.getName();
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("Project: ");
-            String projectStr = docCollectionName;
-            if (projectName != null)
-              projectStr = projectName + " (Id: " + docCollectionName + ")";
-            if (projectUrl != null) {
-              projectStr = "<a href=\"" + projectUrl + "\">" + projectStr + "</a>";
+            if (projectColl != null) {
+              projectUrl = projectColl.getWebBaseUrl();
+              String projectName = projectColl.getName();
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("Project: ");
+              String projectStr = docCollectionName;
+              if (projectName != null)
+                projectStr = projectName + " (Id: " + docCollectionName + ")";
+              if (projectUrl != null) {
+                projectStr = "<a href=\"" + projectUrl + "\">" + projectStr + "</a>";
+              }
+              htmlStrBuilder.append(projectStr);
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
             }
-            htmlStrBuilder.append(projectStr);
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
           }
           // description row
           Fieldable descriptionField = doc.getFieldable("description");
