@@ -4,6 +4,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.log4j.Logger;
 import org.bbaw.wsp.cms.servlets.CmsWebServletContextListener;
 
 import de.mpg.mpiwg.berlin.mpdl.lt.dict.db.LexHandler;
@@ -23,6 +24,7 @@ public class CmsWebServletContextListener implements ServletContextListener {
   private PageTransformer pageTransformer = null;
   private XslResourceTransformer highlightTransformer = null;
   private XQueryEvaluator xQueryEvaluator = null;  
+  private static Logger LOGGER = Logger.getLogger(CmsWebServletContextListener.class);
   
   public void contextInitialized(ServletContextEvent event) {
     try {
@@ -36,23 +38,23 @@ public class CmsWebServletContextListener implements ServletContextListener {
       context.setAttribute("documentDirectory", documentsDirectory);
       context.setAttribute("luceneDocumentsDirectory", luceneDocumentsDirectory);
       context.setAttribute("luceneNodesDirectory", luceneNodesDirectory);
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (documentsDirectory= \"" + documentsDirectory + "\", set in constants.properties)");
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneDocumentsDirectory= \"" + luceneDocumentsDirectory + "\", set in constants.properties)");
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneNodesDirectory= \"" + luceneNodesDirectory + "\", set in constants.properties)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (documentsDirectory= \"" + documentsDirectory + "\", set in constants.properties)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneDocumentsDirectory= \"" + luceneDocumentsDirectory + "\", set in constants.properties)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneNodesDirectory= \"" + luceneNodesDirectory + "\", set in constants.properties)");
       fragmentTransformer = new FragmentTransformer();
       context.setAttribute("fragmentTransformer", fragmentTransformer);
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (fragmentTransformer)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (fragmentTransformer)");
       pageTransformer = new PageTransformer();
       context.setAttribute("pageTransformer", pageTransformer);
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (pageTransformer)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (pageTransformer)");
       highlightTransformer = new XslResourceTransformer("highlight.xsl");
       context.setAttribute("highlightTransformer", highlightTransformer);
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (highlightTransformer)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (highlightTransformer)");
       xQueryEvaluator = new XQueryEvaluator();
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error(e);
     }
   }
 
@@ -65,9 +67,9 @@ public class CmsWebServletContextListener implements ServletContextListener {
       CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
       scheduler.end();
       Thread.sleep(1000);  // with this, also the scheduler worker threads could be closed
-      System.out.println(CmsWebServletContextListener.class.getName() + ": contextDestroyed");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextDestroyed");
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error(e);
     }
   }
 }
