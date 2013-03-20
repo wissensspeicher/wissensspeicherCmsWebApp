@@ -94,6 +94,12 @@ public class GetDocInfo extends HttpServlet {
         String subject = mdRecord.getSubject();
         if ((field == null || (field != null && field.equals("subject"))) && subject != null)
           out.print("<subject>" + subject + "</subject>");
+        String contributor = mdRecord.getContributor();
+        if ((field == null || (field != null && field.equals("contributor"))) && contributor != null)
+          out.print("<contributor>" + contributor + "</contributor>");
+        String coverage = mdRecord.getCoverage();
+        if ((field == null || (field != null && field.equals("coverage"))) && coverage != null)
+          out.print("<coverage>" + coverage + "</coverage>");
         String swd = mdRecord.getSwd();
         if ((field == null || (field != null && field.equals("swd"))) && swd != null)
           out.print("<swd>" + swd + "</swd>");
@@ -143,6 +149,9 @@ public class GetDocInfo extends HttpServlet {
         String type = mdRecord.getType();
         if ((field == null || (field != null && field.equals("type"))) && type != null)
           out.print("<type>" + type + "</type>");
+        String encoding = mdRecord.getEncoding();
+        if ((field == null || (field != null && field.equals("encoding"))) && encoding != null)
+          out.print("<encoding>" + encoding + "</encoding>");
         int pageCount = mdRecord.getPageCount();
         if (field == null || (field != null && field.equals("countPages")))
           out.print("<countPages>" + pageCount + "</countPages>");
