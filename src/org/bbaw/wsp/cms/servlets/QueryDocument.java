@@ -274,7 +274,7 @@ public class QueryDocument extends HttpServlet {
         }
       }
       String language = docMetadataRecord.getLanguage();
-      String getPageLink = request.getServletContext() + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
+      String getPageLink = request.getContextPath() + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
       xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
       String xmlContentTokenized = null;
       Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
