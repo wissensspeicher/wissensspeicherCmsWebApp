@@ -1,7 +1,9 @@
 package org.bbaw.wsp.cms.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
@@ -12,12 +14,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryMdSystem extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -29,8 +36,12 @@ public class QueryMdSystem extends HttpServlet {
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
   }
+  
+  //localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    PrintWriter out = response.getWriter();
+    Logger logger = Logger.getLogger(QueryMdSystem.class);
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
@@ -38,32 +49,31 @@ public class QueryMdSystem extends HttpServlet {
     if (language != null && language.equals("none"))
       language = null;
     String outputFormat = request.getParameter("outputFormat");
-    if (outputFormat.equals("html") || outputFormat.equals("json"))
-      response.setContentType("text/html");
-    else 
-      response.setContentType("text/xml");
+    response.setContentType("text/html");
+    //Suche nach Konzepten in "Vorhaben-Metadaten"
     String conceptSearch = request.getParameter("conceptSearch");
-    PrintWriter out = response.getWriter();
+    //Suche nach Begriffen in einzelnen Triples oder Named Graphen
+    String detailedSearch = request.getParameter("detailedSearch");
     if (query == null) {
-      out.print("no query specified: please set parameter \"query\"");
+      logger.info("no query specified: please set parameter \"query\"");
       return;
     }
     try {
       Date begin = new Date();
-      //ToDo
+
+      String baseUrl = getBaseUrl(request);
       MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
       mdQueryHandler.init();
+      logger.info("******************** ");
       
       if(conceptSearch !=null && conceptSearch.equals("true")){
-      final ArrayList<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
-      //hier hits lesen
-//      String jsonResult = mdQueryHandler.queryConcepts("marx");
+        final ArrayList<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
       
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
-      String baseUrl = getBaseUrl(request);
+      logger.info("begin json");
       
-      if (outputFormat.equals("json")) {
+      if (outputFormat.equals("json") && conceptHits != null) {
         WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
         jsonEncoder.clear();
         jsonEncoder.putStrings("searchTerm", query);
@@ -71,24 +81,25 @@ public class QueryMdSystem extends HttpServlet {
         JSONArray jsonOuterArray = new JSONArray();
         JSONObject jsonWrapper = null;
           for (int i=0; i<conceptHits.size(); i++) {
-            out.println("**************");
-            out.println("results.get(i) : "+conceptHits.get(i));
-            out.println("getSet() : "+conceptHits.get(i).getAllMDFields());
+            logger.info("**************");
+            logger.info("results.get(i) : "+conceptHits.get(i));
+            logger.info("getSet() : "+conceptHits.get(i).getAllMDFields());
             Set<String> keys = conceptHits.get(i).getAllMDFields();
             JSONArray jsonInnerArray = new JSONArray();
             for (String s : keys) {
-                out.println("concepts.get(i).getValue(s) : "+conceptHits.get(i).getValue(s));
+                logger.info("concepts.get(i).getValue(s) : "+conceptHits.get(i).getValue(s));
                 jsonWrapper = new JSONObject();
                 jsonWrapper.put(s, conceptHits.get(i).getValue(s));
                 jsonInnerArray.add(jsonWrapper);
             }
-            out.println("*******************");
+            logger.info("*******************");
             jsonOuterArray.add(jsonInnerArray);
           }
         
         jsonEncoder.putJsonObj("mdHits", jsonOuterArray);
 
-        out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+        logger.info("end json");
+        logger.info(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       }
       }
     } catch (Exception e) {
