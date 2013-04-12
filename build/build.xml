@@ -5,8 +5,8 @@
   <property name="baseLibFile" location="../wspCmsCore/dist/wspCmsCore.jar"/>
   <property name="src" location="src"/>
   <property name="lib" location="WebContent/WEB-INF/lib"/>
-  <property name="libTomcat" location="/opt/apache-tomcat-7.0.27/lib"/>
-  <property name="webappTomcat" location="/opt/apache-tomcat-7.0.27/webapps"/>
+  <property name="libTomcat" location="/opt/apache-tomcat-7.0.29/lib"/>
+  <property name="webappTomcat" location="/opt/apache-tomcat-7.0.29/webapps"/>
   <property name="build" location="WebContent/WEB-INF/classes"/>
   <property name="dist" location="dist"/>
 
