@@ -258,7 +258,6 @@ public class QueryDocument extends HttpServlet {
         elementPagePosition = fElementPagePosition.stringValue();
         posStr = posStr + presElementName + " " + elementPagePosition + ":";
       }
-      String baseUrl = getBaseUrl(request);
       String highlightQueryType = "orig";
       String highlightQueryTypeStr = "";
       String normalizationStr = "";
@@ -275,7 +274,7 @@ public class QueryDocument extends HttpServlet {
         }
       }
       String language = docMetadataRecord.getLanguage();
-      String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
+      String getPageLink = request.getServletContext() + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
       xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
       String xmlContentTokenized = null;
       Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
@@ -333,14 +332,6 @@ public class QueryDocument extends HttpServlet {
     return retStr;
   }
   
-  private String getBaseUrl(HttpServletRequest request) {
-    return getServerUrl(request) + request.getContextPath();
-  }
-
-  private String getServerUrl(HttpServletRequest request) {
-    return request.getScheme() + "://" + request.getServerName();
-  }
-
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     // Auto-generated method stub
   }
