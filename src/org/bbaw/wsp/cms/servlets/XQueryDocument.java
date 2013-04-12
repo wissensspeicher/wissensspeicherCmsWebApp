@@ -160,8 +160,7 @@ public class XQueryDocument extends HttpServlet {
     xmlStrBuilder.append("<html>");
     xmlStrBuilder.append("<head>");
     xmlStrBuilder.append("<title>Document: \"" + query + "\"</title>");
-    String baseUrl = getBaseUrl(request);
-    String cssUrl = baseUrl + "/css/page.css";
+    String cssUrl = request.getContextPath() + "/css/page.css";
     xmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
     xmlStrBuilder.append("</head>");
     xmlStrBuilder.append("<body>");
@@ -186,11 +185,11 @@ public class XQueryDocument extends HttpServlet {
         String hitName = hit.getName();
         int hitType = hit.getType();
         int hitPagePosition = hit.getHitPagePosition();
-        String getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + docPage + "&outputFormat=" + "xmlDisplay" + "&highlightElem=" + hitName + "&highlightElemPos=" + hitPagePosition;
+        String getPageLink = request.getContextPath() +  "/query/GetPage?docId=" + docId + "&page=" + docPage + "&outputFormat=" + "xmlDisplay" + "&highlightElem=" + hitName + "&highlightElemPos=" + hitPagePosition;
         String hitPres = hitName + "[" + hitPagePosition + "]";
         if (hitType == Hit.TYPE_ATTRIBUTE) {
           hitPres = "@" + hitName;
-          getPageLink = baseUrl + "/query/GetPage?docId=" + docId + "&page=" + docPage;
+          getPageLink = request.getContextPath() + "/query/GetPage?docId=" + docId + "&page=" + docPage;
         }
         String posStr = "Page " + docPage + ", " + hitPres + ":";
         int num = (page - 1) * pageSize + i + 1;
@@ -213,14 +212,6 @@ public class XQueryDocument extends HttpServlet {
     xmlStrBuilder.append("</body>");
     xmlStrBuilder.append("</html>");
     return xmlStrBuilder.toString();   
-  }
-
-  private String getBaseUrl(HttpServletRequest request) {
-    return getServerUrl(request) + request.getContextPath();
-  }
-
-  private String getServerUrl(HttpServletRequest request) {
-    return request.getScheme() + "://" + request.getServerName();
   }
 
 }
