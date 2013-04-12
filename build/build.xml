@@ -26,6 +26,7 @@
         <include name="**/*.jar"/>
       </fileset>
     </copy>
+    <delete dir="WebContent/WEB-INF/config"/>
     <copy todir="WebContent/WEB-INF/config">
       <fileset dir="../wspCmsCore/config">
         <include name="**/*.*"/>

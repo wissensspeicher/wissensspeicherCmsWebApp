@@ -14,14 +14,14 @@
         <ul>
           <li>id (required)
             <ul>
-              <li>resource identifier, e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
+              <li>resource identifier, e.g. "/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
             </ul>
           </li>
         </ul>
       </li>
       <li>Response output
         <ul>
-          <li>Example: <a href="doc/GetDocument?id=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Get test document</a></li>
+          <li>Example: <a href="doc/GetDocument?id=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Get test document</a></li>
         </ul>
       </li>
     </ul>
@@ -37,7 +37,7 @@
           </li>
           <li>docId (required)
             <ul>
-              <li>resource identifier, e.g. "/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
+              <li>resource identifier, e.g. "/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
             </ul>
           </li>
           <li>elementNames (optional)
@@ -63,7 +63,7 @@
       <li>Response output
         <ul>
           <li>Link to job</li>
-          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test resource</a></li>
+          <li>Example: <a href="doc/DocumentOperation?srcUrl=http://telota.bbaw.de:8085/exist/rest/db/AvHBriefedition/Briefe/Dok280E18xml.xml&docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml&operation=create">Create test resource</a></li>
         </ul>
       </li>
     </ul>
@@ -144,14 +144,14 @@
         <ul>
           <li>Page of resource</li>
           <li>Example: <a href="query/GetPage?docId=/test/test/Test_1789.xml">Page 1 in test resource</a></li>
-          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Page 1 in Humboldt - Ehrenberg letter</a></li>
-          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized">Page 1 in Humboldt - Ehrenberg letter, tokenized</a></li>
-          <li>Example: <a href="query/GetPage?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 1 in in Humboldt - Ehrenberg letter, tokenized, morphological forms of "ist" are highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA resource</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA resource, tokenized</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted (XML output)</a></li>
-          <li>Example: <a href="query/GetPage?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA resource, morphological forms of "ist" are highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Page 1 in Humboldt - Ehrenberg letter</a></li>
+          <li>Example: <a href="query/GetPage?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized">Page 1 in Humboldt - Ehrenberg letter, tokenized</a></li>
+          <li>Example: <a href="query/GetPage?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml&mode=tokenized&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 1 in in Humboldt - Ehrenberg letter, tokenized, morphological forms of "ist" are highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13">Page 13 in MEGA resource</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&mode=tokenized">Page 13 in in MEGA resource, tokenized</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted (XML output)</a></li>
+          <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA resource, morphological forms of "ist" are highlighted</a></li>
         </ul>
       </li>
     </ul>
@@ -352,12 +352,12 @@
       <li>Response output
         <ul>
           <li>nodes in resource which matches the query, hits are highlighted</li>
-          <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (XML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:später&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "später" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains "körper" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "bin" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:später&outputFormat=html">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all nodes which contains morphological "später" in content (HTML output)</a></li>
           <li>Example: <a href="query/QueryDocument?docId=/test/test/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in /test/test/Test_1789.xml: all nodes which contains "sentence" in original content (HTML output)</a></li>
-          <li>Example: <a href="query/QueryDocument?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&query=elementName:p">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all p elements (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&query=elementName:p">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all p elements (XML output)</a></li>
         </ul>
       </li>
     </ul>
@@ -451,7 +451,7 @@
       <li>Response output
         <ul>
           <li>Similar resources of resources with that id</li>
-          <li>Example: <a href="query/MoreLikeThis?docId=/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml">similar resources of "/MEGA/mega/docs/MEGA_A2_B004-01_ETX.xml"</a></li>
+          <li>Example: <a href="query/MoreLikeThis?docId=/mega/mega/docs/MEGA_A2_B004-01_ETX.xml">similar resources of "/mega/mega/docs/MEGA_A2_B004-01_ETX.xml"</a></li>
         </ul>
       </li>
     </ul>
@@ -463,7 +463,7 @@
         <ul>
           <li>docId (optional)
             <ul>
-              <li>resource identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
+              <li>resource identifier (e.g. "/mega/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>attribute (optional)
@@ -495,7 +495,7 @@
         <ul>
           <li>Tokens of the attribute</li>
           <li>Example: <a href="query/GetToken?attribute=docId">all token in docId field (starting from beginning)</a></li>
-          <li>Example: <a href="query/GetToken?docId=/MEGA/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenMorph&query=a">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
+          <li>Example: <a href="query/GetToken?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenMorph&query=a">in /mega/docs/MEGA_A2_B001-01_ETX.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
           <li>Example: <a href="query/GetToken?attribute=tokenMorph&query=a">in all resources: all token beginning with "a" in morphological content (starting from "a")</a></li>
         </ul>
       </li>
@@ -508,7 +508,7 @@
         <ul>
           <li>docId (required)
             <ul>
-              <li>resource identifier (e.g. "/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
+              <li>resource identifier (e.g. "/mega/mega/docs/MEGA_A2_B001-01_ETX.xml"</li>
             </ul>
           </li>
           <li>field (optional)
@@ -531,7 +531,7 @@
       <li>Response output
         <ul>
           <li>Meta info of resource</li>
-          <li>Example: <a href="query/GetDocInfo?docId=/AvH/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /AvH/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
+          <li>Example: <a href="query/GetDocInfo?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
         </ul>
       </li>
     </ul>
