@@ -1,8 +1,8 @@
 package org.bbaw.wsp.cms.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,16 +15,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraph;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraphContainer;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.ISparqlAdapter;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.SparqlAdapterFactory;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-
-import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
-import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryMdSystem extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -37,10 +37,11 @@ public class QueryMdSystem extends HttpServlet {
     super.init(config);
   }
   
-  //localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true
+  //zum testen
+  //http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
+  //http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    PrintWriter out = response.getWriter();
     Logger logger = Logger.getLogger(QueryMdSystem.class);
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
@@ -71,6 +72,7 @@ public class QueryMdSystem extends HttpServlet {
       
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
+      logger.info("elapsedTime : "+elapsedTime);
       logger.info("begin json");
       
       if (outputFormat.equals("json") && conceptHits != null) {
@@ -101,12 +103,34 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("end json");
         logger.info(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       }
+      
+      }
+      if(detailedSearch !=null && detailedSearch.equals("true")){
+        
+        final ISparqlAdapter adapter = useFuseki();
+        final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+marx");
+        System.out.println("resultContainer.size() : "+resultContainer.size());
+        for (HitGraph hitGraph : resultContainer.getAllHits()) {
+            System.out.println("hitGraph : "+hitGraph);
+        }
       }
     } catch (Exception e) {
       throw new ServletException(e);
     }
   }
 
+  public static ISparqlAdapter useFuseki() {
+    URL fusekiDatasetUrl;
+    try {
+      fusekiDatasetUrl = new URL("http://localhost:3030/ds");
+      return SparqlAdapterFactory.getDefaultAdapter(fusekiDatasetUrl);
+    } catch (final MalformedURLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return null;
+    }
+  }
+  
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }
