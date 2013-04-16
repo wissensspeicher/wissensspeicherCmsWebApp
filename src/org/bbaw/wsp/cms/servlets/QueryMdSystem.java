@@ -113,7 +113,7 @@ public class QueryMdSystem extends HttpServlet {
 
   private String getBaseUrl(HttpServletRequest request) {
     return getServerUrl(request) + request.getContextPath();
-  }
+  }   
 
   private String getServerUrl(HttpServletRequest request) {
     if ((request.getServerPort() == 80) || (request.getServerPort() == 443))
