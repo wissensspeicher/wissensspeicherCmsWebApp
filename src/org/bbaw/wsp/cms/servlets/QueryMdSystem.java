@@ -36,10 +36,10 @@ public class QueryMdSystem extends HttpServlet {
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
   }
-  
-  //zum testen
-  //http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
-  //http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json
+
+  // zum testen
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     Logger logger = Logger.getLogger(QueryMdSystem.class);
@@ -51,9 +51,9 @@ public class QueryMdSystem extends HttpServlet {
       language = null;
     String outputFormat = request.getParameter("outputFormat");
     response.setContentType("text/html");
-    //Suche nach Konzepten in "Vorhaben-Metadaten"
+    // Suche nach Konzepten in "Vorhaben-Metadaten"
     String conceptSearch = request.getParameter("conceptSearch");
-    //Suche nach Begriffen in einzelnen Triples oder Named Graphen
+    // Suche nach Begriffen in einzelnen Triples oder Named Graphen
     String detailedSearch = request.getParameter("detailedSearch");
     if (query == null) {
       logger.info("no query specified: please set parameter \"query\"");
@@ -66,52 +66,55 @@ public class QueryMdSystem extends HttpServlet {
       MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
       mdQueryHandler.init();
       logger.info("******************** ");
-      
-      if(conceptSearch !=null && conceptSearch.equals("true")){
+
+      if (conceptSearch != null && conceptSearch.equals("true")) {
         final ArrayList<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
-      
-      Date end = new Date();
-      long elapsedTime = end.getTime() - begin.getTime();
-      logger.info("elapsedTime : "+elapsedTime);
-      logger.info("begin json");
-      
-      if (outputFormat.equals("json") && conceptHits != null) {
-        WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-        jsonEncoder.clear();
-        jsonEncoder.putStrings("searchTerm", query);
-        jsonEncoder.putStrings("numberOfHits", String.valueOf(conceptHits.size()));
-        JSONArray jsonOuterArray = new JSONArray();
-        JSONObject jsonWrapper = null;
-          for (int i=0; i<conceptHits.size(); i++) {
+        Date end = new Date();
+        long elapsedTime = end.getTime() - begin.getTime();
+        logger.info("elapsedTime : " + elapsedTime);
+        logger.info("begin json");
+
+        if (outputFormat.equals("json") && conceptHits != null) {
+          WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+          jsonEncoder.clear();
+          jsonEncoder.putStrings("searchTerm", query);
+          jsonEncoder.putStrings("numberOfHits", String.valueOf(conceptHits.size()));
+          JSONArray jsonOuterArray = new JSONArray();
+          JSONObject jsonWrapper = null;
+          for (int i = 0; i < conceptHits.size(); i++) {
             logger.info("**************");
-            logger.info("results.get(i) : "+conceptHits.get(i));
-            logger.info("getSet() : "+conceptHits.get(i).getAllMDFields());
+            logger.info("results.get(i) : " + conceptHits.get(i));
+            logger.info("getSet() : " + conceptHits.get(i).getAllMDFields());
             Set<String> keys = conceptHits.get(i).getAllMDFields();
             JSONArray jsonInnerArray = new JSONArray();
             for (String s : keys) {
-                logger.info("concepts.get(i).getValue(s) : "+conceptHits.get(i).getValue(s));
-                jsonWrapper = new JSONObject();
-                jsonWrapper.put(s, conceptHits.get(i).getValue(s));
-                jsonInnerArray.add(jsonWrapper);
+              logger.info("concepts.get(i).getValue(s) : " + conceptHits.get(i).getValue(s));
+              jsonWrapper = new JSONObject();
+              jsonWrapper.put(s, conceptHits.get(i).getValue(s));
+              jsonInnerArray.add(jsonWrapper);
             }
             logger.info("*******************");
             jsonOuterArray.add(jsonInnerArray);
           }
-        
-        jsonEncoder.putJsonObj("mdHits", jsonOuterArray);
 
-        logger.info("end json");
-        logger.info(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+          jsonEncoder.putJsonObj("mdHits", jsonOuterArray);
+
+          logger.info("end json");
+          logger.info(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+        }
+
       }
-      
-      }
-      if(detailedSearch !=null && detailedSearch.equals("true")){
-        
+      if (detailedSearch != null && detailedSearch.equals("true")) {
+
         final ISparqlAdapter adapter = useFuseki();
         final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+marx");
-        System.out.println("resultContainer.size() : "+resultContainer.size());
+        Date end = new Date();
+        long elapsedTime = end.getTime() - begin.getTime();
+        logger.info("elapsedTime : " + elapsedTime);
+        logger.info("begin json");
+        logger.info("resultContainer.size() : " + resultContainer.size());
         for (HitGraph hitGraph : resultContainer.getAllHits()) {
-            System.out.println("hitGraph : "+hitGraph);
+          logger.info("hitGraph : " + hitGraph);
         }
       }
     } catch (Exception e) {
@@ -130,14 +133,14 @@ public class QueryMdSystem extends HttpServlet {
       return null;
     }
   }
-  
+
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }
 
   private String getBaseUrl(HttpServletRequest request) {
     return getServerUrl(request) + request.getContextPath();
-  }   
+  }
 
   private String getServerUrl(HttpServletRequest request) {
     if ((request.getServerPort() == 80) || (request.getServerPort() == 443))
