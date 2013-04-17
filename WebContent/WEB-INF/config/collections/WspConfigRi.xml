@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsp>
+  <collection>
+    <id>ri</id>
+    <name>Regesta Imperii – Regesten Kaiser Friedrichs III.</name>
+    <url>
+      <webBaseUrl>http://www.bbaw.de/bbaw/Forschung/Forschungsprojekte/regestaimperii/de/Startseite</webBaseUrl>
+      <dataUrl>http://www.bbaw.de/forschung/regestaimperii/uebersicht</dataUrl>
+    </url>
+    <mainLanguage>ger</mainLanguage>
+    <formats>
+      <format>PDF</format>
+    </formats> 
+  </collection>
+</wsp>
+

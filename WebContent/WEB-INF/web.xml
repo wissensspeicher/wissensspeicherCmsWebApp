@@ -164,5 +164,15 @@
     <servlet-name>TestApp2</servlet-name>
     <url-pattern>/VAADIN/*</url-pattern>
   </servlet-mapping>
+    <servlet>
+    <description>QueryMdSystem</description>
+    <display-name>QueryMdSystem</display-name>
+    <servlet-name>QueryMdSystem</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.QueryMdSystem</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QueryMdSystem</servlet-name>
+    <url-pattern>/query/QueryMdSystem</url-pattern>
+  </servlet-mapping>
   
 </web-app>

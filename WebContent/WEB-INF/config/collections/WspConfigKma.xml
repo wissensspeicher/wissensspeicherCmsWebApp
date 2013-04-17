@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<wsp>
+  <collection>
+    <id>kma</id>
+    <name>Kritische Karl-Philipp-Moritz-Ausgabe</name>
+    <url>
+      <webBaseUrl>http://www.bbaw.de/bbaw/Forschung/Forschungsprojekte/moritz/de/Startseite</webBaseUrl>
+      <dataUrl>http://www.bbaw.de/bbaw/Forschung/Forschungsprojekte/moritz/de/Startseite</dataUrl> 
+    </url>
+    <mainLanguage>ger</mainLanguage>
+    <formats>
+      <format>html</format>
+    </formats>
+  </collection>
+</wsp>
