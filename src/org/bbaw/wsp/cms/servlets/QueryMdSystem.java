@@ -1,11 +1,11 @@
 package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -19,12 +19,22 @@ import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraph;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraphContainer;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.IQueryStrategy;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.ISparqlAdapter;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.QueryStrategyJena;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.SparqlAdapter;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.SparqlAdapterFactory;
+import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.JenaMain;
+import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.RdfHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.ResultSet;
+
+import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class QueryMdSystem extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -50,7 +60,14 @@ public class QueryMdSystem extends HttpServlet {
     if (language != null && language.equals("none"))
       language = null;
     String outputFormat = request.getParameter("outputFormat");
-    response.setContentType("text/html");
+    if (outputFormat == null)
+      outputFormat = "html";
+    if (outputFormat.equals("xml"))
+      response.setContentType("text/xml");
+    else if (outputFormat.equals("html") || outputFormat.equals("json"))
+      response.setContentType("text/html");
+    else 
+      response.setContentType("text/xml");
     // Suche nach Konzepten in "Vorhaben-Metadaten"
     String conceptSearch = request.getParameter("conceptSearch");
     // Suche nach Begriffen in einzelnen Triples oder Named Graphen
@@ -102,11 +119,25 @@ public class QueryMdSystem extends HttpServlet {
           logger.info("end json");
           logger.info(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
         }
-
+        if (outputFormat.equals("html") && conceptHits != null) {
+          StringBuilder htmlStrBuilder = new StringBuilder();
+          String cssUrl = request.getContextPath() + "/css/page.css";
+          htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+          htmlStrBuilder.append("<html>");
+          htmlStrBuilder.append("<head>");
+          htmlStrBuilder.append("<title>Query: " + query + "</title>");
+          htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+          htmlStrBuilder.append("</head>");
+          htmlStrBuilder.append("<body>");
+          htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
+          htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+          htmlStrBuilder.append("</table>");
+          htmlStrBuilder.append("<p/>");
+        }
       }
       if (detailedSearch != null && detailedSearch.equals("true")) {
-
-        final ISparqlAdapter adapter = useFuseki();
+        logger.info("detailed Search");
+        final ISparqlAdapter adapter = useJena();
         final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+marx");
         Date end = new Date();
         long elapsedTime = end.getTime() - begin.getTime();
@@ -134,6 +165,24 @@ public class QueryMdSystem extends HttpServlet {
     }
   }
 
+
+  public static ISparqlAdapter useJena() {
+    final JenaMain jenamain = new JenaMain();
+    try {
+      jenamain.initStore();
+      final RdfHandler handler = new RdfHandler();
+      final Dataset dataset = jenamain.getDataset();
+      final IQueryStrategy<Map<URL, ResultSet>> queryStrategy = new QueryStrategyJena(handler, dataset);
+      final ISparqlAdapter adapter = new SparqlAdapter<>(queryStrategy);
+      return adapter;
+    } catch (final ApplicationException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return null;
+    }
+    // jenamain.makeDefaultGraphUnion();
+  }
+  
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }
