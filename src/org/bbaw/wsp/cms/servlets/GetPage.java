@@ -67,8 +67,7 @@ public class GetPage extends HttpServlet {
       outputFormat = "html";
     String cssUrl = request.getParameter("cssUrl");
     if (cssUrl == null) {
-      String baseUrl = getBaseUrl(request);
-      cssUrl = baseUrl + "/css/page.css";
+      cssUrl = request.getContextPath() + "/css/page.css";
     }
     int page = 1;
     if (pageStr != null)
@@ -91,7 +90,7 @@ public class GetPage extends HttpServlet {
         String head = "<head><title>" + title + "</title><link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/></head>";
         String htmlStr = "<h2>Document page view</h2>";
         htmlStr = htmlStr +	"There is no single page preview for document type: " + mimeType + ". Please download the whole file: ";
-        String docUrl = getBaseUrl(request) + "/doc/GetDocument?id=" + docId;
+        String docUrl = request.getContextPath() + "/doc/GetDocument?id=" + docId;
         String webUri = mdRecord.getWebUri();
         if (webUri != null)
           docUrl = webUri;
@@ -151,14 +150,6 @@ public class GetPage extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }  
-
-  private String getBaseUrl(HttpServletRequest request) {
-    return getServerUrl(request) + request.getContextPath();
-  }
-
-  private String getServerUrl(HttpServletRequest request) {
-    return request.getScheme() + "://" + request.getServerName();
-  }
 
   private String normalizeWords(String xmlStr) throws ApplicationException {
     try {

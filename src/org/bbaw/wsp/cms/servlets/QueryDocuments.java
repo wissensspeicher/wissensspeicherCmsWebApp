@@ -124,7 +124,7 @@ public class QueryDocuments extends HttpServlet {
         out.print("</result>");
       } else if (outputFormat.equals("html")) {
         StringBuilder htmlStrBuilder = new StringBuilder();
-        String cssUrl = baseUrl + "/css/page.css";
+        String cssUrl = request.getContextPath() + "/css/page.css";
         htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
         htmlStrBuilder.append("<html>");
         htmlStrBuilder.append("<head>");
