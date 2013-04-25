@@ -20,6 +20,7 @@ import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraph;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraphContainer;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitStatement;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.IQueryStrategy;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.ISparqlAdapter;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.QueryStrategyJena;
@@ -35,7 +36,6 @@ import org.json.simple.JSONValue;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ResultSet;
 import com.sun.org.apache.bcel.internal.generic.FCONST;
-import com.vaadin.terminal.gwt.server.AbstractCommunicationManager.Response;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -109,8 +109,8 @@ public class QueryMdSystem extends HttpServlet {
 
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
     logger.info("detailed Search");
-    // final ISparqlAdapter adapter = useFuseki();
-    final ISparqlAdapter adapter = useJena();
+    final ISparqlAdapter adapter = useFuseki();
+    // final ISparqlAdapter adapter = useJena();
     final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+" + query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
@@ -137,17 +137,36 @@ public class QueryMdSystem extends HttpServlet {
       int counter = 0;
       for (final HitGraph hitGraph : resultContainer.getAllHits()) {
         htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
-        htmlStrBuilder.append("\n\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
-        htmlStrBuilder.append("\n\t\t\t<li><strong>Score:</strong> " + hitGraph.calcScore() + "</li>");
-        htmlStrBuilder.append("\n\t\t\t\t<ul>");
-        htmlStrBuilder.append("\n\t\t\t\t</ul>");
-        htmlStrBuilder.append("\n\t\t\t</li>");
+        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Score:</strong> " + hitGraph.calcScore() + "</li>");
+        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Literal:</strong> " + hitStatement.getLiteral() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+        }
+
+        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
       }
 
       htmlStrBuilder.append("\n\t\t</ul>");
       htmlStrBuilder.append("\n\t</body>");
       htmlStrBuilder.append("\n</html>");
       out.println(htmlStrBuilder.toString()); // print html
+    }
+    /*
+     * ..:::::::::::..
+     */
+    /*
+     * ..:: json ::..
+     */
+    else if (outputFormat.equals("json")) {
+
     }
     /*
      * ..:::::::::::..
