@@ -2,11 +2,13 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -40,6 +42,9 @@ import com.sun.org.apache.bcel.internal.generic.FCONST;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class QueryMdSystem extends HttpServlet {
+  private static final String MD_HITS = "mdHits";
+  private static final String NUMBER_OF_HITS = "numberOfHits";
+  private static final String SEARCH_TERM = "searchTerm";
   private static final long serialVersionUID = 1L;
 
   public QueryMdSystem() {
@@ -166,6 +171,28 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: json ::..
      */
     else if (outputFormat.equals("json")) {
+      response.setContentType("application/json"); // indicates that this content is pure json
+      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+      jsonEncoder.putStrings(SEARCH_TERM, query);
+      jsonEncoder.putStrings(NUMBER_OF_HITS, resultContainer.size() + " ");
+      final JSONArray jResultContainers = new JSONArray();
+      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        final JSONArray jHitGraphes = new JSONArray();
+        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+          final JSONObject jHitStatement = new JSONObject();
+          jHitStatement.put("subject", hitStatement.getSubject());
+          jHitStatement.put("predicate", hitStatement.getPredicate().toExternalForm());
+          jHitStatement.put("literal", hitStatement.getLiteral());
+          jHitStatement.put("parentSubject", hitStatement.getSubjParent());
+          jHitStatement.put("parentPredicate", hitStatement.getPredParent());
+          jHitStatement.put("score", hitStatement.getScore());
+          jHitGraphes.add(jHitStatement);
+        }
+        jResultContainers.add(jHitGraphes);
+      }
+      jsonEncoder.putJsonObj(MD_HITS, jResultContainers);
+      final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
+      out.println(jsonString); // response
 
     }
     /*
@@ -206,8 +233,8 @@ public class QueryMdSystem extends HttpServlet {
       response.setContentType("application/json"); // indicates that this content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.clear();
-      jsonEncoder.putStrings("searchTerm", query);
-      jsonEncoder.putStrings("numberOfHits", String.valueOf(conceptHits.size()));
+      jsonEncoder.putStrings(SEARCH_TERM, query);
+      jsonEncoder.putStrings(NUMBER_OF_HITS, String.valueOf(conceptHits.size()));
       final JSONArray jsonOuterArray = new JSONArray();
       JSONObject jsonWrapper = null;
       for (int i = 0; i < conceptHits.size(); i++) {
@@ -226,7 +253,7 @@ public class QueryMdSystem extends HttpServlet {
         jsonOuterArray.add(jsonInnerArray);
       }
 
-      jsonEncoder.putJsonObj("mdHits", jsonOuterArray);
+      jsonEncoder.putJsonObj(MD_HITS, jsonOuterArray);
 
       logger.info("end json");
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
