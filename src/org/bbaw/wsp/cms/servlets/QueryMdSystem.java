@@ -144,7 +144,8 @@ public class QueryMdSystem extends HttpServlet {
         htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
         htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
         htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
-        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Score:</strong> " + hitGraph.calcScore() + "</li>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Average score:</strong>" + hitGraph.getAvgScore() + "</li>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Highest score:</strong>" + hitGraph.getHighestScore() + "</li>");
         for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
           htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
@@ -178,6 +179,12 @@ public class QueryMdSystem extends HttpServlet {
       final JSONArray jResultContainers = new JSONArray();
       for (final HitGraph hitGraph : resultContainer.getAllHits()) {
         final JSONArray jHitGraphes = new JSONArray();
+        final JSONObject avgScoreJsonObj = new JSONObject();
+        avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
+        jHitGraphes.add(avgScoreJsonObj);
+        final JSONObject maxScoreJsonObj = new JSONObject();
+        maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
+        jHitGraphes.add(maxScoreJsonObj);
         for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
           final JSONObject jHitStatement = new JSONObject();
           jHitStatement.put("subject", hitStatement.getSubject());
