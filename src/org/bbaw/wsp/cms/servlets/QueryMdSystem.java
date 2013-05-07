@@ -329,9 +329,7 @@ public class QueryMdSystem extends HttpServlet {
     final JenaMain jenamain = new JenaMain();
     try {
       jenamain.initStore();
-      final RdfHandler handler = new RdfHandler();
-      final Dataset dataset = jenamain.getDataset();
-      final IQueryStrategy<Map<URL, ResultSet>> queryStrategy = new QueryStrategyJena(handler, dataset);
+      final IQueryStrategy<Map<URL, ResultSet>> queryStrategy = new QueryStrategyJena(jenamain);
       final ISparqlAdapter adapter = new SparqlAdapter<>(queryStrategy);
       return adapter;
     } catch (final ApplicationException e) {
