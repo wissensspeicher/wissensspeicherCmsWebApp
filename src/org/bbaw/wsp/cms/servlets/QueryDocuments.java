@@ -151,6 +151,7 @@ public class QueryDocuments extends HttpServlet {
         if (language != null)
           htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
         htmlStrBuilder.append("<input type=\"hidden\" name=\"page\" id=\"pageId\" value=\"" + page + "\"/>");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"pageSize\" id=\"pageSizeId\" value=\"" + pageSize + "\"/>");
         htmlStrBuilder.append("<input type=\"hidden\" name=\"sortBy\" id=\"sortById\" value=\"" + sortByStr + "\"/>");
         htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
         htmlStrBuilder.append("<table>");
@@ -162,9 +163,9 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<col width=\"70%\"/>");
         htmlStrBuilder.append("</colgroup>");
         htmlStrBuilder.append("<tr>");
-        int countPages = hitsSize / 10 + 1;
-        if (hitsSize % 10 == 0) // modulo operator: e.g. 280 % 10 is 0
-          countPages = hitsSize / 10;
+        int countPages = hitsSize / pageSize + 1;
+        if (hitsSize % pageSize == 0) // modulo operator: e.g. 280 % 10 is 0
+          countPages = hitsSize / pageSize;
         int pageLeft = page - 1;
         if (page == 1)
           pageLeft = 1;
@@ -459,19 +460,21 @@ public class QueryDocuments extends HttpServlet {
             JSONObject jsonProjectId = new JSONObject();
             jsonProjectId.put("id", docCollectionName);
             jsonProject.add(jsonProjectId);
-            String projectName = coll.getName();
-            if (projectName != null) {
-              JSONObject jsonProjectName = new JSONObject();
-              jsonProjectName.put("name", projectName);
-              jsonProject.add(jsonProjectName);
+            if (coll != null) {
+              String projectName = coll.getName();
+              if (projectName != null) {
+                JSONObject jsonProjectName = new JSONObject();
+                jsonProjectName.put("name", projectName);
+                jsonProject.add(jsonProjectName);
+              }
+              String projectUrl = coll.getWebBaseUrl();
+              if (projectUrl != null) {
+                JSONObject jsonProjectUrl = new JSONObject();
+                jsonProjectUrl.put("url", projectUrl);
+                jsonProject.add(jsonProjectUrl);
+              }
+              jsonWrapper.put("project", jsonProject);
             }
-            String projectUrl = coll.getWebBaseUrl();
-            if (projectUrl != null) {
-              JSONObject jsonProjectUrl = new JSONObject();
-              jsonProjectUrl.put("url", projectUrl);
-              jsonProject.add(jsonProjectUrl);
-            }
-            jsonWrapper.put("project", jsonProject);
           }
           Fieldable docIdField = doc.getFieldable("docId");
           if(docIdField != null){
@@ -489,9 +492,11 @@ public class QueryDocuments extends HttpServlet {
           }
           if (docCollectionName != null) {
             Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-            String webBaseUrl = coll.getWebBaseUrl();
-            if (webBaseUrl != null)
-              jsonWrapper.put("webBaseUri", webBaseUrl);
+            if (coll != null) {
+              String webBaseUrl = coll.getWebBaseUrl();
+              if (webBaseUrl != null)
+                jsonWrapper.put("webBaseUri", webBaseUrl);
+            }
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
