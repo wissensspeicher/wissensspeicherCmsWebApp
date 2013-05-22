@@ -150,7 +150,7 @@ public class QueryMdSystem extends HttpServlet {
           htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Literal:</strong> " + hitStatement.getLiteral() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Literal:</strong> " + hitStatement.getObject().asLiteral() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
@@ -188,8 +188,8 @@ public class QueryMdSystem extends HttpServlet {
         for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
           final JSONObject jHitStatement = new JSONObject();
           jHitStatement.put("subject", hitStatement.getSubject());
-          jHitStatement.put("predicate", hitStatement.getPredicate().toExternalForm());
-          jHitStatement.put("literal", hitStatement.getLiteral());
+          jHitStatement.put("predicate", hitStatement.getPredicate().toString());
+          jHitStatement.put("literal", hitStatement.getObject().asLiteral());
           jHitStatement.put("parentSubject", hitStatement.getSubjParent());
           jHitStatement.put("parentPredicate", hitStatement.getPredParent());
           jHitStatement.put("score", hitStatement.getScore());
@@ -299,7 +299,7 @@ public class QueryMdSystem extends HttpServlet {
       int counter = 0;
 
       for (final ConceptQueryResult conceptHit : conceptHits) {
-        htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
+        htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong> is of type : "+conceptHit.getValue("type"));
 
         htmlStrBuilder.append("\n\t\t\t\t<ul>");
         for (final String mdField : conceptHit.getAllMDFields()) {
