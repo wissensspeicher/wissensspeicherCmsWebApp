@@ -201,7 +201,8 @@ public class About extends HttpServlet {
       String request = "/pit/2-1/getAspects.php?content=" + personNameEncoded;
       if (otherNames != null) {
         String otherNamesEncoded = URLEncoder.encode(otherNames, "utf-8");
-        request = request + " " + otherNamesEncoded;
+        String blankEncoded = URLEncoder.encode(" ", "utf-8");
+        request = request + blankEncoded + otherNamesEncoded;
       }
       request = request + "&format=xml";
       pdrXmlStr = performGetRequest(protocol, host, port, request);
