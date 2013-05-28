@@ -64,6 +64,7 @@ public class QueryMdSystem extends HttpServlet {
   protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
     // HTTP response print writer
     final PrintWriter out = response.getWriter();
+    // bla
 
     final Logger logger = Logger.getLogger(QueryMdSystem.class);
     request.setCharacterEncoding("utf-8");
