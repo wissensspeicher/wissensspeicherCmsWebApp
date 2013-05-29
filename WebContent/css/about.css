@@ -32,14 +32,14 @@ img.depiction { float:left; border:0; width: 12em; }
 div.subjects { clear:both; margin-top:0.4em; margin-left: 0.2em; }
 div.broaderTerms { margin-top:0.4em; margin-left: 0.2em; }
 div.relatedTerms { margin-top:0.4em; margin-left: 0.2em; }
-div.wiki { padding-top:0.4em; margin-left: 0.2em; }
+div.wiki { clear:both; padding-top:0.4em; margin-left: 0.2em; }
 div.externalLinks { margin-top:0.4em; margin-left: 0.2em; }
 ul.urls { margin-top:0; margin-left:1em; padding:0; list-style-type: none; }
 div.ddc { margin-top:0.4em; margin-left: 0.2em; }
 div.swd { margin-top:0.4em; margin-left: 0.2em; }
 
 /* PDR persons    */
-div.pdr { margin-top:0.4em; margin-left: 0.2em; }
+div.pdr { clear:both; margin-top:0.4em; margin-left: 0.2em; }
 div.person { margin-left:0.2em; }
 div.name { font-weight:bold; }
 div.otherNames:before { content: 'Other names: '; margin-left: 0.2em; }
@@ -49,6 +49,7 @@ div.death:before { content: 'Death: '; margin-left: 0.2em; }
 ul.furtherProviders { margin-top:0; margin-left:0.2em; padding:0; list-style-type: none; }
 ul.furtherProviders:before { content: 'See also: '; }
 li.provider { margin-left:0.4em; }
+ul.pitPersonLink { margin-top:0; margin-left:0.2em; padding:0; list-style-type: none; }
 
 /* links   */
 a.logo:link {text-decoration: none; }
