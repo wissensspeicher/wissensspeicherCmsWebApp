@@ -178,7 +178,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
         int fromDisplay = from + 1;
         int toDisplay = to + 1;
-        if (hitsSize < to)
+        if (hitsSize < toDisplay)
           toDisplay = hitsSize;
         htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
         htmlStrBuilder.append("</tr>");
