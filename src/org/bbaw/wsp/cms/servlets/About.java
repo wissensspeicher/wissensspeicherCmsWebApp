@@ -110,12 +110,17 @@ public class About extends HttpServlet {
       if (type.equals("person")) {
         String surName = person.getSurname();
         String foreName = person.getForename();
-        String pdrXmlStr = getPdrXmlStr(surName, foreName);
-        if (pdrXmlStr == null)
-          pdrXmlStr = "";
-        pdrXmlStr = pdrXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
+        String pdrPitXmlStr = getPdrPitXmlStr(surName, foreName);
+        if (pdrPitXmlStr == null)
+          pdrPitXmlStr = "";
+        pdrPitXmlStr = pdrPitXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
+        String pdrConcordancerXmlStr = getPdrConcordancerXmlStr(surName, foreName);
+        if (pdrConcordancerXmlStr == null)
+          pdrConcordancerXmlStr = "";
+        pdrConcordancerXmlStr = pdrConcordancerXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         aboutXmlStrBuilder.append("<pdr>");
-        aboutXmlStrBuilder.append(pdrXmlStr);
+        aboutXmlStrBuilder.append(pdrPitXmlStr);
+        aboutXmlStrBuilder.append(pdrConcordancerXmlStr);
         aboutXmlStrBuilder.append("</pdr>");
       }
       aboutXmlStrBuilder.append("</about>");
@@ -186,7 +191,28 @@ public class About extends HttpServlet {
     return dbPediaXmlStr;
   }
   
-  private String getPdrXmlStr(String personName, String otherNames) throws ApplicationException {
+  private String getPdrPitXmlStr(String personName, String otherNames) throws ApplicationException {
+    String pdrXmlStr = null;
+    String protocol = "http"; 
+    String host = "pdrdev.bbaw.de"; 
+    String port = "80"; 
+    try {
+      String personNameEncoded = URLEncoder.encode(personName, "utf-8");
+      String request = "/pit/2-1/getAspects.php?content=" + personNameEncoded;
+      if (otherNames != null) {
+        String otherNamesEncoded = URLEncoder.encode(otherNames, "utf-8");
+        String blankEncoded = URLEncoder.encode(" ", "utf-8");
+        request = request + blankEncoded + otherNamesEncoded;
+      }
+      request = request + "&format=xml";
+      pdrXmlStr = performGetRequest(protocol, host, port, request);
+    } catch (UnsupportedEncodingException e) {
+      throw new ApplicationException(e);
+    }
+    return pdrXmlStr;
+  }
+  
+  private String getPdrConcordancerXmlStr(String personName, String otherNames) throws ApplicationException {
     String pdrXmlStr = null;
     String protocol = "http"; 
     String host = "pdrdev.bbaw.de"; 
