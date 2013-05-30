@@ -19,13 +19,15 @@ public class MySqlConnector {
 			// This will load the MySQL driver, each DB has its own driver
 			Class.forName("com.mysql.jdbc.Driver");
 			// Setup the connection with the DB
-			connect = DriverManager.getConnection("jdbc:mysql://localhost/feedback?"
-					+ "user=sqluser&password=testuser");
+			connect = DriverManager.getConnection("jdbc:mysql://localhost/dbreq?"
+					+ "user=root&password=toor");
 
 			// Statements allow to issue SQL queries to the database
 			statement = connect.createStatement();
 			// Result set get the result of the SQL query
-			resultSet = statement.executeQuery("select * from dbreq.COMMENTS");
+
+			resultSet = statement.executeQuery("select * from dbreq");
+			System.out.println(resultSet);
 
 		} catch (Exception e) {
 			throw e;
