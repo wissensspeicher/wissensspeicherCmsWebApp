@@ -97,6 +97,7 @@ public class QueryMdSystem extends HttpServlet {
       final Date begin = new Date();
 
       final String baseUrl = getBaseUrl(request);
+      logger.info("baseUrl : "+baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
       mdQueryHandler.init();
       logger.info("******************** ");
@@ -118,10 +119,11 @@ public class QueryMdSystem extends HttpServlet {
     final ISparqlAdapter adapter = useFuseki();
     try{
       //als mögliches subjekt validieren
-      URI queryAsUri = new URL(query).toURI();
+      URL queryAsUri = new URL(query);
+      logger.info("queryAsUri : "+queryAsUri);
       // das 'ganz normale pattern' mit query als subjekt 
-//      adapter.buildSparqlQuery(query, "?p", "?o");
-    }catch (MalformedURLException | URISyntaxException mal){
+      adapter.buildSparqlQuery(queryAsUri, "?p", "?o");
+    }catch (MalformedURLException mal){
       logger.info("query is not a valid URI");
     }
 //    hier query als predikat identifizieren. evtl mit einer neuen schema-klasse und Validator 
