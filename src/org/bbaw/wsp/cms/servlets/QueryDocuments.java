@@ -178,7 +178,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
         int fromDisplay = from + 1;
         int toDisplay = to + 1;
-        if (hitsSize < to)
+        if (hitsSize < toDisplay)
           toDisplay = hitsSize;
         htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
         htmlStrBuilder.append("</tr>");
@@ -470,7 +470,8 @@ public class QueryDocuments extends HttpServlet {
               String projectUrl = coll.getWebBaseUrl();
               if (projectUrl != null) {
                 JSONObject jsonProjectUrl = new JSONObject();
-                jsonProjectUrl.put("url", projectUrl);
+                String encoded = URIUtil.encodeQuery(projectUrl);
+                jsonProjectUrl.put("url", encoded);
                 jsonProject.add(jsonProjectUrl);
               }
               jsonWrapper.put("project", jsonProject);
@@ -483,19 +484,23 @@ public class QueryDocuments extends HttpServlet {
           Fieldable docUriField = doc.getFieldable("uri");
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
-            jsonWrapper.put("uri", docUri);
+            String encoded = URIUtil.encodeQuery(docUri);
+            jsonWrapper.put("uri", encoded);
           }
           Fieldable webUriField = doc.getFieldable("webUri");
           if (webUriField != null) {
             String webUri = webUriField.stringValue();
-            jsonWrapper.put("webUri", webUri);
+            String encoded = URIUtil.encodeQuery(webUri);
+            jsonWrapper.put("webUri", encoded);
           }
           if (docCollectionName != null) {
             Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
             if (coll != null) {
               String webBaseUrl = coll.getWebBaseUrl();
-              if (webBaseUrl != null)
-                jsonWrapper.put("webBaseUri", webBaseUrl);
+              if (webBaseUrl != null) {
+                String encoded = URIUtil.encodeQuery(webBaseUrl);
+                jsonWrapper.put("webBaseUri", encoded);
+              }
             }
           }
           Fieldable docAuthorField = doc.getFieldable("author");
@@ -554,7 +559,7 @@ public class QueryDocuments extends HttpServlet {
               String personName = persons[j];
               JSONObject persNameAndLink = new JSONObject();
               persNameAndLink.put("name", personName);
-              String personLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+              String personLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(personName) + "&type=person";
               if (lang != null && ! lang.isEmpty())
                 personLink = personLink + "&language=" + lang;
               persNameAndLink.put("link", personLink);

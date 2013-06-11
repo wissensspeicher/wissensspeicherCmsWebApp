@@ -2,13 +2,13 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -17,27 +17,26 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraph;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitGraphContainer;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.HitStatement;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.IQueryStrategy;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.ISparqlAdapter;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.QueryStrategyJena;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.SparqlAdapter;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.adapter.SparqlAdapterFactory;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.conceptsearch.ConceptQueryResult;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraph;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraphContainer;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitStatement;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.IQueryStrategy;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.ISparqlAdapter;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.QueryStrategyJena;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAdapter;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAdapterFactory;
 import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.JenaMain;
-import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.RdfHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ResultSet;
-import com.sun.org.apache.bcel.internal.generic.FCONST;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -70,6 +69,7 @@ public class QueryMdSystem extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     final String query = request.getParameter("query");
+    new RequestStatisticAnalyser(query);
     String language = request.getParameter("language");
     if (language != null && language.equals("none")) {
       language = null;
@@ -97,12 +97,13 @@ public class QueryMdSystem extends HttpServlet {
       final Date begin = new Date();
 
       final String baseUrl = getBaseUrl(request);
+      logger.info("baseUrl : "+baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
       mdQueryHandler.init();
       logger.info("******************** ");
 
       if (conceptSearch != null && conceptSearch.equals("true")) {
-        handleConceptQuery(request, response, out, logger, query, outputFormat, begin, mdQueryHandler);
+        handleConceptQuery(request, response, out, logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
       }
 
       if (detailedSearch != null && detailedSearch.equals("true")) {
@@ -116,7 +117,22 @@ public class QueryMdSystem extends HttpServlet {
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
     logger.info("detailed Search");
     final ISparqlAdapter adapter = useFuseki();
-    // final ISparqlAdapter adapter = useJena();
+    try{
+      //als mögliches subjekt validieren
+      URL queryAsUri = new URL(query);
+      logger.info("queryAsUri : "+queryAsUri);
+      // das 'ganz normale pattern' mit query als subjekt 
+      adapter.buildSparqlQuery(queryAsUri, "?p", "?o");
+    }catch (MalformedURLException mal){
+      logger.info("query is not a valid URI");
+    }
+//    hier query als predikat identifizieren. evtl mit einer neuen schema-klasse und Validator 
+//    try{
+//      // das 'ganz normale pattern' mit query als predikat
+//      adapter.buildSparqlQuery(query, predicate, literal);
+//    }catch (MalformedURLException | URISyntaxException mal){
+//      logger.info("query is not a valid URI");
+//    }
     final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+" + query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
@@ -173,7 +189,8 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: json ::..
      */
     else if (outputFormat.equals("json")) {
-      response.setContentType("application/json"); // indicates that this content is pure json
+      response.setContentType("application/json"); // indicates that this
+                                                   // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.putStrings(SEARCH_TERM, query);
       jsonEncoder.putStrings(NUMBER_OF_HITS, resultContainer.size() + " ");
@@ -226,8 +243,9 @@ public class QueryMdSystem extends HttpServlet {
    *          String, 'json' or 'html'
    * @param begin
    * @param mdQueryHandler
+   * @throws URIException
    */
-  private void handleConceptQuery(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out, final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler) {
+  private void handleConceptQuery(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out, final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
     final ArrayList<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
@@ -238,7 +256,8 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: show json ::..
      */
     if (outputFormat.equals("json") && conceptHits != null) {
-      response.setContentType("application/json"); // indicates that this content is pure json
+      response.setContentType("application/json"); // indicates that this
+                                                   // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.clear();
       jsonEncoder.putStrings(SEARCH_TERM, query);
@@ -304,8 +323,32 @@ public class QueryMdSystem extends HttpServlet {
 
         htmlStrBuilder.append("\n\t\t\t\t<ul>");
         for (final String mdField : conceptHit.getAllMDFields()) {
-          htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " + conceptHit.getValue(mdField));
+          ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
+          int size = conceptHit.getValue(mdField).size();
+          if (size > 1) {
+            logger.info("conceptHits.get(i).getValue(s).size() > 1");
+            ArrayList<String> values = conceptHit.getValue(mdField);
+            for (String value : values) {
+              String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+              logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
+              String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+              detailedSearchLinkList.add(nameAndLink);
+            }
+          } else if (size == 1) {
+            logger.info("conceptHits.get(i).getValue(s).size() == 1");
+            String value = conceptHit.getValue(mdField).get(0);
+            String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+
+            String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+            logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
+            logger.info("nameAndLink : " + nameAndLink);
+            detailedSearchLinkList.add(nameAndLink);
+          }
+          htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " + detailedSearchLinkList);
           htmlStrBuilder.append("</li>");
+          // htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " +
+          // conceptHit.getValue(mdField));
+          // htmlStrBuilder.append("</li>");
         }
         htmlStrBuilder.append("\n\t\t\t\t</ul>");
         htmlStrBuilder.append("\n\t\t\t</li>");
