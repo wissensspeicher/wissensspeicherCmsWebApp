@@ -6,95 +6,146 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 public class MySqlConnector {
-	private Connection connect = null;
-	private Statement statement = null;
-	private PreparedStatement preparedStatement = null;
-	private ResultSet resultSet = null;
+    private Connection connect = null;
+    private Statement statement = null;
+    private PreparedStatement preparedStatement = null;
+    private ResultSet resultSet = null;
+    private final String server;
+    private final String port;
+    private final String database;
 
-	public void readDataBase() throws Exception {
+    /**
+     * 
+     * @param server
+     * @param port
+     * @param database
+     */
+    public MySqlConnector(final String server, final String port,
+	    final String database) {
+	this.server = server;
+	this.port = port;
+	this.database = database;
 
-		try {
-			// This will load the MySQL driver, each DB has its own driver
-			Class.forName("com.mysql.jdbc.Driver");
-			// Setup the connection with the DB
-			connect = DriverManager.getConnection("jdbc:mysql://localhost/dbreq?"
-					+ "user=root&password=toor");
+    }
 
-			// Statements allow to issue SQL queries to the database
-			statement = connect.createStatement();
-			// Result set get the result of the SQL query
+    public void readDataBase() throws Exception {
 
-			resultSet = statement.executeQuery("select * from dbreq");
-			System.out.println(resultSet);
+	try {
+	    // This will load the MySQL driver, each DB has its own driver
+	    Class.forName("com.mysql.jdbc.Driver");
+	    // Setup the connection with the DB
+	    connect = getConnection();
 
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			close();
-		}
+	    // Statements allow to issue SQL queries to the database
+	    statement = connect.createStatement();
+	    // Result set get the result of the SQL query
 
+	    // resultSet = statement.executeQuery("select * from ");
+	    // System.out.println(resultSet);
+
+	} catch (Exception e) {
+	    throw e;
 	}
 
-	/**
-	 * Methode contains helps to add or upate a request of the MySQL Database
-	 * 
-	 * @param request
-	 * @throws SQLException
-	 */
-	public void inserStatement(String request) throws SQLException {
-		preparedStatement = connect
-				.prepareStatement("select REQUEST from dbreq.COMMENTS "
-						+ "WHERE REQUEST = " + request);
-		preparedStatement.executeQuery();
+    }
 
-		if (!resultSet.getString("REQUEST").equals(request)) {
-			preparedStatement = connect
-					.prepareStatement("insert into dbreq.COMMENTS values(" + request
-							+ ",0,0)");
-			preparedStatement.executeUpdate();
-		} else {
+    private Connection getConnection() throws SQLException {
 
-			preparedStatement = connect
-					.prepareStatement("UPDATE HITS SET HITS=HITS+1 from dbreq.COMMENTS WHERE REQUEST = "
-							+ request);
+	Connection conn = null;
+	Properties connectionProps = new Properties();
+	connectionProps.put("user", "root");
+	connectionProps.put("password", "toor");
 
-			preparedStatement.executeUpdate();
-		}
+	conn = DriverManager.getConnection("jdbc:" + "mysql" + "://" + server
+		+ ":" + port + "/" + database, connectionProps);
 
+	System.out.println("Connected to database");
+	return conn;
+    }
+
+    /**
+     * 
+     * @param table
+     * @param element
+     *            (s)
+     * @param value
+     *            (s)
+     * @throws SQLException
+     */
+    public void inserSingelElementToTable(String table, String element,
+	    String value) throws SQLException {
+
+	if (table.equals("Queries")) {
+	    resultSet = statement
+		    .executeQuery("select requests from Queries where query="
+			    + value);
+
+	    int temp = 0;
+	    while (resultSet.next()) {
+		temp = Integer.parseInt(resultSet.getString(1));
+	    }
+
+	    if (temp > 0) {
+		updateSingelValueInTable(table, "requests", element, ""
+			+ ++temp, value);
+		resultSet.close();
+		return;
+	    }
+	    resultSet.close();
 	}
 
-	private void writeMetaData(ResultSet resultSet) throws SQLException {
-		// Now get some metadata from the database
-		// Result set get the result of the SQL query
+	preparedStatement = connect.prepareStatement("insert into " + table
+		+ " (" + element + ",requests) " + " values " + "(" + value
+		+ ",1);");
+	preparedStatement.executeUpdate();
+	System.out.println("Database updated");
 
-		System.out.println("The columns in the table are: ");
+    }
 
-		System.out.println("Table: " + resultSet.getMetaData().getTableName(1));
-		for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-			System.out.println("Column " + i + " "
-					+ resultSet.getMetaData().getColumnName(i));
-		}
+    public void updateSingelValueInTable(String table, String columnToUpdate,
+	    String columnConditionToUpdate, String value, String conditionValue)
+	    throws SQLException {
+	preparedStatement = connect.prepareStatement("update " + table
+		+ " set " + columnToUpdate + " = " + value + " where "
+		+ columnConditionToUpdate + " = " + conditionValue + ";");
+	preparedStatement.executeUpdate();
+	System.out.println("Database updated");
+
+    }
+
+    private void writeMetaData(ResultSet resultSet) throws SQLException {
+	// Now get some metadata from the database
+	// Result set get the result of the SQL query
+
+	System.out.println("The columns in the table are: ");
+
+	System.out.println("Table: " + resultSet.getMetaData().getTableName(1));
+	for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+	    System.out.println("Column " + i + " "
+		    + resultSet.getMetaData().getColumnName(i));
 	}
+    }
 
-	// You need to close the resultSet
-	private void close() {
-		try {
-			if (resultSet != null) {
-				resultSet.close();
-			}
+    // You need to close the resultSet
+    public void closeConnection() {
+	try {
+	    if (resultSet != null) {
+		resultSet.close();
+	    }
 
-			if (statement != null) {
-				statement.close();
-			}
+	    if (statement != null) {
+		statement.close();
+	    }
 
-			if (connect != null) {
-				connect.close();
-			}
-		} catch (Exception e) {
+	    if (connect != null) {
+		connect.close();
+	    }
+	} catch (Exception e) {
 
-		}
 	}
+    }
 
 }
