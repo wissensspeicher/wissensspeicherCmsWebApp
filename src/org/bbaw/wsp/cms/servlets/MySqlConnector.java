@@ -8,11 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-public class MySqlConnector {
+public class MySqlConnector extends Tablenames {
     private Connection connect = null;
-    private Statement statement = null;
-    private PreparedStatement preparedStatement = null;
-    private ResultSet resultSet = null;
+
     private final String server;
     private final String port;
     private final String database;
@@ -40,7 +38,7 @@ public class MySqlConnector {
 	    connect = getConnection();
 
 	    // Statements allow to issue SQL queries to the database
-	    statement = connect.createStatement();
+
 	    // Result set get the result of the SQL query
 
 	    // resultSet = statement.executeQuery("select * from ");
@@ -78,6 +76,12 @@ public class MySqlConnector {
     public void inserSingelElementToTable(String table, String element,
 	    String value) throws SQLException {
 
+	value = createValidSQLString(value);
+
+	Statement statement = connect.createStatement();
+	ResultSet resultSet = null;
+	PreparedStatement preparedStatement = null;
+
 	if (table.equals("Queries")) {
 	    resultSet = statement
 		    .executeQuery("select requests from Queries where query="
@@ -105,9 +109,79 @@ public class MySqlConnector {
 
     }
 
+    /**
+     * 
+     * @param table
+     * @param value
+     * @return
+     * @throws SQLException
+     */
+    public String getID(String table, String value) throws SQLException {
+
+	value = createValidSQLString(value);
+
+	Statement statement = connect.createStatement();
+	ResultSet resultSet = null;
+
+	String element = "";
+
+	switch (table) {
+	case QUERY_WORDS:
+	    element = QUERY_WORDS_COL;
+	    break;
+	case QUERIES:
+	    element = QUERIES_COL;
+	    break;
+	case RELEVANT_COUNTER:
+	    element = RELEVANT_COUNTER_COL;
+	    break;
+	case RELEVANT_DOCS:
+	    element = RELEVANT_DOCS_COL;
+	    break;
+	default:
+	    return null;
+
+	}
+
+	String temp = null;
+	resultSet = statement.executeQuery("select id from " + table
+		+ " where " + element + " = " + value + ";");
+	while (resultSet.next()) {
+	    temp = resultSet.getString(1);
+	}
+	resultSet.close();
+	return temp;
+
+    }
+
+    public void updateQueries(String value) throws SQLException {
+
+	String bla = "select " + QUERIES_COL + " from " + QUERIES + ";";
+
+	Statement st = connect.createStatement();
+
+	ResultSet resultSet = st.executeQuery(bla);
+
+	int i = 0;
+	String id = getID(QUERY_WORDS, value);
+	if (id == null)
+	    return;
+
+	while (resultSet.next()) {
+	    String temp = resultSet.getString(++i);
+	    if (temp.startsWith(value)) {
+		updateSingelValueInTable(QUERIES, "id_queryWords", QUERIES_COL,
+			id, createValidSQLString(temp));
+	    }
+	}
+
+    }
+
     public void updateSingelValueInTable(String table, String columnToUpdate,
 	    String columnConditionToUpdate, String value, String conditionValue)
 	    throws SQLException {
+
+	PreparedStatement preparedStatement = null;
 	preparedStatement = connect.prepareStatement("update " + table
 		+ " set " + columnToUpdate + " = " + value + " where "
 		+ columnConditionToUpdate + " = " + conditionValue + ";");
@@ -116,29 +190,13 @@ public class MySqlConnector {
 
     }
 
-    private void writeMetaData(ResultSet resultSet) throws SQLException {
-	// Now get some metadata from the database
-	// Result set get the result of the SQL query
-
-	System.out.println("The columns in the table are: ");
-
-	System.out.println("Table: " + resultSet.getMetaData().getTableName(1));
-	for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-	    System.out.println("Column " + i + " "
-		    + resultSet.getMetaData().getColumnName(i));
-	}
+    private String createValidSQLString(String str) {
+	return "\"" + str + "\"";
     }
 
     // You need to close the resultSet
     public void closeConnection() {
 	try {
-	    if (resultSet != null) {
-		resultSet.close();
-	    }
-
-	    if (statement != null) {
-		statement.close();
-	    }
 
 	    if (connect != null) {
 		connect.close();

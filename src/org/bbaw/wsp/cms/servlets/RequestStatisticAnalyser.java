@@ -6,7 +6,7 @@ package org.bbaw.wsp.cms.servlets;
  * @author shk2
  * 
  */
-public class RequestStatisticAnalyser {
+public class RequestStatisticAnalyser extends Tablenames {
     private final String request;
 
     public static void main(String[] args) {
@@ -15,7 +15,10 @@ public class RequestStatisticAnalyser {
 
 	try {
 	    con.readDataBase();
-	    con.inserSingelElementToTable("Queries", "query", "\"Marx Mega\"");
+	    con.inserSingelElementToTable(QUERIES, "query", "Marx Mega");
+
+	    System.out.println(con.getID(RELEVANT_DOCS, "Http://Bla und so"));
+	    con.updateQueries("Marx");
 	    con.closeConnection();
 
 	} catch (Exception e) {
@@ -27,5 +30,4 @@ public class RequestStatisticAnalyser {
     public RequestStatisticAnalyser(String request) {
 	this.request = request;
     }
-
 }
