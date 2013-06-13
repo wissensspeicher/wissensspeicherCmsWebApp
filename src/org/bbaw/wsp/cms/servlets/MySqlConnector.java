@@ -174,6 +174,7 @@ public class MySqlConnector extends Tablenames {
 			id, createValidSQLString(temp));
 	    }
 	}
+	resultSet.close();
 
     }
 
@@ -187,6 +188,7 @@ public class MySqlConnector extends Tablenames {
 		+ columnConditionToUpdate + " = " + conditionValue + ";");
 	preparedStatement.executeUpdate();
 	System.out.println("Database updated");
+	preparedStatement.close();
 
     }
 
