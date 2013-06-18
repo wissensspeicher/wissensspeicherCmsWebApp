@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class MySqlConnector extends Tablenames {
@@ -189,6 +190,29 @@ public class MySqlConnector extends Tablenames {
 	preparedStatement.executeUpdate();
 	System.out.println("Database updated");
 	preparedStatement.close();
+
+    }
+
+    public ArrayList<String> getQueries(String value) throws SQLException {
+
+	ArrayList<String> temp = new ArrayList<String>();
+
+	value = createValidSQLString(value);
+
+	Statement statement = connect.createStatement();
+	ResultSet resultSet = null;
+
+	resultSet = statement.executeQuery("select " + QUERIES_COL + " from "
+		+ QUERIES + " where id_queryWords = ( select id from "
+		+ QUERY_WORDS + " where " + QUERY_WORDS_COL + " = " + value
+		+ ") order by requests desc");
+
+	int i = 0;
+	while (resultSet.next()) {
+	    temp.add(resultSet.getString(++i));
+	}
+
+	return temp;
 
     }
 
