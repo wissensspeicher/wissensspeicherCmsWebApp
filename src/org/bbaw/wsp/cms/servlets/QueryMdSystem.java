@@ -327,7 +327,7 @@ public class QueryMdSystem extends HttpServlet {
       //
       // }
       int counter = 0;
-
+ 
       for (final ConceptQueryResult conceptHit : conceptHits) {
         htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
 
