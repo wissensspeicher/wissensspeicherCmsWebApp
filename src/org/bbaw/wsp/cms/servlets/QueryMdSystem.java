@@ -69,7 +69,7 @@ public class QueryMdSystem extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     final String query = request.getParameter("query");
-    new RequestStatisticAnalyser(query);
+//    new RequestStatisticAnalyser(query);
     String language = request.getParameter("language");
     if (language != null && language.equals("none")) {
       language = null;
@@ -133,7 +133,17 @@ public class QueryMdSystem extends HttpServlet {
 //    }catch (MalformedURLException | URISyntaxException mal){
 //      logger.info("query is not a valid URI");
 //    }
-    final HitGraphContainer resultContainer = adapter.buildSparqlQuery("+" + query);
+    HitGraphContainer resultContainer = null;
+    URL queryAsURL;
+    try {
+      queryAsURL = new URL(query);
+    
+    if((queryAsURL.getProtocol()!=null && !queryAsURL.getProtocol().equals("http"))){
+      resultContainer = adapter.buildSparqlQuery("+" + query);
+    }
+    } catch (MalformedURLException e) {
+    e.printStackTrace();
+    }
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
     /*
@@ -317,7 +327,7 @@ public class QueryMdSystem extends HttpServlet {
       //
       // }
       int counter = 0;
-
+ 
       for (final ConceptQueryResult conceptHit : conceptHits) {
         htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
 

@@ -264,6 +264,7 @@ public class QueryDocuments extends HttpServlet {
             Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
             if (projectColl != null) {
               projectUrl = projectColl.getWebBaseUrl();
+              String projectRdfId = projectColl.getRdfId();
               String projectName = projectColl.getName();
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -271,9 +272,13 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("Project: ");
               String projectStr = docCollectionName;
               if (projectName != null)
-                projectStr = projectName + " (Id: " + docCollectionName + ")";
+                projectStr = projectName + " (Id: " + docCollectionName + "): ";
               if (projectUrl != null) {
-                projectStr = "<a href=\"" + projectUrl + "\">" + projectStr + "</a>";
+                projectStr = projectStr + "<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Homepage</a> ";
+              }
+              if (projectRdfId != null) {
+                String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
+                projectStr = projectStr + "<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Details</a>";
               }
               htmlStrBuilder.append(projectStr);
               htmlStrBuilder.append("</td>");
@@ -500,6 +505,11 @@ public class QueryDocuments extends HttpServlet {
               if (webBaseUrl != null) {
                 String encoded = URIUtil.encodeQuery(webBaseUrl);
                 jsonWrapper.put("webBaseUri", encoded);
+              }
+              String projectRdfId = coll.getRdfId();
+              if (projectRdfId != null) {
+                String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
+                jsonWrapper.put("projectDetailsUri", projectDetailsUrl);
               }
             }
           }
