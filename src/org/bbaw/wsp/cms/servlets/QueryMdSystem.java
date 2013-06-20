@@ -45,6 +45,18 @@ public class QueryMdSystem extends HttpServlet {
   private static final String NUMBER_OF_HITS = "numberOfHits";
   private static final String SEARCH_TERM = "searchTerm";
   private static final long serialVersionUID = 1L;
+  /**
+   * The URI/name of the normdata graph as stored in the triple store.
+   */
+  private static final String NORMDATA_GRAPH_URI = "http://wsp.normdata.rdf/";
+  /**
+   * key/name for/of the parameter graphId.
+   */
+  private static final String PARAM_GRAPH_ID = "graphId";
+  /**
+   * key/name for/of the parameter subject.
+   */
+  private static final String PARAM_SUBJECT = "subject";
 
   public QueryMdSystem() {
     super();
@@ -57,7 +69,7 @@ public class QueryMdSystem extends HttpServlet {
 
   // zum testen
   // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
-  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json[&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/....
 
   @Override
   protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
@@ -69,7 +81,7 @@ public class QueryMdSystem extends HttpServlet {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
     final String query = request.getParameter("query");
-//    new RequestStatisticAnalyser(query);
+    // new RequestStatisticAnalyser(query);
     String language = request.getParameter("language");
     if (language != null && language.equals("none")) {
       language = null;
@@ -97,7 +109,7 @@ public class QueryMdSystem extends HttpServlet {
       final Date begin = new Date();
 
       final String baseUrl = getBaseUrl(request);
-      logger.info("baseUrl : "+baseUrl);
+      logger.info("baseUrl : " + baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
       mdQueryHandler.init();
       logger.info("******************** ");
@@ -117,39 +129,52 @@ public class QueryMdSystem extends HttpServlet {
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
     logger.info("detailed Search");
     final ISparqlAdapter adapter = useFuseki();
-    try{
-      //als mögliches subjekt validieren
-      URL queryAsUri = new URL(query);
-      logger.info("queryAsUri : "+queryAsUri);
-      // das 'ganz normale pattern' mit query als subjekt 
-      adapter.buildSparqlQuery(queryAsUri, "?p", "?o");
-    }catch (MalformedURLException mal){
-      logger.info("query is not a valid URI");
-    }
-//    hier query als predikat identifizieren. evtl mit einer neuen schema-klasse und Validator 
-//    try{
-//      // das 'ganz normale pattern' mit query als predikat
-//      adapter.buildSparqlQuery(query, predicate, literal);
-//    }catch (MalformedURLException | URISyntaxException mal){
-//      logger.info("query is not a valid URI");
-//    }
+
+    // @formatter:off
+    /*
+     * 
+     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/.... 
+     * check, whether a parameter graphId is set. 
+     * If graphId is set to true, query contains a resource.
+     * 
+     */
+    // @formatter:on
     HitGraphContainer resultContainer = null;
-    URL queryAsURL;
-    try {
-      queryAsURL = new URL(query);
-    
-    if((queryAsURL.getProtocol()!=null && !queryAsURL.getProtocol().equals("http"))){
-      resultContainer = adapter.buildSparqlQuery("+" + query);
+    if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
+      // query contains the graph uri
+      // call sparql adapter with the given graph uri
+      System.out.println("look for named graph...");
+      URL graphUri;
+      try {
+        graphUri = new URL(URIUtil.decode(query));
+        resultContainer = adapter.buildSparqlQuery(graphUri);
+      } catch (URIException | MalformedURLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
+      // query contains the subject uri
+      // call sparql adapter and query for the given subject
+    } else { // neither graphId or subject was set
+      // query contains the subject URI
+      // call sparql adapter and query for the given subject within THE NORMDATA.RDF
+      final URL defaultGraphName;
+      System.out.println("look for subject in normdata.rdf...");
+      try {
+        defaultGraphName = new URL(NORMDATA_GRAPH_URI);
+        final String subject = "<" + URIUtil.decode(query) + ">";
+        resultContainer = adapter.buildSparqlQuery(defaultGraphName, subject);
+      } catch (final MalformedURLException | URIException e1) {
+        e1.printStackTrace();
+      }
     }
-    } catch (MalformedURLException e) {
-    e.printStackTrace();
-    }
+
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
     /*
      * ..:: html ::..
      */
-    if (outputFormat.equals("html")) {
+    if (resultContainer != null && outputFormat.equals("html")) {
       final StringBuilder htmlStrBuilder = new StringBuilder();
       final String cssUrl = request.getContextPath() + "/css/page.css";
       htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
@@ -198,7 +223,7 @@ public class QueryMdSystem extends HttpServlet {
     /*
      * ..:: json ::..
      */
-    else if (outputFormat.equals("json")) {
+    else if (resultContainer != null && outputFormat.equals("json")) {
       response.setContentType("application/json"); // indicates that this
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
@@ -206,24 +231,39 @@ public class QueryMdSystem extends HttpServlet {
       jsonEncoder.putStrings(NUMBER_OF_HITS, resultContainer.size() + " ");
       final JSONArray jResultContainers = new JSONArray();
       for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-        final JSONArray jHitGraphes = new JSONArray();
-        final JSONObject avgScoreJsonObj = new JSONObject();
-        avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
-        jHitGraphes.add(avgScoreJsonObj);
-        final JSONObject maxScoreJsonObj = new JSONObject();
-        maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
-        jHitGraphes.add(maxScoreJsonObj);
-        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
-          final JSONObject jHitStatement = new JSONObject();
-          jHitStatement.put("subject", hitStatement.getSubject());
-          jHitStatement.put("predicate", hitStatement.getPredicate());
-          jHitStatement.put("literal", hitStatement.getObject());
-          jHitStatement.put("parentSubject", hitStatement.getSubjParent());
-          jHitStatement.put("parentPredicate", hitStatement.getPredParent());
-          jHitStatement.put("score", hitStatement.getScore());
-          jHitGraphes.add(jHitStatement);
+        try {
+          System.out.println(resultContainer);
+          final JSONArray jHitGraphes = new JSONArray();
+          final JSONObject avgScoreJsonObj = new JSONObject();
+          avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
+          jHitGraphes.add(avgScoreJsonObj);
+          final JSONObject maxScoreJsonObj = new JSONObject();
+          maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
+          jHitGraphes.add(maxScoreJsonObj);
+          for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+            final JSONObject jHitStatement = new JSONObject();
+            final String encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
+            jHitStatement.put("subject", encodedSubj);
+            final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
+            jHitStatement.put("predicate", encodedPred);
+            final String encodedLit = URIUtil.encodeQuery(hitStatement.getObject().toString());
+            jHitStatement.put("literal", encodedLit);
+            if (hitStatement.getSubjParent() != null) {
+              final String parentSubj = URIUtil.encodeQuery(hitStatement.getSubjParent().toString());
+              jHitStatement.put("parentSubject", parentSubj);
+            }
+            if (hitStatement.getPredParent() != null) {
+              final String parentPred = URIUtil.encodeQuery(hitStatement.getPredParent().toString());
+              jHitStatement.put("parentPredicate", parentPred);
+            }
+            jHitStatement.put("score", hitStatement.getScore());
+            jHitGraphes.add(jHitStatement);
+          }
+          jResultContainers.add(jHitGraphes);
+          System.out.println(jHitGraphes);
+        } catch (final Exception e) {
+          e.printStackTrace();
         }
-        jResultContainers.add(jHitGraphes);
       }
       jsonEncoder.putJsonObj(MD_HITS, jResultContainers);
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
@@ -327,29 +367,29 @@ public class QueryMdSystem extends HttpServlet {
       //
       // }
       int counter = 0;
- 
+
       for (final ConceptQueryResult conceptHit : conceptHits) {
         htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
 
         htmlStrBuilder.append("\n\t\t\t\t<ul>");
         for (final String mdField : conceptHit.getAllMDFields()) {
-          ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
-          int size = conceptHit.getValue(mdField).size();
+          final ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
+          final int size = conceptHit.getValue(mdField).size();
           if (size > 1) {
             logger.info("conceptHits.get(i).getValue(s).size() > 1");
-            ArrayList<String> values = conceptHit.getValue(mdField);
-            for (String value : values) {
-              String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+            final ArrayList<String> values = conceptHit.getValue(mdField);
+            for (final String value : values) {
+              final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
               logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
-              String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+              final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
               detailedSearchLinkList.add(nameAndLink);
             }
           } else if (size == 1) {
             logger.info("conceptHits.get(i).getValue(s).size() == 1");
-            String value = conceptHit.getValue(mdField).get(0);
-            String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+            final String value = conceptHit.getValue(mdField).get(0);
+            final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
 
-            String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+            final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
             logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
             logger.info("nameAndLink : " + nameAndLink);
             detailedSearchLinkList.add(nameAndLink);
