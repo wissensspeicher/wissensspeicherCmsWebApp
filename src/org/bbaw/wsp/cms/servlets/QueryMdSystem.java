@@ -161,11 +161,17 @@ public class QueryMdSystem extends HttpServlet {
       final URL defaultGraphName;
       System.out.println("look for subject in normdata.rdf...");
       try {
-        defaultGraphName = new URL(NORMDATA_GRAPH_URI);
-        final String subject = "<" + URIUtil.decode(query) + ">";
-        resultContainer = adapter.buildSparqlQuery(defaultGraphName, subject);
-      } catch (final MalformedURLException | URIException e1) {
-        e1.printStackTrace();
+        final URL url = new URL(query); // is query URI? -> so it's a subjectz
+        try {
+          defaultGraphName = new URL(NORMDATA_GRAPH_URI);
+          final String subject = "<" + URIUtil.decode(query) + ">";
+          resultContainer = adapter.buildSparqlQuery(defaultGraphName, subject);
+        } catch (final MalformedURLException | URIException e1) {
+          e1.printStackTrace();
+        }
+      } catch (final Exception e) {
+        // query literal
+        resultContainer = adapter.buildSparqlQuery(query);
       }
     }
 
@@ -202,7 +208,7 @@ public class QueryMdSystem extends HttpServlet {
           htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Literal:</strong> " + hitStatement.getObject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
