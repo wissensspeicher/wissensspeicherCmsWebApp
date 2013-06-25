@@ -39,9 +39,10 @@ public class RequestStatisticAnalyser extends HttpServlet {
      * 
      */
     private static final long serialVersionUID = 3711753091526093328L;
-    private final String request;
-    private final MySqlConnector con;
+    private String request;
+    private MySqlConnector con;
 
+    /*
     public static void main(String[] args) {
 
 	try {
@@ -65,7 +66,6 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    e.printStackTrace();
 	}
     }
-
     public RequestStatisticAnalyser(String request, String server, String port,
 	    String databasename) throws Exception {
 	super();
@@ -75,6 +75,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	con.readDataBase();
 
     }
+*/
 
     public void closeConnection() {
 	con.closeConnection();
