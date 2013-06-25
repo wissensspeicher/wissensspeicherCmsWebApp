@@ -399,7 +399,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 		    if (languageField != null)
 			lang = languageField.stringValue();
 		    htmlStrBuilder
-			    .append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">"
+			    .append("<td align=\"left\" valign=\"top\" style=\"psadding-left:5px\">"
 				    + lang + "</td>");
 		    Fieldable schemaNameField = doc.getFieldable("schemaName");
 		    String schemaName = "";

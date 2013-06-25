@@ -128,6 +128,18 @@
     <url-pattern>/query/MoreLikeThis</url-pattern>
   </servlet-mapping>
 
+	<servlet>
+    <description>RequestStatisticAnalyser</description>
+    <display-name>RequestStatisticAnalyser</display-name>
+    <servlet-name>RequestStatisticAnalyser</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.RequestStatisticAnalyser</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RequestStatisticAnalyser</servlet-name>
+    <url-pattern>/query/RequestStatisticAnalyser/</url-pattern>
+  </servlet-mapping>
+	
+
   <!-- Vaadin applications -->  
   <servlet>
     <servlet-name>TestApp</servlet-name>
@@ -146,6 +158,8 @@
     <servlet-name>TestApp</servlet-name>
     <url-pattern>/VAADIN/*</url-pattern>
   </servlet-mapping>
+
+
 
   <servlet>
     <servlet-name>TestApp2</servlet-name>
@@ -175,16 +189,6 @@
     <url-pattern>/query/QueryMdSystem</url-pattern>
   </servlet-mapping>
   
-   <servlet>
-    <description>RequestStatisticAnalyser</description>
-    <display-name>RequestStatisticAnalyser</display-name>
-    <servlet-name>RequestStatisticAnalyser</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.RequestStatisticAnalyser</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>RequestStatisticAnalyser</servlet-name>
-    <url-pattern>/query/RequestStatisticAnalyser/</url-pattern>
-  </servlet-mapping>
-
+   
   
 </web-app>
