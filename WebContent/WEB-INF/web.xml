@@ -175,4 +175,16 @@
     <url-pattern>/query/QueryMdSystem</url-pattern>
   </servlet-mapping>
   
+   <servlet>
+    <description>RequestStatisticAnalyser</description>
+    <display-name>RequestStatisticAnalyser</display-name>
+    <servlet-name>RequestStatisticAnalyser</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.RequestStatisticAnalyser</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RequestStatisticAnalyser</servlet-name>
+    <url-pattern>/query/RequestStatisticAnalyser/</url-pattern>
+  </servlet-mapping>
+
+  
 </web-app>

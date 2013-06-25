@@ -3,6 +3,8 @@ package org.bbaw.wsp.cms.servlets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServlet;
+
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONObject;
 
@@ -12,7 +14,11 @@ import org.json.simple.JSONObject;
  * @author shk2
  * 
  */
-public class RequestStatisticAnalyser extends Tablenames {
+public class RequestStatisticAnalyser extends HttpServlet {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 3711753091526093328L;
     private final String request;
     private final MySqlConnector con;
 
@@ -23,7 +29,8 @@ public class RequestStatisticAnalyser extends Tablenames {
 	    RequestStatisticAnalyser rsa = new RequestStatisticAnalyser(
 		    "Marx Mega", "localhost", "3306", "WspCmsCore");
 
-	    rsa.inserSingelElementToTable(QUERIES, QUERIES_COL, "Marx Mega");
+	    rsa.inserSingelElementToTable(Tablenames.QUERIES,
+		    Tablenames.QUERIES_COL, "Marx Mega");
 
 	    // System.out.println(con.getID(RELEVANT_DOCS,
 	    // "Http://Bla und so"));
@@ -41,6 +48,7 @@ public class RequestStatisticAnalyser extends Tablenames {
 
     public RequestStatisticAnalyser(String request, String server, String port,
 	    String databasename) throws Exception {
+	super();
 	con = new MySqlConnector(server, port, databasename);
 	this.request = request;
 
@@ -72,7 +80,7 @@ public class RequestStatisticAnalyser extends Tablenames {
 
 	int i = 0;
 	for (String string : temp) {
-	    coder.putStrings("" + i, string);
+	    coder.putStrings("" + ++i, string);
 	}
 
 	return coder.getJsonObject();
