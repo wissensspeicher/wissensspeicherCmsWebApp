@@ -8,6 +8,231 @@
 <h2>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</h2>
 
 <ul>
+  <li><b>Url: /wspCmsWebApp/query/QueryDocuments</b>
+    <ul>
+      <li>Experimental: <a href="query/index.html">Web query interface</a></li>
+      <li>Request parameters
+        <ul>
+          <li>query (required)
+            <ul>
+              <li>Lucene query (e.g. +title:marie* +tokenMorph:gebrauchen +tokenMorph:schmutzig)
+	            <ul>
+	              <li>supported fields
+	                <ul>
+	                  <li>docId (local id: resource identifier in index system, e.g. "/edoc/2011/1591/pdf/08_VI.Dokumente.pdf")</li>
+	                  <li>identifier (local id: identifier field in resources metadata: e.g. "47114711")</li>
+	                  <li>uri (global id: resource URI (uniform resource identifier), e.g. http://de.wikipedia.org/wiki/Ramones)</li>
+	                  <li>webUri (global web url, e.g. "http://edoc.bbaw.de/volltexte/2011/1769/")</li>
+	                  <li>collectionNames (project name(s), e.g. "edoc" or "ig")</li>
+	                  <li>schemaName (schema name of resource, e.g. TEI, html, quran etc.)</li>
+	                  <li>author (author(s) of resource)</li>
+	                  <li>title (title(s) of resource)</li>
+	                  <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
+	                  <li>publisher (publisher(s) with place(s), e.g. Springer, New York )</li>
+	                  <li>date (publication date, e.g. 1958)</li>
+	                  <li>description (description, abstract etc.)</li>
+	                  <li>subject (free subject keywords)</li>
+	                  <li>ddc (subject keywords from DDC (Dewey Decimal Classification), e.g. "Philosophie")</li>
+	                  <li>swd (subject keywords from SWD (Schlagwortnormdatei), normally separated by commas)</li>
+	                  <li>persons (main persons in resource)</li>
+	                  <li>places (main places in resource)</li>
+	                  <li>type (mime type: e.g. text/xml)</li>
+	                  <li>rights (rights string, e.g. open access)</li>
+	                  <li>license (license string, e.g. "CC-BY-SA"))</li>
+	                  <li>accessRights (access rights string, e.g. free)</li>
+	                  <li>lastModified (last modification date in index system)</li>
+	                  <li>pageCount (number of pages)</li>
+	                  <li>tokenOrig (original fulltext tokens of resource)</li>
+	                  <li>tokenReg (regularized fulltext tokens of resource)</li>
+	                  <li>tokenNorm (normalized fulltext tokens of resource)</li>
+	                  <li>tokenMorph (morphological base forms of fulltext tokens of resource)</li>
+	                  <li>content (original text content of the resources file (without xml tags))</li>
+	                  <li>default: tokenOrig</li>
+		            </ul>
+		          </li>
+	            </ul>
+	          </li>
+            </ul>
+          </li>
+          <li>sortBy (optional)
+            <ul>
+              <li>fieldNames separated by blank
+              <ul>
+                <li>supported fields
+                  <ul>
+                  <li>docId</li>
+                  <li>schemaName</li>
+                  <li>language</li>
+                  <li>author</li>
+                  <li>title</li>
+                  <li>publisher</li>
+                  <li>date</li>
+                  <li>lastModified</li>
+                </ul>
+              </li>
+              <li>default: result is sorted by Lucene score (the most relevant result first)</li>
+              </ul>
+            </li>
+            </ul>
+          </li>
+          <li>language (optional)
+            <ul>
+              <li>ISO 639-3 specifier</li>
+              <li>default: automatically derived from query</li>
+            </ul>
+          </li>
+          <li>translate (optional)
+            <ul>
+              <li>expansion of the query: translation of the query terms to other languages</li>
+              <li>true</li>
+              <li>false</li>
+              <li>default: false</li>
+            </ul>
+          </li>
+          <li>page (optional)
+            <ul>
+              <li>result page number</li>
+              <li>default: 1</li>
+            </ul>
+          </li>
+          <li>pageSize (optional)
+            <ul>
+              <li>result page size</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>xml</li>
+              <li>html</li>
+              <li>json</li>
+              <li>default: html</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Resources matching the query</li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all resources which contains "körper" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ">all resources which contains "καὶ" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus">all resources which contains "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus&language=deu">all resources which morphological contains german "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist&language=deu">all resources which morphological contains german "ist" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&translate=true">all resources which contains translated "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all resources which morphological contains translated "house" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all resources which morphological contains translated "sur" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist&translate=true&language=deu">all resources which morphological contains translated german "ist" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=*&sortBy=author">Browse: all resources</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=%2Blanguage:ger">Browse: all german resources</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><b>Url: /wspCmsWebApp/query/QueryMdSystem</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>query (required)
+            <ul>
+              <li>query</li>
+            </ul>
+          </li>
+          <li>language (optional)
+            <ul>
+              <li>ISO 639-3 specifier</li>
+              <li>default: automatically derived from query</li>
+            </ul>
+          </li>
+          <li>conceptSearch (optional)
+            <ul>
+              <li>true</li>
+              <li>false</li>
+              <li>default: false</li>
+            </ul>
+          </li>
+          <li>page (optional)
+            <ul>
+              <li>result page number</li>
+              <li>default: 1</li>
+            </ul>
+          </li>
+          <li>pageSize (optional)
+            <ul>
+              <li>result page size</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>html</li>
+              <li>json</li>
+              <li>default: html</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Resources matching the query</li>
+          <li>Example: <a href="query/QueryMdSystem?query=marx&conceptSearch=true">concept search: all "marx" resources</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><b>Url: /wspCmsWebApp/query/About</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>query (required)
+            <ul>
+              <li>query (query language: has to be specified)</li>
+            </ul>
+          </li>
+          <li>type (optional)
+            <ul>
+              <li>person</li>
+              <li>organisation</li>
+              <li>place</li>
+              <li>subject</li>
+              <li>swd (Schlagwortnormdatei key)</li>
+              <li>ddc (Dewey Decimal Classification key)</li>
+              <li>default: none (no type)</li>
+            </ul>
+          </li>
+          <li>language (optional)
+            <ul>
+              <li>ISO 639-3 specifier (e.g. deu)</li>
+              <li>default: eng</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>html</li>
+              <li>default: html</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output: knowledge entry
+        <ul>
+          <li>Example: <a href="query/About?query=Ramones&language=deu">About "Ramones"</a></li>
+          <li>Example: <a href="query/About?query=Marx&type=person&language=deu">About person "Marx"</a></li>
+          <li>Example: <a href="query/About?query=Kennedy, John F.&type=person&language=deu">About person "John F. Kennedy"</a></li>
+          <li>Example: <a href="query/About?query=Berlin-Kreuzberg&type=place&language=deu">About place "Berlin-Kreuzberg"</a></li>
+          <li>Example: <a href="query/About?query=Marxismus&type=subject&language=deu">About subject "Marxismus"</a></li>
+          <li>Example: <a href="query/About?query=Allgemeines, Wissenschaft&type=ddc&language=deu">About ddc "Allgemeines, Wissenschaft"</a></li>
+          <li>Example: <a href="query/About?query=Marxismus&type=swd&language=deu">About swd "Marxismus"</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
   <li><b>Url: /wspCmsWebApp/doc/GetDocument</b>
     <ul>
       <li>Request parameters
@@ -26,6 +251,7 @@
       </li>
     </ul>
   </li>
+  
   <li><b>Url: /wspCmsWebApp/doc/DocumentOperation</b>
     <ul>
       <li>Request parameters
@@ -152,182 +378,6 @@
           <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted</a></li>
           <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&outputFormat=xmlDisplay&highlightElem=p&highlightElemPos=1">Page 13 in MEGA resource, first paragraph highlighted (XML output)</a></li>
           <li>Example: <a href="query/GetPage?docId=/mega/mega/docs/MEGA_A2_B001-01_ETX.xml&page=13&highlightQueryType=norm&highlightQuery=tokenMorph:ist">Page 13 in MEGA resource, morphological forms of "ist" are highlighted</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Url: /wspCmsWebApp/query/QueryDocuments</b>
-    <ul>
-      <li>Experimental: <a href="query/index.html">Web query interface</a></li>
-      <li>Request parameters
-        <ul>
-          <li>query (required)
-            <ul>
-              <li>Lucene query (e.g. +title:marie* +tokenMorph:gebrauchen +tokenMorph:schmutzig)
-	            <ul>
-	              <li>supported fields
-	                <ul>
-	                  <li>docId (local id: resource identifier in index system, e.g. "/edoc/2011/1591/pdf/08_VI.Dokumente.pdf")</li>
-	                  <li>identifier (local id: identifier field in resources metadata: e.g. "47114711")</li>
-	                  <li>uri (global id: resource URI (uniform resource identifier), e.g. http://de.wikipedia.org/wiki/Ramones)</li>
-	                  <li>webUri (global web url, e.g. "http://edoc.bbaw.de/volltexte/2011/1769/")</li>
-	                  <li>collectionNames (project name(s), e.g. "edoc" or "ig")</li>
-	                  <li>schemaName (schema name of resource, e.g. TEI, html, quran etc.)</li>
-	                  <li>author (author(s) of resource)</li>
-	                  <li>title (title(s) of resource)</li>
-	                  <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
-	                  <li>publisher (publisher(s) with place(s), e.g. Springer, New York )</li>
-	                  <li>date (publication date, e.g. 1958)</li>
-	                  <li>description (description, abstract etc.)</li>
-	                  <li>subject (free subject keywords)</li>
-	                  <li>ddc (subject keywords from DDC (Dewey Decimal Classification), e.g. "Philosophie")</li>
-	                  <li>swd (subject keywords from SWD (Schlagwortnormdatei), normally separated by commas)</li>
-	                  <li>persons (main persons in resource)</li>
-	                  <li>places (main places in resource)</li>
-	                  <li>type (mime type: e.g. text/xml)</li>
-	                  <li>rights (rights string, e.g. open access)</li>
-	                  <li>license (license string, e.g. "CC-BY-SA"))</li>
-	                  <li>accessRights (access rights string, e.g. free)</li>
-	                  <li>lastModified (last modification date in index system)</li>
-	                  <li>pageCount (number of pages)</li>
-	                  <li>tokenOrig (original fulltext tokens of resource)</li>
-	                  <li>tokenReg (regularized fulltext tokens of resource)</li>
-	                  <li>tokenNorm (normalized fulltext tokens of resource)</li>
-	                  <li>tokenMorph (morphological base forms of fulltext tokens of resource)</li>
-	                  <li>content (original text content of the resources file (without xml tags))</li>
-	                  <li>default: tokenOrig</li>
-		            </ul>
-		          </li>
-	            </ul>
-	          </li>
-            </ul>
-          </li>
-          <li>sortBy (optional)
-            <ul>
-              <li>fieldNames separated by blank
-              <ul>
-                <li>supported fields
-                  <ul>
-                  <li>docId</li>
-                  <li>schemaName</li>
-                  <li>language</li>
-                  <li>author</li>
-                  <li>title</li>
-                  <li>publisher</li>
-                  <li>date</li>
-                  <li>lastModified</li>
-                </ul>
-              </li>
-              <li>default: result is sorted by Lucene score (the most relevant result first)</li>
-              </ul>
-            </li>
-            </ul>
-          </li>
-          <li>language (optional)
-            <ul>
-              <li>ISO 639-3 specifier</li>
-              <li>default: automatically derived from query</li>
-            </ul>
-          </li>
-          <li>translate (optional)
-            <ul>
-              <li>expansion of the query: translation of the query terms to other languages</li>
-              <li>true</li>
-              <li>false</li>
-              <li>default: false</li>
-            </ul>
-          </li>
-          <li>page (optional)
-            <ul>
-              <li>result page number</li>
-              <li>default: 1</li>
-            </ul>
-          </li>
-          <li>pageSize (optional)
-            <ul>
-              <li>result page size</li>
-              <li>default: 10</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>xml</li>
-              <li>html</li>
-              <li>json</li>
-              <li>default: html</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>Resources matching the query</li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all resources which contains "körper" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ">all resources which contains "καὶ" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus">all resources which contains "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&translate=true">all resources which contains translated "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus">all resources which morphological contains "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all resources which morphological contains translated "house" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist">all resources which morphological contains translated "ist" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all resources which morphological contains translated "sur" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=*&sortBy=author">Browse: all resources</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=%2Blanguage:ger">Browse: all german resources</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Url: /wspCmsWebApp/query/QueryMdSystem</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>query (required)
-            <ul>
-              <li>query</li>
-            </ul>
-          </li>
-          <li>language (optional)
-            <ul>
-              <li>ISO 639-3 specifier</li>
-              <li>default: automatically derived from query</li>
-            </ul>
-          </li>
-          <li>conceptSearch (optional)
-            <ul>
-              <li>true</li>
-              <li>false</li>
-              <li>default: false</li>
-            </ul>
-          </li>
-          <li>page (optional)
-            <ul>
-              <li>result page number</li>
-              <li>default: 1</li>
-            </ul>
-          </li>
-          <li>pageSize (optional)
-            <ul>
-              <li>result page size</li>
-              <li>default: 10</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>html</li>
-              <li>json</li>
-              <li>default: html</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>Resources matching the query</li>
-          <li>Example: <a href="query/QueryMdSystem?query=marx&conceptSearch=true">concept search: all "marx" resources</a></li>
         </ul>
       </li>
     </ul>
@@ -584,53 +634,6 @@
         <ul>
           <li>Meta info of resource</li>
           <li>Example: <a href="query/GetDocInfo?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Url: /wspCmsWebApp/query/About</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>query (required)
-            <ul>
-              <li>query (query language: has to be specified)</li>
-            </ul>
-          </li>
-          <li>type (optional)
-            <ul>
-              <li>person</li>
-              <li>organisation</li>
-              <li>place</li>
-              <li>subject</li>
-              <li>swd (Schlagwortnormdatei key)</li>
-              <li>ddc (Dewey Decimal Classification key)</li>
-              <li>default: none (no type)</li>
-            </ul>
-          </li>
-          <li>language (optional)
-            <ul>
-              <li>ISO 639-3 specifier (e.g. deu)</li>
-              <li>default: eng</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>html</li>
-              <li>default: html</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output: knowledge entry
-        <ul>
-          <li>Example: <a href="query/About?query=Ramones&language=deu">About "Ramones"</a></li>
-          <li>Example: <a href="query/About?query=Kennedy, John F.&type=person&language=deu">About person "John F. Kennedy"</a></li>
-          <li>Example: <a href="query/About?query=Berlin-Kreuzberg&type=place&language=deu">About place "Berlin-Kreuzberg"</a></li>
-          <li>Example: <a href="query/About?query=Marxismus&type=subject&language=deu">About subject "Marxismus"</a></li>
-          <li>Example: <a href="query/About?query=Allgemeines, Wissenschaft&type=ddc&language=deu">About ddc "Allgemeines, Wissenschaft"</a></li>
-          <li>Example: <a href="query/About?query=Marxismus&type=swd&language=deu">About swd "Marxismus"</a></li>
         </ul>
       </li>
     </ul>
