@@ -43,39 +43,33 @@ public class RequestStatisticAnalyser extends HttpServlet {
     private MySqlConnector con;
 
     /*
-    public static void main(String[] args) {
-
-	try {
-
-	    RequestStatisticAnalyser rsa = new RequestStatisticAnalyser(
-		    "Marx Mega", "localhost", "3306", "WspCmsCore");
-
-	    rsa.inserSingelElementToTable(Tablenames.QUERIES,
-		    Tablenames.QUERIES_COL, "Marx Mega");
-
-	    // System.out.println(con.getID(RELEVANT_DOCS,
-	    // "Http://Bla und so"));
-	    rsa.updateQueries("Marx");
-
-	    System.out.println(rsa.getQueries("Marx"));
-
-	    rsa.closeConnection();
-
-	} catch (Exception e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
-    }
-    public RequestStatisticAnalyser(String request, String server, String port,
-	    String databasename) throws Exception {
-	super();
-	con = new MySqlConnector(server, port, databasename);
-	this.request = request;
-
-	con.readDataBase();
-
-    }
-*/
+     * public static void main(String[] args) {
+     * 
+     * try {
+     * 
+     * RequestStatisticAnalyser rsa = new RequestStatisticAnalyser( "Marx Mega",
+     * "localhost", "3306", "WspCmsCore");
+     * 
+     * rsa.inserSingelElementToTable(Tablenames.QUERIES, Tablenames.QUERIES_COL,
+     * "Marx Mega");
+     * 
+     * // System.out.println(con.getID(RELEVANT_DOCS, // "Http://Bla und so"));
+     * rsa.updateQueries("Marx");
+     * 
+     * System.out.println(rsa.getQueries("Marx"));
+     * 
+     * rsa.closeConnection();
+     * 
+     * } catch (Exception e) { // TODO Auto-generated catch block
+     * e.printStackTrace(); } } public RequestStatisticAnalyser(String request,
+     * String server, String port, String databasename) throws Exception {
+     * super(); con = new MySqlConnector(server, port, databasename);
+     * this.request = request;
+     * 
+     * con.readDataBase();
+     * 
+     * }
+     */
 
     public void closeConnection() {
 	con.closeConnection();
@@ -111,6 +105,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request,
 	    HttpServletResponse response) throws ServletException, IOException {
+
 	request.setCharacterEncoding("utf-8");
 	response.setCharacterEncoding("utf-8");
 	String query = request.getParameter("query");
