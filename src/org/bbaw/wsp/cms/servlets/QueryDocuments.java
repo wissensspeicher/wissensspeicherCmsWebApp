@@ -345,7 +345,9 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
             htmlStrBuilder.append("Subjects: ");
             String subjectStr = subjectField.stringValue();
-            String[] subjects = subjectStr.split("[,]");  // separator of subjects
+            String[] subjects = subjectStr.split("[,]");  // one separator of subjects
+            if (subjectStr.contains("###"))
+              subjects = subjectStr.split("###");  // another separator of subjects
             for (int j=0; j<subjects.length; j++) {
               String subjectName = subjects[j].trim();
               if (! subjectName.isEmpty()) {
@@ -598,7 +600,9 @@ public class QueryDocuments extends HttpServlet {
           Fieldable subjectField = doc.getFieldable("subject");
           if (subjectField != null) {
             String subjectStr = subjectField.stringValue();
-            String[] subjects = subjectStr.split("[,]");  // separator of subjects
+            String[] subjects = subjectStr.split("[,]");  // one separator of subjects
+            if (subjectStr.contains("###"))
+              subjects = subjectStr.split("###");  // another separator of subjects
             for (int j=0; j<subjects.length; j++) {
               String subjectName = subjects[j].trim();
               if (! subjectName.isEmpty()) {
