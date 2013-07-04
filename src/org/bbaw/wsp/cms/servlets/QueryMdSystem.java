@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,6 +58,10 @@ public class QueryMdSystem extends HttpServlet {
    * key/name for/of the parameter subject.
    */
   private static final String PARAM_SUBJECT = "subject";
+  /**
+   * key for the JSON attribute for the result priority.
+   */
+  private static final Object PRIORITY = "priority";
 
   public QueryMdSystem() {
     super();
@@ -302,7 +307,7 @@ public class QueryMdSystem extends HttpServlet {
    * @throws URIException
    */
   private void handleConceptQuery(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out, final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
-    final ArrayList<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
+    final List<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
     logger.info("elapsedTime : " + elapsedTime);
@@ -326,6 +331,9 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("getSet() : " + conceptHits.get(i).getAllMDFields());
         final Set<String> keys = conceptHits.get(i).getAllMDFields();
         final JSONArray jsonInnerArray = new JSONArray();
+        final JSONObject simpleHitInfo = new JSONObject();
+        simpleHitInfo.put(PRIORITY, "" + conceptHits.get(i).getResultPriority());
+        jsonInnerArray.add(simpleHitInfo);
         for (final String s : keys) {
           logger.info("concepts.get(i).getValue(s) : " + conceptHits.get(i).getValue(s));
           jsonWrapper = new JSONObject();
@@ -377,10 +385,12 @@ public class QueryMdSystem extends HttpServlet {
       for (final ConceptQueryResult conceptHit : conceptHits) {
         htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
 
+        htmlStrBuilder.append("<p>Result priority:" + conceptHit.getResultPriority() + "</p>");
         htmlStrBuilder.append("\n\t\t\t\t<ul>");
         for (final String mdField : conceptHit.getAllMDFields()) {
           final ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
           final int size = conceptHit.getValue(mdField).size();
+
           if (size > 1) {
             logger.info("conceptHits.get(i).getValue(s).size() > 1");
             final ArrayList<String> values = conceptHit.getValue(mdField);
