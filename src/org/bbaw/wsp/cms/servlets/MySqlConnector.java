@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public class MySqlConnector extends Tablenames {
-    private Connection connect = null;
+    private static Connection connect = null;
 
-    private final String server;
-    private final String port;
-    private final String database;
+    private static String server;
+    private static String port;
+    private static String database;
+    private static MySqlConnector con;
+    private static Boolean hasInfos = false;
 
     /**
      * 
@@ -22,15 +24,26 @@ public class MySqlConnector extends Tablenames {
      * @param port
      * @param database
      */
-    public MySqlConnector(final String server, final String port,
+    private MySqlConnector() {
+
+    }
+
+    public void setValues(final String server, final String port,
 	    final String database) {
 	this.server = server;
 	this.port = port;
 	this.database = database;
-
     }
 
-    public void readDataBase() throws Exception {
+    public static MySqlConnector getInstance() throws Exception {
+	if (con == null) {
+	    con = new MySqlConnector();
+	    readDataBase();
+	}
+	return con;
+    }
+
+    public static void readDataBase() throws Exception {
 
 	try {
 	    // This will load the MySQL driver, each DB has its own driver
@@ -38,6 +51,7 @@ public class MySqlConnector extends Tablenames {
 	    // Setup the connection with the DB
 	    connect = getConnection();
 
+	    hasInfos = true;
 	    // Statements allow to issue SQL queries to the database
 
 	    // Result set get the result of the SQL query
@@ -51,7 +65,11 @@ public class MySqlConnector extends Tablenames {
 
     }
 
-    private Connection getConnection() throws SQLException {
+    public Boolean hasConnectionInfos() {
+	return hasInfos;
+    }
+
+    private static Connection getConnection() throws SQLException {
 
 	Connection conn = null;
 	Properties connectionProps = new Properties();
