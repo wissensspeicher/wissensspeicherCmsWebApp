@@ -8,18 +8,17 @@ import org.json.simple.JSONObject;
 
 public class QuerySqlProvider extends Tablenames {
 
-    private final String request;
     private final MySqlConnector con;
 
-    public QuerySqlProvider(String request, String server, String port,
-	    String databasename) throws Exception {
+    @SuppressWarnings("static-access")
+    public QuerySqlProvider(String server, String port, String databasename)
+	    throws Exception {
 	super();
 	con = MySqlConnector.getInstance();
 	if (!con.hasConnectionInfos()) {
 	    con.setValues(server, port, databasename);
+	    con.readDataBase();
 	}
-
-	this.request = request;
 
 	con.readDataBase();
 
@@ -29,7 +28,15 @@ public class QuerySqlProvider extends Tablenames {
 	con.closeConnection();
     }
 
-    public void updateQueries(String queryWord) throws SQLException {
+    public void updateQueries(String query) throws SQLException {
+
+	String queryWord = query.split("[ ]+")[0];
+	System.out.println(queryWord);
+
+	con.inserSingelElementToTable(QUERY_WORDS, QUERY_WORDS_COL, queryWord);
+
+	con.inserSingelElementToTable(QUERIES, QUERIES_COL, query);
+
 	con.updateQueries(queryWord);
     }
 

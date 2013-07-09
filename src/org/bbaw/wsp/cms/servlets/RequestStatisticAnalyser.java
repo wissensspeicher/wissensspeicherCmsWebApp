@@ -51,26 +51,15 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    return;
 	}
 	try {
-	    // WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-	    // jsonEncoder.clear();
-	    // jsonEncoder.putStrings("searchTerm", query);
 
-	    QuerySqlProvider qsp = new QuerySqlProvider("Marx Mega",
-		    "localhost", "3306", "WspCmsCore");
+	    QuerySqlProvider qsp = new QuerySqlProvider("localhost", "3306",
+		    "WspCmsCore");
 
-	    qsp.inserSingelElementToTable(Tablenames.QUERIES,
-		    Tablenames.QUERIES_COL, "Marx Mega");
-
-	    // System.out.println(con.getID(RELEVANT_DOCS, //
-	    // "Http://Bla und so"));
-	    qsp.updateQueries("Marx");
+	    qsp.updateQueries(query);
 
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
-	    // jsonEncoder.putStrings("searchTerm", query);
-	    // out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
 
-	    // out.println("{}");
 	    out.println(JSONValue.toJSONString(qsp.getQueries(query)));
 
 	    qsp.closeConnection();
