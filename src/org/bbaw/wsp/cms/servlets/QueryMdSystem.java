@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemResultType;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.conceptsearch.ConceptQueryResult;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraph;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraphContainer;
@@ -207,8 +208,12 @@ public class QueryMdSystem extends HttpServlet {
         htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
         htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
         htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
-        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Average score:</strong>" + hitGraph.getAvgScore() + "</li>");
-        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Highest score:</strong>" + hitGraph.getHighestScore() + "</li>");
+        if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
+          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Average score:</strong>" + hitGraph.getAvgScore() + "</li>");
+        }
+        if (hitGraph.getHighestScore() != HitGraph.DEFAULT_SCORE) {
+          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Highest score:</strong>" + hitGraph.getHighestScore() + "</li>");
+        }
         for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
           htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
@@ -216,7 +221,12 @@ public class QueryMdSystem extends HttpServlet {
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
           htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
+          if (hitStatement.getResultType().equals(MdSystemResultType.LITERAL_DEFAULT_GRAPH) || hitStatement.getResultType().equals(MdSystemResultType.LITERAL_NAMED_GRAPH)) {
+            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
+          }
+          if (hitStatement.getResultType() != null) {
+            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>MdSystemResultType:</strong> " + hitStatement.getResultType() + "</li>");
+          }
           htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
         }
 
@@ -245,12 +255,16 @@ public class QueryMdSystem extends HttpServlet {
         try {
           System.out.println(resultContainer);
           final JSONArray jHitGraphes = new JSONArray();
-          final JSONObject avgScoreJsonObj = new JSONObject();
-          avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
-          jHitGraphes.add(avgScoreJsonObj);
-          final JSONObject maxScoreJsonObj = new JSONObject();
-          maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
-          jHitGraphes.add(maxScoreJsonObj);
+          if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
+            final JSONObject avgScoreJsonObj = new JSONObject();
+            avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
+            jHitGraphes.add(avgScoreJsonObj);
+          }
+          if (hitGraph.getHighestScore() != HitGraph.DEFAULT_SCORE) {
+            final JSONObject maxScoreJsonObj = new JSONObject();
+            maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
+            jHitGraphes.add(maxScoreJsonObj);
+          }
           for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
             final JSONObject jHitStatement = new JSONObject();
             final String encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
@@ -267,7 +281,12 @@ public class QueryMdSystem extends HttpServlet {
               final String parentPred = URIUtil.encodeQuery(hitStatement.getPredParent().toString());
               jHitStatement.put("parentPredicate", parentPred);
             }
-            jHitStatement.put("score", hitStatement.getScore());
+            if (hitStatement.getResultType().equals(MdSystemResultType.LITERAL_DEFAULT_GRAPH) || hitStatement.getResultType().equals(MdSystemResultType.LITERAL_NAMED_GRAPH)) {
+              jHitStatement.put("score", hitStatement.getScore());
+            }
+            if (hitStatement.getResultType() != null) {
+              jHitStatement.put("resultType", "" + hitStatement.getResultType());
+            }
             jHitGraphes.add(jHitStatement);
           }
           jResultContainers.add(jHitGraphes);
