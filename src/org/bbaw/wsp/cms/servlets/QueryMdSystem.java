@@ -53,18 +53,45 @@ public class QueryMdSystem extends HttpServlet {
    * JSON field / key for the lexical/"real" value of a literal.
    */
   private static final Object JSON_FIELD_LEXICAL_VALUE = "lexicalValue";
+  /**
+   * JSON field / key which indicates that the object is a blank node.
+   */
   private static final Object JSON_FIELD_IS_BLANK = "isBlank";
   /**
-   * JSON field / key for a general object, might be
+   * JSON field / key for a general object, might be anything although literals (like blank nodes or resources)
    */
   private static final Object JSON_FIELD_OBJECT = "object";
+  /**
+   * JSON field / key for the resultType
+   */
   private static final String JSON_FIELD_RESULT_TYPE = "resultType";
+  /**
+   * JSON field / key for the score
+   */
   private static final String JSON_FIELD_SCORE = "score";
+  /**
+   * JSON field / key for the parent predicate
+   */
   private static final String JSON_FIELD_PARENT_PREDICATE = "parentPredicate";
+  /**
+   * JSON field / key for the parent subject
+   */
   private static final String JSON_FIELD_PARENT_SUBJECT = "parentSubject";
+  /**
+   * JSON field / key for the literal which should have a datatype and lexical type
+   */
   private static final String JSON_FIELD_LITERAL = "literal";
+  /**
+   * JSON field / key for the predicate
+   */
   private static final String JSON_FIELD_PREDICATE = "predicate";
+  /**
+   * JSON field / key for the subject
+   */
   private static final String JSON_FIELD_SUBJECT = "subject";
+  /**
+   * JSON field / key for the datatype (if the object is a literal)
+   */
   private static final Object JSON_FIELD_DATATYPE_URI = "datatype";
   /**
    * JSON field / key for the average score.
