@@ -324,7 +324,7 @@ public class MySqlConnector extends Tablenames {
 		request += " id = " + temp.get(i) + " or ";
 
 	}
-	request += " order by requests;";
+	request += " order by requests ASC;";
 
 	System.out.println(request);
 
