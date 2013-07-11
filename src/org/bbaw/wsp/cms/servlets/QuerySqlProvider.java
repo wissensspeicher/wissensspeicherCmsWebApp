@@ -30,6 +30,7 @@ public class QuerySqlProvider extends Tablenames {
 
     public void updateQueries(String query) throws SQLException {
 
+	query = query.toLowerCase().trim();
 	String queryWord = query.split("[ ]+")[0];
 	System.out.println(queryWord);
 
