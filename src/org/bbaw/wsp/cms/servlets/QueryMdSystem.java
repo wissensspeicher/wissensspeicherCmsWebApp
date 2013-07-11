@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,15 +40,60 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class QueryMdSystem extends HttpServlet {
-  private static final String MD_HITS = "mdHits";
-  private static final String NUMBER_OF_HITS = "numberOfHits";
-  private static final String SEARCH_TERM = "searchTerm";
+  /**
+   * JSON field / key for the lexical/"real" value of a literal.
+   */
+  private static final Object JSON_FIELD_LEXICAL_VALUE = "lexicalValue";
+  private static final Object JSON_FIELD_IS_BLANK = "isBlank";
+  /**
+   * JSON field / key for a general object, might be
+   */
+  private static final Object JSON_FIELD_OBJECT = "object";
+  private static final String JSON_FIELD_RESULT_TYPE = "resultType";
+  private static final String JSON_FIELD_SCORE = "score";
+  private static final String JSON_FIELD_PARENT_PREDICATE = "parentPredicate";
+  private static final String JSON_FIELD_PARENT_SUBJECT = "parentSubject";
+  private static final String JSON_FIELD_LITERAL = "literal";
+  private static final String JSON_FIELD_PREDICATE = "predicate";
+  private static final String JSON_FIELD_SUBJECT = "subject";
+  private static final Object JSON_FIELD_DATATYPE_URI = "datatype";
+  /**
+   * JSON field / key for the average score.
+   */
+  private static final String JSON_FIELD_AVERAGE_SCORE = "averageScore";
+  /**
+   * JSON field / key for the maximum score.
+   */
+  private static final Object JSON_FIELD_MAXIMUM_SCORE = "maximumScore";
+  /**
+   * JSON field / key for the hitGraphes.
+   */
+  private static final String JSON_FIELD_MD_HITS = "hitGraphes";
+  /**
+   * JSON field / key for the numberf of hits.
+   */
+  private static final String JSON_FIELD_NUMBER_OF_HITS = "numberOfHits";
+  /**
+   * JSON field / key for the search term.
+   */
+  private static final String JSON_FIELD_SEARCH_TERM = "searchTerm";
+  /**
+   * JSON field / key for the hit statements.
+   */
+  private static final String JSON_FIELD_STATEMENTS = "hitStatements";
+  /**
+   * JSON field / key for the graph name.
+   */
+  private static final Object JSON_FIELD_GRAPH_URL = "graphName";
   private static final long serialVersionUID = 1L;
   /**
    * The URI/name of the normdata graph as stored in the triple store.
@@ -56,11 +102,11 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * key/name for/of the parameter graphId.
    */
-  private static final String PARAM_GRAPH_ID = "graphId";
+  private static final String PARAM_GRAPH_ID = "isGraphId";
   /**
    * key/name for/of the parameter subject.
    */
-  private static final String PARAM_SUBJECT = "subject";
+  private static final String PARAM_SUBJECT = "isSubject";
   /**
    * key for the JSON attribute for the result priority.
    */
@@ -77,7 +123,7 @@ public class QueryMdSystem extends HttpServlet {
 
   // zum testen
   // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
-  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json[&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/....
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json[&isGraphId=true][&isSubject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/....
 
   @Override
   protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
@@ -260,56 +306,88 @@ public class QueryMdSystem extends HttpServlet {
       response.setContentType("application/json"); // indicates that this
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-      jsonEncoder.putStrings(SEARCH_TERM, query);
-      jsonEncoder.putStrings(NUMBER_OF_HITS, resultContainer.size() + " ");
-      final JSONArray jResultContainers = new JSONArray();
+      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
+      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
+      /*
+       * ..:: hitGraphes: [ ... ::..
+       */
+      final JSONArray jhitGraphes = new JSONArray();
       for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        /*
+         * ...::: singleGraph, element within the hitGraphes array :::...
+         */
         try {
           System.out.println(resultContainer);
-          final JSONArray jHitGraphes = new JSONArray();
+          final JSONObject jHitGraph = new JSONObject();
 
           if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
-            final JSONObject avgScoreJsonObj = new JSONObject();
-            avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
-            jHitGraphes.add(avgScoreJsonObj);
+            jHitGraph.put(JSON_FIELD_AVERAGE_SCORE, hitGraph.getAvgScore());
           }
           if (hitGraph.getHighestScore() != HitGraph.DEFAULT_SCORE) {
-            final JSONObject maxScoreJsonObj = new JSONObject();
-            maxScoreJsonObj.put("maximumScore", hitGraph.getHighestScore());
-            jHitGraphes.add(maxScoreJsonObj);
+            jHitGraph.put(JSON_FIELD_MAXIMUM_SCORE, hitGraph.getHighestScore());
           }
+          if (hitGraph.getNamedGraphUrl() != null) {
+            jHitGraph.put(JSON_FIELD_GRAPH_URL, "" + hitGraph.getNamedGraphUrl());
+          }
+          /*
+           * ....:::: hitStatements: [... ::::....
+           */
+          final JSONArray jHitStatements = new JSONArray();
           for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
             final JSONObject jHitStatement = new JSONObject();
-            jHitStatement.put("graphName", hitGraph.getNamedGraphUrl().toExternalForm());
             final String encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
-            jHitStatement.put("subject", encodedSubj);
+            jHitStatement.put(JSON_FIELD_SUBJECT, encodedSubj);
             final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
-            jHitStatement.put("predicate", encodedPred);
-            final String encodedLit = URIUtil.encodeQuery(hitStatement.getObject().toString());
-            jHitStatement.put("literal", encodedLit);
+            jHitStatement.put(JSON_FIELD_PREDICATE, encodedPred);
+            final RDFNode hitObject = hitStatement.getObject();
+            if (hitObject.isLiteral()) {
+              final JSONObject hitLiteral = new JSONObject();
+              final String encodedLit = hitStatement.getObject().asLiteral().getLexicalForm();
+              final String datatypeUri = hitStatement.getObject().asLiteral().getDatatypeURI();
+              hitLiteral.put(JSON_FIELD_LEXICAL_VALUE, encodedLit);
+              if (datatypeUri != null) {
+                hitLiteral.put(JSON_FIELD_DATATYPE_URI, "" + datatypeUri);
+              }
+              jHitStatement.put(JSON_FIELD_LITERAL, hitLiteral);
+            } else { // rdf node is not a literal
+              if (hitObject.isAnon()) {
+                jHitStatement.put(JSON_FIELD_IS_BLANK, true);
+              }
+              jHitStatement.put(JSON_FIELD_OBJECT, "" + hitObject);
+            }
             if (hitStatement.getSubjParent() != null) {
               final String parentSubj = URIUtil.encodeQuery(hitStatement.getSubjParent().toString());
-              jHitStatement.put("parentSubject", parentSubj);
+              jHitStatement.put(JSON_FIELD_PARENT_SUBJECT, parentSubj);
             }
             if (hitStatement.getPredParent() != null) {
               final String parentPred = URIUtil.encodeQuery(hitStatement.getPredParent().toString());
-              jHitStatement.put("parentPredicate", parentPred);
+              jHitStatement.put(JSON_FIELD_PARENT_PREDICATE, parentPred);
             }
             if (hitStatement.getResultType().equals(MdSystemResultType.LITERAL_DEFAULT_GRAPH) || hitStatement.getResultType().equals(MdSystemResultType.LITERAL_NAMED_GRAPH)) {
-              jHitStatement.put("score", hitStatement.getScore());
+              jHitStatement.put(JSON_FIELD_SCORE, hitStatement.getScore());
             }
             if (hitStatement.getResultType() != null) {
-              jHitStatement.put("resultType", "" + hitStatement.getResultType());
+              jHitStatement.put(JSON_FIELD_RESULT_TYPE, "" + hitStatement.getResultType());
             }
-            jHitGraphes.add(jHitStatement);
+            jHitStatements.add(jHitStatement);
           }
-          jResultContainers.add(jHitGraphes);
-          System.out.println(jHitGraphes);
+          /*
+           * ....:::::::::::::::::::::::::::::....
+           */
+          jHitGraph.put(JSON_FIELD_STATEMENTS, jHitStatements);
+          jhitGraphes.add(jHitGraph);
+          System.out.println(jHitGraph);
         } catch (final Exception e) {
           e.printStackTrace();
         }
+        /*
+         * ...::::::::::::::::::::::::::::::::::::::::::::::::::::::::...
+         */
       }
-      jsonEncoder.putJsonObj(MD_HITS, jResultContainers);
+      /*
+       * ..::::::::::::::::::::..
+       */
+      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
       out.println(jsonString); // response
 
@@ -354,8 +432,8 @@ public class QueryMdSystem extends HttpServlet {
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.clear();
-      jsonEncoder.putStrings(SEARCH_TERM, query);
-      jsonEncoder.putStrings(NUMBER_OF_HITS, String.valueOf(conceptHits.size()));
+      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
+      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, String.valueOf(conceptHits.size()));
       final JSONArray jsonOuterArray = new JSONArray();
       JSONObject jsonWrapper = null;
       for (int i = 0; i < conceptHits.size(); i++) {
@@ -377,7 +455,7 @@ public class QueryMdSystem extends HttpServlet {
         jsonOuterArray.add(jsonInnerArray);
       }
 
-      jsonEncoder.putJsonObj(MD_HITS, jsonOuterArray);
+      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       logger.info("end json");
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
