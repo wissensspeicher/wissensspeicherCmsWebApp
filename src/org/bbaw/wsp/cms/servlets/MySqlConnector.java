@@ -209,20 +209,17 @@ public class MySqlConnector extends Tablenames {
 
 	if (id_qword == null)
 	    return;
-	value = value.toLowerCase().trim();
+
 	// int i = 0;
 	resultSet.beforeFirst();
 	while (resultSet.next()) {
 
 	    String temp = resultSet.getString(1);
 
-	    String compareTemp = temp;
-	    compareTemp = compareTemp.toLowerCase().trim();
-
-	    System.out.println("comparetemp: " + compareTemp);
+	    System.out.println("comparetemp: " + temp);
 	    System.out.println("value: " + value);
 
-	    if (compareTemp.startsWith(value) || compareTemp.equals(value)) {
+	    if (temp.startsWith(value) || temp.equals(value)) {
 
 		String id_q = getID(QUERIES, temp);
 		System.out.println(id_q);
@@ -293,12 +290,11 @@ public class MySqlConnector extends Tablenames {
 
 	System.out.println("getQueries");
 
-	String request = "select " + QUERIES_COL + " from " + QUERIES
-		+ " where id = " + "(select " + QUERY_WORD_CONNECTION_QUERY_COL
-		+ " from " + QUERY_WORD_CONNECTION + " where "
+	String request = "select " + QUERY_WORD_CONNECTION_QUERY_COL + " from "
+		+ QUERY_WORD_CONNECTION + " where "
 		+ QUERY_WORD_CONNECTION_WORD_COL + " = (select id from "
 		+ QUERY_WORDS + " where " + QUERY_WORDS_COL + " = " + value
-		+ ")) order by requests desc;";
+		+ ");";
 
 	System.out.println(request);
 
@@ -311,10 +307,39 @@ public class MySqlConnector extends Tablenames {
 
 	resultSet = statement.executeQuery(request);
 
-	int i = 0;
 	while (resultSet.next()) {
-	    temp.add(resultSet.getString(++i));
+	    temp.add(resultSet.getString(1));
 	}
+	resultSet.close();
+
+	if (temp.isEmpty())
+	    return temp;
+
+	request = "select " + QUERIES_COL + " from " + QUERIES + " where ";
+
+	for (int i = 0; i < temp.size(); i++) {
+	    if (i == temp.size() - 1) {
+		request += " id = " + temp.get(i) + " ";
+	    } else
+		request += " id = " + temp.get(i) + " or ";
+
+	}
+	request += " order by requests;";
+
+	System.out.println(request);
+
+	temp.clear();
+	statement.close();
+
+	Statement stat = connect.createStatement();
+	ResultSet set = null;
+	set = stat.executeQuery(request);
+
+	while (set.next()) {
+	    temp.add(set.getString(1));
+	}
+	set.close();
+	stat.close();
 
 	return temp;
 
