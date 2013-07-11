@@ -39,6 +39,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -159,8 +161,18 @@ public class QueryMdSystem extends HttpServlet {
         e.printStackTrace();
       }
     } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
+
       // query contains the subject uri
       // call sparql adapter and query for the given subject
+      String resourceUri;
+      try {
+        resourceUri = URIUtil.decode(query);
+        final Resource resource = new ResourceImpl("<" + resourceUri + ">");
+        resultContainer = adapter.buildSparqlQuery(resource);
+      } catch (final URIException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     } else { // neither graphId or subject was set
       // query contains the subject URI
       // call sparql adapter and query for the given subject within THE NORMDATA.RDF
@@ -255,6 +267,7 @@ public class QueryMdSystem extends HttpServlet {
         try {
           System.out.println(resultContainer);
           final JSONArray jHitGraphes = new JSONArray();
+
           if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
             final JSONObject avgScoreJsonObj = new JSONObject();
             avgScoreJsonObj.put("averageScore", hitGraph.getAvgScore());
@@ -267,6 +280,7 @@ public class QueryMdSystem extends HttpServlet {
           }
           for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
             final JSONObject jHitStatement = new JSONObject();
+            jHitStatement.put("graphName", hitGraph.getNamedGraphUrl().toExternalForm());
             final String encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
             jHitStatement.put("subject", encodedSubj);
             final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
