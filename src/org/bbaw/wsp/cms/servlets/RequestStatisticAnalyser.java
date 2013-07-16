@@ -2,6 +2,7 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -9,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bbaw.wsp.cms.document.Token;
+import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONValue;
 
@@ -36,6 +39,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	request.setCharacterEncoding("utf-8");
 	response.setCharacterEncoding("utf-8");
 	String query = request.getParameter("query");
+	String documenturl = request.getParameter("document");
 	String outputFormat = request.getParameter("outputFormat");
 	if (outputFormat == null)
 	    outputFormat = "html";
@@ -52,10 +56,29 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	}
 	try {
 
+	    query = query.toLowerCase().trim();
+	    IndexHandler indexHandler = IndexHandler.getInstance();
+
+	    String[] array = query.split("[ ]+");
+
+	    Boolean inserInDatabase = true;
+
+	    for (String str : array) {
+		ArrayList<Token> token = indexHandler.getToken("tokenOrig",
+			str, 1);
+
+		if (token.get(0) == null) {
+		    inserInDatabase = false;
+		}
+
+	    }
+
 	    QuerySqlProvider qsp = new QuerySqlProvider("localhost", "3306",
 		    "WspCmsCore");
 
-	    qsp.updateQueries(query);
+	    if (inserInDatabase) {
+		qsp.updateQueries(query);
+	    }
 
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
