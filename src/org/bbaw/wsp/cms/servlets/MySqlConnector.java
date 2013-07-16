@@ -292,7 +292,7 @@ public class MySqlConnector extends Tablenames {
 	    System.out.println("comparetemp: " + temp);
 	    System.out.println("value: " + value);
 
-	    if (temp.startsWith(value)) {
+	    if (temp.startsWith(value) || temp.equals(value)) {
 
 		String id_q = getID(QUERIES, temp);
 		System.out.println(id_q);
