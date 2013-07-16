@@ -28,6 +28,7 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    @SuppressWarnings("static-access")
     public void setValues(final String server, final String port,
 	    final String database) {
 	this.server = server;
@@ -150,6 +151,80 @@ public class MySqlConnector extends Tablenames {
 	    }
 	}
 
+	else if (table == Tablenames.RELEVANT_DOCS) {
+
+	    System.out
+		    .println("inserSingelElementToTable an stelle relevant docs");
+	    resultSet = statement.executeQuery("select requests from "
+		    + RELEVANT_DOCS + " where " + RELEVANT_DOCS_COL + " = "
+		    + value);
+
+	    int temp = 0;
+	    while (resultSet.next()) {
+		temp = Integer.parseInt(resultSet.getString(1));
+	    }
+	    System.out.println(temp);
+
+	    if (temp > 0) {
+		updateSingelValueInTable(table, "requests", element, ""
+			+ ++temp, value);
+		resultSet.close();
+		return;
+	    } else {
+		resultSet.close();
+
+		preparedStatement = connect.prepareStatement("insert into "
+			+ table + " (" + element + ") values (" + value + ");");
+		preparedStatement.executeUpdate();
+		return;
+	    }
+	}
+
+    }
+
+    @SuppressWarnings("null")
+    public void updateDocs(String query, String docUrl) throws SQLException {
+
+	String id_doc = getID(RELEVANT_DOCS, docUrl);
+	String id_query = getID(QUERIES, query);
+
+	query = createValidSQLString(query);
+	docUrl = createValidSQLString(docUrl);
+
+	if (id_doc == null || id_query == null)
+	    return;
+
+	ResultSet resultSet = null;
+	Statement statement = null;
+	PreparedStatement preparedStatement = null;
+
+	System.out.println("inserSingelElementToTable an stelle querywords");
+	resultSet = statement.executeQuery("select id from "
+		+ RELEVANT_DOCS_CONNECTION + " where "
+		+ RELEVANT_DOCS_CONNECTION_DOC_COL + " = " + "(select id from "
+		+ RELEVANT_DOCS + " where " + RELEVANT_DOCS_COL + " = "
+		+ docUrl + ") and " + RELEVANT_DOCS_CONNECTION_QUERY_COL
+		+ " = (select id from " + QUERIES + " where " + QUERIES_COL
+		+ " = " + query + ");");
+
+	int temp = 0;
+	while (resultSet.next()) {
+	    temp = Integer.parseInt(resultSet.getString(1));
+	}
+	System.out.println(temp);
+
+	if (!(temp > 0)) {
+
+	    preparedStatement = connect.prepareStatement("insert into "
+		    + RELEVANT_DOCS_CONNECTION + " ("
+		    + RELEVANT_DOCS_CONNECTION_DOC_COL + ", "
+		    + RELEVANT_DOCS_CONNECTION_QUERY_COL + ") values ("
+		    + id_doc + ", " + id_query + ");");
+	    preparedStatement.executeUpdate();
+	    return;
+	}
+	resultSet.close();
+
     }
 
     /**
@@ -175,9 +250,7 @@ public class MySqlConnector extends Tablenames {
 	case QUERIES:
 	    element = QUERIES_COL;
 	    break;
-	case RELEVANT_COUNTER:
-	    element = RELEVANT_COUNTER_COL;
-	    break;
+
 	case RELEVANT_DOCS:
 	    element = RELEVANT_DOCS_COL;
 	    break;
@@ -219,7 +292,7 @@ public class MySqlConnector extends Tablenames {
 	    System.out.println("comparetemp: " + temp);
 	    System.out.println("value: " + value);
 
-	    if (temp.startsWith(value) || temp.equals(value)) {
+	    if (temp.startsWith(value)) {
 
 		String id_q = getID(QUERIES, temp);
 		System.out.println(id_q);
@@ -267,6 +340,66 @@ public class MySqlConnector extends Tablenames {
 	    preparedStatement.executeUpdate();
 	    System.out.println("Database updated");
 	}
+
+    }
+
+    @SuppressWarnings("null")
+    public ArrayList<String> getDocmuents(String query) throws SQLException {
+
+	String id_query = getID(QUERIES, query);
+
+	query = createValidSQLString(query);
+
+	ResultSet resultSet = null;
+	Statement statement = null;
+
+	if (id_query == null)
+	    return null;
+
+	resultSet = statement.executeQuery("select "
+		+ RELEVANT_DOCS_CONNECTION_DOC_COL + " from "
+		+ RELEVANT_DOCS_CONNECTION + " where "
+		+ RELEVANT_DOCS_CONNECTION_QUERY_COL + " = " + id_query + ";");
+
+	ArrayList<String> temp = new ArrayList<String>();
+
+	while (resultSet.next()) {
+	    temp.add(resultSet.getString(1));
+
+	}
+
+	if (temp.isEmpty()) {
+	    return null;
+	}
+
+	String request = "select " + RELEVANT_DOCS_COL + " from "
+		+ RELEVANT_DOCS + " where ";
+
+	for (int i = 0; i < temp.size(); i++) {
+	    if (i == temp.size() - 1) {
+		request += " id = " + temp.get(i) + " ";
+	    } else
+		request += " id = " + temp.get(i) + " or ";
+
+	}
+	request += " order by requests ASC;";
+
+	System.out.println(request);
+
+	temp.clear();
+	statement.close();
+
+	Statement stat = connect.createStatement();
+	ResultSet set = null;
+	set = stat.executeQuery(request);
+
+	while (set.next()) {
+	    temp.add(set.getString(1));
+	}
+	set.close();
+	stat.close();
+
+	return temp;
 
     }
 

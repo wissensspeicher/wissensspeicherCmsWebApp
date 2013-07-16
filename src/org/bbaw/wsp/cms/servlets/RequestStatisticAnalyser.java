@@ -39,7 +39,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	request.setCharacterEncoding("utf-8");
 	response.setCharacterEncoding("utf-8");
 	String query = request.getParameter("query");
-	String documenturl = request.getParameter("document");
+	String docUrl = request.getParameter("docUrl");
 	String outputFormat = request.getParameter("outputFormat");
 	if (outputFormat == null)
 	    outputFormat = "html";
@@ -57,6 +57,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	try {
 
 	    query = query.toLowerCase().trim();
+
 	    IndexHandler indexHandler = IndexHandler.getInstance();
 
 	    String[] array = query.split("[ ]+");
@@ -83,11 +84,18 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
 
-	    out.println(JSONValue.toJSONString(qsp.getQueries(query)));
+	    if (docUrl == null && !query.contains(" ")) {
+
+		out.println(JSONValue.toJSONString(qsp.getQueries(query)));
+
+	    } else if (docUrl == null) {
+		out.println(JSONValue.toJSONString(qsp.getDocuments(query)));
+	    } else {
+		docUrl = docUrl.toLowerCase().trim();
+		qsp.updateDocs(query, docUrl);
+	    }
 
 	    qsp.closeConnection();
-
-	    out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
 
 	} catch (Exception e) {
 	    throw new ServletException(e);

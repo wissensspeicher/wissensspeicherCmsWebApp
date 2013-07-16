@@ -40,17 +40,39 @@ public class QuerySqlProvider extends Tablenames {
 	con.updateQueries(queryWord);
     }
 
+    public void updateDocs(String query, String docUrl) throws SQLException {
+
+	con.inserSingelElementToTable(RELEVANT_DOCS, RELEVANT_DOCS_COL, query);
+
+	con.updateDocs(query, docUrl);
+    }
+
     public void inserSingelElementToTable(String table, String col, String query)
 	    throws SQLException {
 	con.inserSingelElementToTable(table, col, query);
     }
 
+    @SuppressWarnings("static-access")
     public void readDataBase() throws Exception {
 	con.readDataBase();
     }
 
     public JSONObject getQueries(String queryWord) throws SQLException {
 	ArrayList<String> temp = con.getQueries(queryWord);
+
+	WspJsonEncoder coder = new WspJsonEncoder();
+
+	int i = 0;
+	for (String string : temp) {
+	    coder.putStrings("" + ++i, string);
+	}
+
+	return coder.getJsonObject();
+
+    }
+
+    public JSONObject getDocuments(String query) throws SQLException {
+	ArrayList<String> temp = con.getDocmuents(query);
 
 	WspJsonEncoder coder = new WspJsonEncoder();
 
