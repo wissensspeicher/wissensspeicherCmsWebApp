@@ -174,7 +174,8 @@ public class MySqlConnector extends Tablenames {
 		resultSet.close();
 
 		preparedStatement = connect.prepareStatement("insert into "
-			+ table + " (" + element + ") values (" + value + ");");
+			+ table + " (" + element + ",requests) values ("
+			+ value + ",1);");
 		preparedStatement.executeUpdate();
 		return;
 	    }
@@ -185,45 +186,54 @@ public class MySqlConnector extends Tablenames {
     @SuppressWarnings("null")
     public void updateDocs(String query, String docUrl) throws SQLException {
 
-	String id_doc = getID(RELEVANT_DOCS, docUrl);
-	String id_query = getID(QUERIES, query);
+	String id_doc = createValidSQLString(getID(RELEVANT_DOCS, docUrl));
+	String id_query = createValidSQLString(getID(QUERIES, query));
 
-	query = createValidSQLString(query);
-	docUrl = createValidSQLString(docUrl);
+	System.out.println("id_doc = " + id_doc);
+	System.out.println("id_query = " + id_query);
 
 	if (id_doc == null || id_query == null)
 	    return;
 
+	query = createValidSQLString(query);
+	docUrl = createValidSQLString(docUrl);
+
 	ResultSet resultSet = null;
-	Statement statement = null;
+	Statement statement = connect.createStatement();
 	PreparedStatement preparedStatement = null;
-
-	System.out.println("inserSingelElementToTable an stelle querywords");
-	resultSet = statement.executeQuery("select id from "
-		+ RELEVANT_DOCS_CONNECTION + " where "
-		+ RELEVANT_DOCS_CONNECTION_DOC_COL + " = " + "(select id from "
-		+ RELEVANT_DOCS + " where " + RELEVANT_DOCS_COL + " = "
-		+ docUrl + ") and " + RELEVANT_DOCS_CONNECTION_QUERY_COL
-		+ " = (select id from " + QUERIES + " where " + QUERIES_COL
-		+ " = " + query + ");");
-
 	int temp = 0;
+
+	String request = "select id from " + RELEVANT_DOCS_CONNECTION
+		+ " where " + RELEVANT_DOCS_CONNECTION_DOC_COL + " = " + id_doc
+		+ " and " + RELEVANT_DOCS_CONNECTION_QUERY_COL + " = "
+		+ id_query + ";";
+
+	System.out.println(request);
+
+	resultSet = statement.executeQuery(request);
+
 	while (resultSet.next()) {
+
 	    temp = Integer.parseInt(resultSet.getString(1));
 	}
+
+	resultSet.close();
+	statement.close();
+
 	System.out.println(temp);
+	if (temp == 0) {
 
-	if (!(temp > 0)) {
-
-	    preparedStatement = connect.prepareStatement("insert into "
-		    + RELEVANT_DOCS_CONNECTION + " ("
+	    request = "insert into " + RELEVANT_DOCS_CONNECTION + " ("
 		    + RELEVANT_DOCS_CONNECTION_DOC_COL + ", "
 		    + RELEVANT_DOCS_CONNECTION_QUERY_COL + ") values ("
-		    + id_doc + ", " + id_query + ");");
+		    + id_doc + ", " + id_query + ");";
+
+	    System.out.println(request);
+	    preparedStatement = connect.prepareStatement(request);
+
 	    preparedStatement.executeUpdate();
-	    return;
+
 	}
-	resultSet.close();
 
     }
 
@@ -346,20 +356,22 @@ public class MySqlConnector extends Tablenames {
     @SuppressWarnings("null")
     public ArrayList<String> getDocmuents(String query) throws SQLException {
 
-	String id_query = getID(QUERIES, query);
+	String id_query = createValidSQLString(getID(QUERIES, query));
 
 	query = createValidSQLString(query);
 
 	ResultSet resultSet = null;
-	Statement statement = null;
+	Statement statement = connect.createStatement();
 
 	if (id_query == null)
 	    return null;
 
-	resultSet = statement.executeQuery("select "
-		+ RELEVANT_DOCS_CONNECTION_DOC_COL + " from "
-		+ RELEVANT_DOCS_CONNECTION + " where "
-		+ RELEVANT_DOCS_CONNECTION_QUERY_COL + " = " + id_query + ";");
+	String request = "select " + RELEVANT_DOCS_CONNECTION_DOC_COL
+		+ " from " + RELEVANT_DOCS_CONNECTION + " where "
+		+ RELEVANT_DOCS_CONNECTION_QUERY_COL + " = " + id_query + ";";
+	System.out.println(request);
+
+	resultSet = statement.executeQuery(request);
 
 	ArrayList<String> temp = new ArrayList<String>();
 
@@ -369,11 +381,11 @@ public class MySqlConnector extends Tablenames {
 	}
 
 	if (temp.isEmpty()) {
-	    return null;
+	    return temp;
 	}
 
-	String request = "select " + RELEVANT_DOCS_COL + " from "
-		+ RELEVANT_DOCS + " where ";
+	request = "select " + RELEVANT_DOCS_COL + " from " + RELEVANT_DOCS
+		+ " where ";
 
 	for (int i = 0; i < temp.size(); i++) {
 	    if (i == temp.size() - 1) {

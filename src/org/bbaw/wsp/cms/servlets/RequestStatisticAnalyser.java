@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.bbaw.wsp.cms.document.Token;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 /**
@@ -39,7 +40,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	request.setCharacterEncoding("utf-8");
 	response.setCharacterEncoding("utf-8");
 	String query = request.getParameter("query");
-	String docUrl = request.getParameter("docUrl");
+	String docUrl = request.getParameter("url");
 	String outputFormat = request.getParameter("outputFormat");
 	if (outputFormat == null)
 	    outputFormat = "html";
@@ -49,7 +50,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    response.setContentType("text/html");
 	else
 	    response.setContentType("text/xml");
-	PrintWriter out = response.getWriter();
+	final PrintWriter out = response.getWriter();
 	if (query == null) {
 	    out.print("no query specified: please set parameter \"query\"");
 	    return;
@@ -74,8 +75,8 @@ public class RequestStatisticAnalyser extends HttpServlet {
 
 	    }
 
-	    QuerySqlProvider qsp = new QuerySqlProvider("localhost", "3306",
-		    "WspCmsCore");
+	    final QuerySqlProvider qsp = new QuerySqlProvider("localhost",
+		    "3306", "WspCmsCore");
 
 	    if (inserInDatabase) {
 		qsp.updateQueries(query);
@@ -84,14 +85,31 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
 
+	    System.out.println("docUrl= " + docUrl);
+	    System.out.println("Query= " + query);
+
 	    if (docUrl == null && !query.contains(" ")) {
 
-		out.println(JSONValue.toJSONString(qsp.getQueries(query)));
+		JSONObject queries = qsp.getQueries(query);
+		System.out.println("Erste abfrage erfolgreich");
+		System.out.println(queries);
+		JSONObject documents = qsp.getDocuments(query);
+		System.out.println("Zweite abfrage erfolgreich");
+		System.out.println(documents);
+
+		if (queries != null)
+		    out.println(JSONValue.toJSONString(queries));
+
+		if (documents != null)
+		    out.println(JSONValue.toJSONString(documents));
 
 	    } else if (docUrl == null) {
-		out.println(JSONValue.toJSONString(qsp.getDocuments(query)));
+		JSONObject documents = qsp.getDocuments(query);
+		if (documents != null)
+		    out.println(JSONValue.toJSONString(documents));
 	    } else {
 		docUrl = docUrl.toLowerCase().trim();
+
 		qsp.updateDocs(query, docUrl);
 	    }
 

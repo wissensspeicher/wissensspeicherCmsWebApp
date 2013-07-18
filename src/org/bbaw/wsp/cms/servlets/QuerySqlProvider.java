@@ -42,7 +42,7 @@ public class QuerySqlProvider extends Tablenames {
 
     public void updateDocs(String query, String docUrl) throws SQLException {
 
-	con.inserSingelElementToTable(RELEVANT_DOCS, RELEVANT_DOCS_COL, query);
+	con.inserSingelElementToTable(RELEVANT_DOCS, RELEVANT_DOCS_COL, docUrl);
 
 	con.updateDocs(query, docUrl);
     }
