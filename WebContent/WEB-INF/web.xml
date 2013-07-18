@@ -147,6 +147,16 @@
     <servlet-name>RequestStatisticAnalyser</servlet-name>
     <url-pattern>/query/RequestStatisticAnalyser</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description>Suggest</description>
+    <display-name>Suggest</display-name>
+    <servlet-name>Suggest</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.Suggest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Suggest</servlet-name>
+    <url-pattern>/query/Suggest</url-pattern>
+  </servlet-mapping>
 
   <!-- Vaadin applications -->  
   <servlet>
