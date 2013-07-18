@@ -233,6 +233,38 @@
     </ul>
   </li>
 
+  <li><b>Url: /wspCmsWebApp/query/Suggest</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>query (required)
+            <ul>
+              <li>suggest query</li>
+            </ul>
+          </li>
+          <li>count (optional)
+            <ul>
+              <li>count of suggestions</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>json</li>
+              <li>xml</li>
+              <li>default: json</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output: suggestions (term + termFreq)
+        <ul>
+          <li>Example: <a href="query/Suggest?query=hau">Suggestions for "hau"</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
  <li><b>Url: /wspCmsWebApp/query/RequestStatisticAnalyser</b>
     <ul>
       <li>Request parameters
@@ -251,8 +283,6 @@
     </ul>
   </li>
          
-
-
 
   <li><b>Url: /wspCmsWebApp/doc/GetDocument</b>
     <ul>
