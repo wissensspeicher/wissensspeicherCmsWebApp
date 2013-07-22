@@ -6,6 +6,7 @@ import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -31,6 +32,7 @@ import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  
   public QueryDocuments() {
     super();
   }
@@ -408,15 +410,32 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tr valign=\"top\">");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+          String firstHitPageNumber = null;
+          if (docIsXml)
+            firstHitPageNumber = doc.getFirstHitPageNumber();
           Fieldable webUriField = doc.getFieldable("webUri");
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
-          if (webUri != null)
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
+          if (webUri != null) {
+            if (firstHitPageNumber == null) {
+              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
+            } else {
+              Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+              Hashtable<String, String> urlParams = projectColl.getUrlParamters();
+              if (urlParams != null) {
+                String pageNumberField = urlParams.get("pageNumber");
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "&" + pageNumberField + "=" + firstHitPageNumber + "\">Project-View</a>, ");
+              }
+            }
+          }
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
-          if (docIsXml)
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "\">WSP-View</a>, ");
+          if (docIsXml) {
+            if (firstHitPageNumber == null)
+              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "\">WSP-View</a>, ");
+            else
+              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "&page=" + firstHitPageNumber + "&highlightQuery=" + query + "\">WSP-View</a>, ");
+          }
           Fieldable content = doc.getFieldable("content");
           if (content != null) {
             String contentStr = content.stringValue();
@@ -491,8 +510,10 @@ public class QueryDocuments extends HttpServlet {
             }
           }
           Fieldable docIdField = doc.getFieldable("docId");
-          if(docIdField != null){
-            jsonWrapper.put("docId", docIdField.stringValue());
+          String docId = null;
+          if(docIdField != null) {
+            docId = docIdField.stringValue();
+            jsonWrapper.put("docId", docId);
           }
           Fieldable docUriField = doc.getFieldable("uri");
           if (docUriField != null) {
@@ -503,6 +524,23 @@ public class QueryDocuments extends HttpServlet {
           Fieldable webUriField = doc.getFieldable("webUri");
           if (webUriField != null) {
             String webUri = webUriField.stringValue();
+            if (webUri != null) {
+              String firstHitPageNumber = null;
+              boolean docIsXml = false; 
+              String mimeType = getMimeType(docId);
+              if (mimeType != null && mimeType.contains("xml"))
+                docIsXml = true;
+              if (docIsXml)
+                firstHitPageNumber = doc.getFirstHitPageNumber();
+              if (firstHitPageNumber != null) {
+                Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+                Hashtable<String, String> urlParams = projectColl.getUrlParamters();
+                if (urlParams != null) {
+                  String pageNumberField = urlParams.get("pageNumber");
+                  webUri =  webUri + "&" + pageNumberField + "=" + firstHitPageNumber;
+                }
+              }
+            }
             String encoded = URIUtil.encodeQuery(webUri);
             jsonWrapper.put("webUri", encoded);
           }
