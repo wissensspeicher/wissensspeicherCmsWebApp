@@ -1,5 +1,13 @@
 package org.bbaw.wsp.cms.servlets;
 
+/**
+ * Class contains static values of Tablenames to make an easy change of tables
+ * or columns names possible
+ * 
+ * @author shk2
+ * 
+ */
+
 public class Tablenames {
 
     // Tablenames

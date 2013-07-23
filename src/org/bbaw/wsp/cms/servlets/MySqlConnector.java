@@ -9,6 +9,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Properties;
 
+/**
+ * Connector for JDBC, also the main SQL requests are created here.
+ * 
+ * @author shk2
+ * 
+ */
 public class MySqlConnector extends Tablenames {
     private static Connection connect = null;
 
@@ -19,15 +25,12 @@ public class MySqlConnector extends Tablenames {
     private static Boolean hasInfos = false;
 
     /**
+     * Methode sets constant values for the Database connection.
      * 
      * @param server
      * @param port
      * @param database
      */
-    private MySqlConnector() {
-
-    }
-
     @SuppressWarnings("static-access")
     public void setValues(final String server, final String port,
 	    final String database) {
@@ -36,6 +39,13 @@ public class MySqlConnector extends Tablenames {
 	this.database = database;
     }
 
+    /**
+     * Singelton Pattern, returns the instance of {@link MySqlConnector} or
+     * creates a new and returns it.
+     * 
+     * @return
+     * @throws Exception
+     */
     public static MySqlConnector getInstance() throws Exception {
 	if (con == null) {
 	    con = new MySqlConnector();
@@ -44,6 +54,12 @@ public class MySqlConnector extends Tablenames {
 	return con;
     }
 
+    /**
+     * Methode connects actually to the Database, throwns Exception if values
+     * are not set yet or wrong
+     * 
+     * @throws Exception
+     */
     public static void readDataBase() throws Exception {
 
 	try {
@@ -66,10 +82,21 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Returns bool if connection was successfully created
+     * 
+     * @return
+     */
     public Boolean hasConnectionInfos() {
 	return hasInfos;
     }
 
+    /**
+     * Calls the JDBC driver and sets the user rights to the database
+     * 
+     * @return
+     * @throws SQLException
+     */
     private static Connection getConnection() throws SQLException {
 
 	Connection conn = null;
@@ -85,6 +112,7 @@ public class MySqlConnector extends Tablenames {
     }
 
     /**
+     * Methode is used to add a single value to the given Table and colum
      * 
      * @param table
      * @param element
@@ -183,6 +211,13 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Creates new Connections in RelevantDocsConnection the given query
+     * 
+     * @param query
+     * @param docUrl
+     * @throws SQLException
+     */
     @SuppressWarnings("null")
     public void updateDocs(String query, String docUrl) throws SQLException {
 
@@ -238,13 +273,15 @@ public class MySqlConnector extends Tablenames {
     }
 
     /**
+     * Returns the id in the given table, where the value has the value of the
+     * given value, sounds may stupid but works xD
      * 
      * @param table
      * @param value
      * @return
      * @throws SQLException
      */
-    public String getID(String table, String value) throws SQLException {
+    private String getID(String table, String value) throws SQLException {
 
 	value = createValidSQLString(value);
 
@@ -280,6 +317,12 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Creates new Connections in QueryWordConnection the given query
+     * 
+     * @param value
+     * @throws SQLException
+     */
     public void updateQueries(String value) throws SQLException {
 
 	String stat = "select " + QUERIES_COL + " from " + QUERIES + ";";
@@ -318,7 +361,14 @@ public class MySqlConnector extends Tablenames {
 
     }
 
-    public void inserQueryWordConnection(String queryWord_id, String query_id)
+    /**
+     * Methode to inser a value used in updateDocs Methode
+     * 
+     * @param queryWord_id
+     * @param query_id
+     * @throws SQLException
+     */
+    private void inserQueryWordConnection(String queryWord_id, String query_id)
 	    throws SQLException {
 
 	System.out.println("inserQueryWordConnection");
@@ -353,7 +403,14 @@ public class MySqlConnector extends Tablenames {
 
     }
 
-    @SuppressWarnings("null")
+    /**
+     * Methode returns an Arraylist of matching Documents to the given query,
+     * returns empty list if none does.
+     * 
+     * @param query
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<String> getDocmuents(String query) throws SQLException {
 
 	String id_query = createValidSQLString(getID(QUERIES, query));
@@ -415,6 +472,17 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Updates a singel values given Table and cloumn, with given new value
+     * under given condition with the conditionValue
+     * 
+     * @param table
+     * @param columnToUpdate
+     * @param columnConditionToUpdate
+     * @param value
+     * @param conditionValue
+     * @throws SQLException
+     */
     public void updateSingelValueInTable(String table, String columnToUpdate,
 	    String columnConditionToUpdate, String value, String conditionValue)
 	    throws SQLException {
@@ -429,6 +497,14 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Methode returns matching Arraylist of Queries to given QueryWord, if none
+     * does empty List returns
+     * 
+     * @param value
+     * @return
+     * @throws SQLException
+     */
     public ArrayList<String> getQueries(String value) throws SQLException {
 
 	value = createValidSQLString(value);
@@ -490,11 +566,19 @@ public class MySqlConnector extends Tablenames {
 
     }
 
+    /**
+     * Methode sets a String in "" and returns it to match sql syntax
+     * 
+     * @param str
+     * @return
+     */
     private String createValidSQLString(String str) {
 	return "\"" + str + "\"";
     }
 
-    // You need to close the resultSet
+    /**
+     * JDBC Connection closes
+     */
     public void closeConnection() {
 	try {
 

@@ -17,7 +17,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 /**
- * Class is used to split an incoming Request and match it with the Database
+ * Class provides an Servlet service to get matching querys or Documents of the
+ * Database or inser them in the Database. If query is just one word a json with
+ * usally requests ordered by rate to this word in the Database will be
+ * returned. Otherwise there will be created an entry or if exists already the
+ * parameter requests increased
  * 
  * @author shk2
  * 
