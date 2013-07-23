@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.bbaw.wsp.cms.document.Token;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.query.rf.QuerySqlProvider;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
