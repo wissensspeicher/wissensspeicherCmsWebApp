@@ -80,7 +80,8 @@ public class RequestStatisticAnalyser extends HttpServlet {
 
 	    if (inserInDatabase) {
 		qsp.updateQueries(query);
-	    }
+	    } else
+		return;
 
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
