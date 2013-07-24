@@ -46,6 +46,7 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	response.setCharacterEncoding("utf-8");
 	String query = request.getParameter("query");
 	String docUrl = request.getParameter("url");
+	String type = request.getParameter("type");
 	String outputFormat = request.getParameter("outputFormat");
 	if (outputFormat == null)
 	    outputFormat = "html";
@@ -60,6 +61,10 @@ public class RequestStatisticAnalyser extends HttpServlet {
 	    out.print("no query specified: please set parameter \"query\"");
 	    return;
 	}
+	if (type == null) {
+	    type = "queries";
+	}
+
 	try {
 
 	    query = query.toLowerCase().trim();
@@ -84,36 +89,35 @@ public class RequestStatisticAnalyser extends HttpServlet {
 		    "3306", "WspCmsCore");
 
 	    if (inserInDatabase) {
+
 		qsp.updateQueries(query);
+
 	    } else
 		return;
 
 	    WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
 	    jsonEncoder.clear();
 
-	    System.out.println("docUrl= " + docUrl);
-	    System.out.println("Query= " + query);
+	    if (docUrl == null && type.equals("resources")) {
 
-	    if (docUrl == null && !query.contains(" ")) {
+		JSONObject documents = qsp.getDocuments(query);
+
+		if (documents != null)
+		    out.println(JSONValue.toJSONString(documents));
+
+	    } else if (docUrl == null && type.equals("queries")) {
+
+		if (query.contains(" ")) {
+		    out.print("query is longer as than as one word. Please just give one.");
+		    return;
+		}
 
 		JSONObject queries = qsp.getQueries(query);
-		System.out.println("Erste abfrage erfolgreich");
-		System.out.println(queries);
-		JSONObject documents = qsp.getDocuments(query);
-		System.out.println("Zweite abfrage erfolgreich");
-		System.out.println(documents);
-
 		if (queries != null)
 		    out.println(JSONValue.toJSONString(queries));
 
-		if (documents != null)
-		    out.println(JSONValue.toJSONString(documents));
-
-	    } else if (docUrl == null) {
-		JSONObject documents = qsp.getDocuments(query);
-		if (documents != null)
-		    out.println(JSONValue.toJSONString(documents));
 	    } else {
+
 		docUrl = docUrl.toLowerCase().trim();
 
 		qsp.updateDocs(query, docUrl);
