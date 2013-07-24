@@ -265,41 +265,42 @@
     </ul>
   </li>
 
- <li><b>Url: /wspCmsWebApp/query/RequestStatisticAnalyser</b>
+  <li><b>Url: /wspCmsWebApp/query/RequestStatisticAnalyser</b>
     <ul>
       <li>Request parameters
         <ul>
-          <li>query (required) 
+          <li>query (required)
             <ul>
-              <li>query (query language: has to be specified)</li>
-              <li>if query is just one word a json with usally requests ordered by 
-              <br>rate to this word in the Database will be returned. </li>
-              <li>otherwise there will be created an entry or if exists already
-              <br> the parameter requests increased </li>
-              <li><br>There are 2 possible ways to do so. </li>
-              <li>First you give just one word, then it can be a queryword or already the query,
-              <br>because that you will get 2 Jsons first with connected queries 
-              <br>second with connected Docs to the query. </li>
-              <li>The other possiblity is there are 2 words or more as query given,
-              <br>then it will be interpeted as query and a JSON with connected Docs to the 
-              <br> query will return.</li>
-                            
+              <li>query word</li>
             </ul>
-            <li> url (optional)
-            <ul>	
-            <li> url allows to add an Documents to the query before </li>
-            <li> Example: wspCmsWebApp/query/RequestStatisticAnalyser?query=Marx&url=http://www.bla.de/doc.pdf </li>
-            <li> u well get no response, if it was a success.
-            </ul>
-            </li>
-            
           </li>
-         
+          <li>type (optional)
+            <ul>
+              <li>queries</li>
+              <li>resources</li>
+              <li>insert</li>
+              <li>default: queries</li>
+            </ul>
+          </li>
+          <li>url (optional)
+            <ul>
+              <li>URL of a resource which is relevant to the query. This parameter is only used when parameter "type" = "insert".</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>if type = "queries": queries ordered by overall usage frequency of the query word in all queries</li>
+          <li>if type = "resources":  resources ordered by frequency of relevance feedback given by users</li>
+          <li>if type = "insert": no result (relevant document for the query is inserted)</li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=queries">user queries which contain "marx"</a></li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=resources">relevant resources of queries which contain "marx"</a></li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=insert&url=http://www.bbaw.de/mega/doc1.pdf">insert of a user relevance feedback: for query "marx" the resource "http://www.bbaw.de/mega/doc1.pdf" is notified as relevant</a></li>
         </ul>
       </li>
     </ul>
   </li>
-         
 
   <li><b>Url: /wspCmsWebApp/doc/GetDocument</b>
     <ul>
