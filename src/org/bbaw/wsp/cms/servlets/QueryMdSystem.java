@@ -38,6 +38,7 @@ import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.openjena.atlas.json.JsonObject;
 
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -266,6 +267,11 @@ public class QueryMdSystem extends HttpServlet {
       }
     }
 
+    /*
+     * statistics
+     */
+    
+    
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
     /*
@@ -481,7 +487,12 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("*******************");
         jsonOuterArray.add(jsonInnerArray);
       }
-
+      JSONArray statArray = new JSONArray();
+      JsonObject statistics = new JsonObject();
+      statistics.put("totalNumberOfTriple : ", mdQueryHandler.getTripleCount().toString());
+      statistics.put("totalNumberOfGraphs : ", mdQueryHandler.getNumberOfGraphs());
+      statArray.add(statistics);
+      jsonOuterArray.add(statArray);
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       logger.info("end json");
@@ -512,6 +523,8 @@ public class QueryMdSystem extends HttpServlet {
       htmlStrBuilder.append("\n\t\t</table>");
       htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
       htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + conceptHits.size() + "</p>");
+      htmlStrBuilder.append("\n\t\t<p>Total Number of Triple :"+mdQueryHandler.getTripleCount().toString()+"</p>");
+      htmlStrBuilder.append("\n\t\t<p>Total Number of Graphs :"+mdQueryHandler.getNumberOfGraphs().toString()+"</p>");
       htmlStrBuilder.append("\n\t\t<ul>");
       // for (int i = 0; i < conceptHits.size(); i++) {
       // final ConceptQueryResult conceptHit = conceptHits.get(i);
