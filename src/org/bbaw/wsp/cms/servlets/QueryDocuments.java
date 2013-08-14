@@ -426,6 +426,8 @@ public class QueryDocuments extends HttpServlet {
               if (urlParams != null) {
                 String pageNumberField = urlParams.get("pageNumber");
                 htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "&" + pageNumberField + "=" + firstHitPageNumber + "\">Project-View</a>, ");
+              } else {
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
               }
             }
           }
