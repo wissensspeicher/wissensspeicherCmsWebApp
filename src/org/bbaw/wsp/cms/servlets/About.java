@@ -3,6 +3,7 @@ package org.bbaw.wsp.cms.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
 
 import javax.servlet.ServletConfig;
@@ -16,6 +17,7 @@ import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmValue;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -29,6 +31,7 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class About extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private static int SOCKET_TIMEOUT = 10 * 1000;
   private HttpClient httpClient; 
   private XslResourceTransformer aboutTransformer;
 
@@ -38,9 +41,7 @@ public class About extends HttpServlet {
 
   public void init(ServletConfig config) throws ServletException  {
     super.init(config);
-    httpClient = new HttpClient();
-    int timeout = 2 * 1000;
-    httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(timeout);  // TODO does that work ?
+    initHttpClient();
     try {
       aboutTransformer = new XslResourceTransformer("about.xsl");
     } catch (ApplicationException e) {
@@ -48,6 +49,15 @@ public class About extends HttpServlet {
     }
   }
 
+  private void initHttpClient() {
+    httpClient = new HttpClient();
+    // timeout seems to work
+    httpClient.getParams().setParameter("http.socket.timeout", SOCKET_TIMEOUT);
+    httpClient.getParams().setParameter("http.connection.timeout", SOCKET_TIMEOUT);
+    httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(SOCKET_TIMEOUT));
+    httpClient.getParams().setParameter("http.protocol.head-body-timeout", SOCKET_TIMEOUT);
+  }
+  
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     String result = "";
     request.setCharacterEncoding("utf-8");
@@ -89,10 +99,18 @@ public class About extends HttpServlet {
           dbpediaKey = dbPediaForeName + "_" + surname;
         }
       }
-      String dbPediaXmlStr = getDBpediaXmlStr(dbpediaKey, language);
+      String host = language + ".dbpedia.org";
+      if (language.equals("en"))
+        host = "dbpedia.org"; 
+      String port = "80";
+      String dbPediaXmlStr = getDBpediaXmlStr(host, port, dbpediaKey);
       if (dbPediaXmlStr == null)
         dbPediaXmlStr = "";
       dbPediaXmlStr = dbPediaXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
+      if (dbPediaXmlStr.contains("XXXErrorXXX")) {
+        String errorStr = dbPediaXmlStr.replaceAll("XXXErrorXXX", "");
+        dbPediaXmlStr = "<error>No DBpedia results: " + errorStr + "</error>";
+      }
       StringBuilder aboutXmlStrBuilder = new StringBuilder();
       aboutXmlStrBuilder.append("<about>");
       aboutXmlStrBuilder.append("<query>");
@@ -152,13 +170,9 @@ public class About extends HttpServlet {
     doGet(request, response);
   }  
 
-  private String getDBpediaXmlStr(String key, String language) throws ApplicationException {
+  private String getDBpediaXmlStr(String host, String port, String key) throws ApplicationException {
     String dbPediaXmlStr = null;
     String protocol = "http"; 
-    String host = language + ".dbpedia.org";
-    if (language.equals("en"))
-      host = "dbpedia.org"; 
-    String port = "80";
     String dbPediaResource = protocol + "://" + host + "/resource/" + key;
     try {
       String keyEncoded = URLEncoder.encode(key, "utf-8");
@@ -172,7 +186,7 @@ public class About extends HttpServlet {
       // redirection if necessary
       if (dbPediaXmlStr != null && dbPediaXmlStr.contains("wikiPageRedirects")) {
         XQueryEvaluator xQueryEvaluator = new XQueryEvaluator();
-        String redirectXPath = "string(/*:RDF/*:Description[@*:about = '" + dbPediaResource + "']/*:wikiPageRedirects/@*:resource)";
+        String redirectXPath = "string(/*:RDF/*:Description[@*:about = '" + dbPediaResource + "']/*:wikiPageRedirects[1]/@*:resource)";
         String redirectUrl = xQueryEvaluator.evaluateAsString(dbPediaXmlStr, redirectXPath);
         if (redirectUrl != null) {
           int index = redirectUrl.lastIndexOf("/");
@@ -237,17 +251,23 @@ public class About extends HttpServlet {
 
   private String performGetRequest(String protocol, String host, String port, String requestName) throws ApplicationException {
     String resultStr = null;
+    int statusCode = -1;
+    String portPart = ":" + port;
+    String urlStr = protocol + "://" + host + portPart + requestName;
     try {
-      String portPart = ":" + port;
-      String urlStr = protocol + "://" + host + portPart + requestName;
       GetMethod method = new GetMethod(urlStr);
-      int statusCode = httpClient.executeMethod(method);
+      statusCode = httpClient.executeMethod(method);
       if (statusCode < 400) {
         byte[] resultBytes = method.getResponseBody();
         resultStr = new String(resultBytes, "utf-8");
       }
       method.releaseConnection();
-    } catch (Exception e) {
+    } catch (HttpException e) {
+      // nothing
+    } catch (SocketTimeoutException e) {
+      resultStr = "XXXErrorXXX" + "Url: \"" + urlStr + "\" has socket timeout after " + SOCKET_TIMEOUT + " ms (" + e.bytesTransferred + " bytes transferred)";
+      initHttpClient();
+    } catch (IOException e) {
       // nothing
     }
     return resultStr;
