@@ -21,6 +21,9 @@ span.about {float:right;}
 span.query { font-weight:bold; font-size:150%; }
 div.result { margin-top:0.4em; margin-left: 0.2em; }
 
+/* error */
+span.error { margin-top:0.4em; margin-left: 0.2em; font-weight:bold; color: red; }
+
 /* about fields    */
 div.label { font-weight:bold; font-size:150%; }
 div.dbpedia { margin-top:0.4em; margin-left: 0.2em; }
