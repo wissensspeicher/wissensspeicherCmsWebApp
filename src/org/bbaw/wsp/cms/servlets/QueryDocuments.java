@@ -88,6 +88,7 @@ public class QueryDocuments extends HttpServlet {
         withHitHighlights = true;
       Hits hits = indexHandler.queryDocuments(query, sortFields, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
+      int sizeTotalTerms = hits.getSizeTotalTerms();
       ArrayList<Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
@@ -182,7 +183,7 @@ public class QueryDocuments extends HttpServlet {
         int toDisplay = to + 1;
         if (hitsSize < toDisplay)
           toDisplay = hitsSize;
-        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
+        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "<br/>" + "Number of different terms in all documents: " + sizeTotalTerms + "</td>");
         htmlStrBuilder.append("</tr>");
         htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("<p/>");
@@ -478,6 +479,7 @@ public class QueryDocuments extends HttpServlet {
         jsonEncoder.putStrings("searchTerm", query);
         jsonEncoder.putStrings("numberOfHits", String.valueOf(hitsSize));
         jsonEncoder.putStrings("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
+        jsonEncoder.putStrings("sizeTotalTerms", String.valueOf(sizeTotalTerms));
         JSONArray jsonArray = new JSONArray();
         for (int i=0; i<docsSize; i++) {
           JSONObject jsonWrapper = new JSONObject();
