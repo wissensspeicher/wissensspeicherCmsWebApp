@@ -163,7 +163,7 @@ function checkCR(event) {
           <input type="checkbox" name="schema3" id="schema3Id" value="diverse" checked="checked" style="margin-left:1px;"/>
         </td>
         <td valign="top">
-          <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+          <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
           <input type="hidden" name="query" id="luceneQueryId1"/>
           <input type="hidden" name="sortBy" id="sortById1" value="author"/>
           <button type="submit" onclick="Browse()" style="margin-left:20px;"><span>Browse</span></button>
@@ -210,7 +210,7 @@ function checkCR(event) {
       <input type="text" size="40" name="field1Query" id="field1QueryId" onkeypress="return checkCR(event)"/>
       </td>
       <td valign="top">
-      <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+      <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
         <input type="hidden" name="query" id="luceneQueryId2"/>
         <input type="hidden" name="sortBy" id="sortById2"/>
         <button type="submit" onclick="AttributeQuery()">Query</button>
@@ -262,7 +262,7 @@ function checkCR(event) {
         Resource contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
         </td>
         <td>
-          <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get">
+          <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
             <input type="hidden" name="query" id="luceneQueryId3"/>
             <input type="hidden" name="language" id="languageId3"/>
             <input type="hidden" name="translate" id="translateId3"/>
@@ -300,6 +300,6 @@ function checkCR(event) {
   </table> 
   <hr/>
   <p/>
-  Release 0.5, December, 2012
+  Release 0.7, August, 2013
 </body>
 </html>
