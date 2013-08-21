@@ -266,7 +266,6 @@ public class About extends HttpServlet {
       // nothing
     } catch (SocketTimeoutException e) {
       resultStr = "XXXErrorXXX" + "Url: \"" + urlStr + "\" has socket timeout after " + SOCKET_TIMEOUT + " ms (" + e.bytesTransferred + " bytes transferred)";
-      initHttpClient();
     } catch (IOException e) {
       // nothing
     }
