@@ -6,7 +6,6 @@ import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -20,6 +19,7 @@ import org.apache.lucene.search.Query;
 
 import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
+import org.bbaw.wsp.cms.collections.Service;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -28,6 +28,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 
 public class QueryDocuments extends HttpServlet {
@@ -411,6 +412,7 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tr valign=\"top\">");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+          // project link
           String firstHitPageNumber = null;
           if (docIsXml)
             firstHitPageNumber = doc.getFirstHitPageNumber();
@@ -418,20 +420,9 @@ public class QueryDocuments extends HttpServlet {
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
-          if (webUri != null) {
-            if (firstHitPageNumber == null) {
-              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
-            } else {
-              Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-              Hashtable<String, String> urlParams = projectColl.getUrlParamters();
-              if (urlParams != null) {
-                String pageNumberField = urlParams.get("pageNumber");
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "&" + pageNumberField + "=" + firstHitPageNumber + "\">Project-View</a>, ");
-              } else {
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project-View</a>, ");
-              }
-            }
-          }
+          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
+          if (projectLink != null)
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project-View</a>, ");
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
           if (docIsXml) {
             if (firstHitPageNumber == null)
@@ -525,27 +516,21 @@ public class QueryDocuments extends HttpServlet {
             String encoded = URIUtil.encodeQuery(docUri);
             jsonWrapper.put("uri", encoded);
           }
+          // project link
+          boolean docIsXml = false; 
+          String mimeType = getMimeType(docId);
+          if (mimeType != null && mimeType.contains("xml"))
+            docIsXml = true;
+          String firstHitPageNumber = null;
+          if (docIsXml)
+            firstHitPageNumber = doc.getFirstHitPageNumber();
           Fieldable webUriField = doc.getFieldable("webUri");
-          if (webUriField != null) {
-            String webUri = webUriField.stringValue();
-            if (webUri != null) {
-              String firstHitPageNumber = null;
-              boolean docIsXml = false; 
-              String mimeType = getMimeType(docId);
-              if (mimeType != null && mimeType.contains("xml"))
-                docIsXml = true;
-              if (docIsXml)
-                firstHitPageNumber = doc.getFirstHitPageNumber();
-              if (firstHitPageNumber != null) {
-                Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-                Hashtable<String, String> urlParams = projectColl.getUrlParamters();
-                if (urlParams != null) {
-                  String pageNumberField = urlParams.get("pageNumber");
-                  webUri =  webUri + "&" + pageNumberField + "=" + firstHitPageNumber;
-                }
-              }
-            }
-            String encoded = URIUtil.encodeQuery(webUri);
+          String webUri = null;
+          if (webUriField != null)
+            webUri = webUriField.stringValue();
+          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
+          if (projectLink != null) {
+            String encoded = URIUtil.encodeQuery(projectLink);
             jsonWrapper.put("webUri", encoded);
           }
           if (docCollectionName != null) {
@@ -710,6 +695,53 @@ public class QueryDocuments extends HttpServlet {
     }
   }
 
+  private String buildProjectLink(String docCollectionName, String firstHitPageNumber, String webUri, String query) throws ApplicationException {
+    // project link
+    String projectQueryStr = query.replaceAll(".*:", "").trim(); // TODO translate lucene query properly to projectQuery
+    projectQueryStr = projectQueryStr.replaceAll("\\(|\\)", "");
+    projectQueryStr = projectQueryStr.replaceAll(" ", " || ");
+    // projectQueryStr = projectQueryStr.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
+    String projectLink = null;
+    Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+    Service queryResourceService = projectColl.getService("queryResource");
+    Service pageViewService = projectColl.getService("pageView");
+    if (webUri == null) {
+      if (queryResourceService != null) {
+        String resourceWebId = "bla";  // TODO index it and get it from doc
+        String queryParam = queryResourceService.getParamValue("query");
+        String resourceParam = queryResourceService.getParamValue("resource");
+        projectLink = queryResourceService.toUrlStr();
+        if (queryParam != null)
+          projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
+        if (resourceParam != null)
+          projectLink = projectLink + "&" + resourceParam + "=" + resourceWebId;
+      }
+    } else {
+      projectLink = webUri;
+      if (queryResourceService != null) {
+        int index = webUri.lastIndexOf("/");  // TODO hack
+        String resourceWebId = webUri.substring(index + 1);  // hack TODO index it and get it from doc
+        if (index == -1)
+          resourceWebId = "bla";
+        String queryParam = queryResourceService.getParamValue("query");
+        String resourceParam = queryResourceService.getParamValue("resource");
+        projectLink = queryResourceService.toUrlStr();
+        if (queryParam != null)
+          projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
+        if (resourceParam != null)
+          projectLink = projectLink + "&" + resourceParam + "=" + resourceWebId;
+      } else if (pageViewService != null) {
+        if (firstHitPageNumber != null) {
+          String pageParam = pageViewService.getParamValue("page");
+          projectLink = webUri;
+          if (pageParam != null)
+            projectLink = projectLink + "&" + pageParam + "=" + firstHitPageNumber;
+        }
+      } 
+    }
+    return projectLink;
+  }
+  
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }
