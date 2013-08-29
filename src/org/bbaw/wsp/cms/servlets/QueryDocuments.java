@@ -64,6 +64,7 @@ public class QueryDocuments extends HttpServlet {
     int pageSize = Integer.parseInt(pageSizeStr);
     int from = (page * pageSize) - pageSize;  // e.g. 0
     int to = page * pageSize - 1;  // e.g. 9
+    String requestHitFragments = request.getParameter("hitFragments");  // if "true": show result with highlighted hit fragments
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "html";
@@ -85,8 +86,10 @@ public class QueryDocuments extends HttpServlet {
       if (translate != null && translate.equals("true"))
         translateBool = true;
       boolean withHitHighlights = false;
-      if (query.contains("tokenOrig:") || query.contains("tokenMorph:") || query.contains("tokenReg:") || query.contains("tokenNorm:"))
-        withHitHighlights = true;
+      if (query.contains("tokenOrig:") || query.contains("tokenMorph:") || query.contains("tokenReg:") || query.contains("tokenNorm:")) {
+        if (requestHitFragments == null || requestHitFragments.equals("true"))
+          withHitHighlights = true;
+      }
       Hits hits = indexHandler.queryDocuments(query, sortFields, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
@@ -697,10 +700,6 @@ public class QueryDocuments extends HttpServlet {
 
   private String buildProjectLink(String docCollectionName, String firstHitPageNumber, String webUri, String query) throws ApplicationException {
     // project link
-    String projectQueryStr = query.replaceAll(".*:", "").trim(); // TODO translate lucene query properly to projectQuery
-    projectQueryStr = projectQueryStr.replaceAll("\\(|\\)", "");
-    projectQueryStr = projectQueryStr.replaceAll(" ", " || ");
-    // projectQueryStr = projectQueryStr.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
     String projectLink = null;
     Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
     Service queryResourceService = projectColl.getService("queryResource");
@@ -711,6 +710,8 @@ public class QueryDocuments extends HttpServlet {
         String queryParam = queryResourceService.getParamValue("query");
         String resourceParam = queryResourceService.getParamValue("resource");
         projectLink = queryResourceService.toUrlStr();
+        String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
+        String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
@@ -726,6 +727,8 @@ public class QueryDocuments extends HttpServlet {
         String queryParam = queryResourceService.getParamValue("query");
         String resourceParam = queryResourceService.getParamValue("resource");
         projectLink = queryResourceService.toUrlStr();
+        String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
+        String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
@@ -740,6 +743,20 @@ public class QueryDocuments extends HttpServlet {
       } 
     }
     return projectLink;
+  }
+
+  private String translateLuceneToQueryLanguage(String inputQuery, String queryLanguage) {
+    String outputQuery = null;
+    if (queryLanguage == null) {
+      return inputQuery;
+    } else if (queryLanguage.equals("ddc")) {
+      // TODO translate lucene query properly to ddc
+      outputQuery = inputQuery.replaceAll(".*:", "").trim(); 
+      outputQuery = outputQuery.replaceAll("\\(|\\)", "");
+      outputQuery = outputQuery.replaceAll(" ", " || ");
+      // outputQuery = outputQuery.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
+    }
+    return outputQuery;
   }
   
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
