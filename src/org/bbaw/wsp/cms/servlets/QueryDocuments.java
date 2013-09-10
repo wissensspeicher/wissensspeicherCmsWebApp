@@ -70,8 +70,10 @@ public class QueryDocuments extends HttpServlet {
       outputFormat = "html";
     if (outputFormat.equals("xml"))
       response.setContentType("text/xml");
-    else if (outputFormat.equals("html") || outputFormat.equals("json"))
+    else if (outputFormat.equals("html"))
       response.setContentType("text/html");
+    else if (outputFormat.equals("json"))
+      response.setContentType("application/json");
     else 
       response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
@@ -485,24 +487,18 @@ public class QueryDocuments extends HttpServlet {
             jsonWrapper.put("collectionName", docCollectionName);
           }
           if (docCollectionName != null) {
-            JSONArray jsonProject = new JSONArray();
+            JSONObject jsonProject = new JSONObject();
             Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-            JSONObject jsonProjectId = new JSONObject();
-            jsonProjectId.put("id", docCollectionName);
-            jsonProject.add(jsonProjectId);
+            jsonProject.put("id", docCollectionName);
             if (coll != null) {
               String projectName = coll.getName();
               if (projectName != null) {
-                JSONObject jsonProjectName = new JSONObject();
-                jsonProjectName.put("name", projectName);
-                jsonProject.add(jsonProjectName);
+                jsonProject.put("name", projectName);
               }
               String projectUrl = coll.getWebBaseUrl();
               if (projectUrl != null) {
-                JSONObject jsonProjectUrl = new JSONObject();
                 String encoded = URIUtil.encodeQuery(projectUrl);
-                jsonProjectUrl.put("url", encoded);
-                jsonProject.add(jsonProjectUrl);
+                jsonProject.put("url", encoded);
               }
               jsonWrapper.put("project", jsonProject);
             }
