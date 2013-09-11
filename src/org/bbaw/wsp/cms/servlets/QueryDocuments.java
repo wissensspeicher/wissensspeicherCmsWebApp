@@ -215,7 +215,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='docId'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Id" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='lastModified'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Last modified" + "</button></td>");
         htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='language'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Language" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='schemaName'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Schema" + "</button></td>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='type'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Type" + "</button></td>");
         htmlStrBuilder.append("</tr>");
         htmlStrBuilder.append("</thead>");
         htmlStrBuilder.append("<tbody>");
@@ -261,11 +261,11 @@ public class QueryDocuments extends HttpServlet {
           if (languageField != null)
             lang = languageField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
-          Fieldable schemaNameField = doc.getFieldable("schemaName");
-          String schemaName = "";
-          if (schemaNameField != null)
-            schemaName = schemaNameField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + schemaName + "</td>");
+          Fieldable typeField = doc.getFieldable("type");
+          String type = "";
+          if (typeField != null)
+            type = typeField.stringValue();
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + type + "</td>");
           htmlStrBuilder.append("</tr>");
           // project link row
           String projectUrl = null;
@@ -700,8 +700,11 @@ public class QueryDocuments extends HttpServlet {
     Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
     Service queryResourceService = projectColl.getService("queryResource");
     Service pageViewService = projectColl.getService("pageView");
+    boolean isFulltextQuery = false;
+    if (query.contains("tokenOrig:") || query.contains("tokenNorm:") || query.contains("tokenMorph:"))
+      isFulltextQuery = true;
     if (webUri == null) {
-      if (queryResourceService != null) {
+      if (queryResourceService != null && isFulltextQuery) {
         String resourceWebId = "bla";  // TODO index it and get it from doc
         String queryParam = queryResourceService.getParamValue("query");
         String resourceParam = queryResourceService.getParamValue("resource");
@@ -715,7 +718,7 @@ public class QueryDocuments extends HttpServlet {
       }
     } else {
       projectLink = webUri;
-      if (queryResourceService != null) {
+      if (queryResourceService != null && isFulltextQuery) {
         int index = webUri.lastIndexOf("/");  // TODO hack
         String resourceWebId = webUri.substring(index + 1);  // hack TODO index it and get it from doc
         if (index == -1)
