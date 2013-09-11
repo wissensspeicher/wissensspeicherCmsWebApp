@@ -530,6 +530,7 @@ public class QueryDocuments extends HttpServlet {
           String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
           if (projectLink != null) {
             String encoded = URIUtil.encodeQuery(projectLink);
+            encoded = encoded.replaceAll("%23", "#");
             jsonWrapper.put("webUri", encoded);
           }
           if (docCollectionName != null) {
