@@ -174,10 +174,10 @@ public class QueryMdSystem extends HttpServlet {
     }
     if (outputFormat.equals("xml")) {
       response.setContentType("text/xml");
-    } else if (outputFormat.equals("html") || outputFormat.equals("json")) {
+    } else if (outputFormat.equals("html")) {
       response.setContentType("text/html");
-    } else {
-      response.setContentType("text/xml");
+    } else if(outputFormat.equals("json")){
+      response.setContentType("application/json");
     }
     // Suche nach Konzepten in "Vorhaben-Metadaten"
     final String conceptSearch = request.getParameter("conceptSearch");
@@ -487,12 +487,12 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("*******************");
         jsonOuterArray.add(jsonInnerArray);
       }
-      JSONArray statArray = new JSONArray();
-      JsonObject statistics = new JsonObject();
-      statistics.put("totalNumberOfTriple : ", mdQueryHandler.getTripleCount().toString());
-      statistics.put("totalNumberOfGraphs : ", mdQueryHandler.getNumberOfGraphs());
-      statArray.add(statistics);
-      jsonOuterArray.add(statArray);
+//      JSONArray statArray = new JSONArray();
+//      JsonObject statistics = new JsonObject();
+//      statistics.put("totalNumberOfTriple : ", mdQueryHandler.getTripleCount().toString());
+//      statistics.put("totalNumberOfGraphs : ", mdQueryHandler.getNumberOfGraphs());
+//      statArray.add(statistics);
+//      jsonOuterArray.add(statArray);
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       logger.info("end json");
@@ -523,8 +523,8 @@ public class QueryMdSystem extends HttpServlet {
       htmlStrBuilder.append("\n\t\t</table>");
       htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
       htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + conceptHits.size() + "</p>");
-      htmlStrBuilder.append("\n\t\t<p>Total Number of Triple :"+mdQueryHandler.getTripleCount().toString()+"</p>");
-      htmlStrBuilder.append("\n\t\t<p>Total Number of Graphs :"+mdQueryHandler.getNumberOfGraphs().toString()+"</p>");
+//      htmlStrBuilder.append("\n\t\t<p>Total Number of Triple :"+mdQueryHandler.getTripleCount().toString()+"</p>");
+//      htmlStrBuilder.append("\n\t\t<p>Total Number of Graphs :"+mdQueryHandler.getNumberOfGraphs().toString()+"</p>");
       htmlStrBuilder.append("\n\t\t<ul>");
       // for (int i = 0; i < conceptHits.size(); i++) {
       // final ConceptQueryResult conceptHit = conceptHits.get(i);
