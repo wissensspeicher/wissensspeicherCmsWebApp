@@ -21,8 +21,6 @@ import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.collections.Service;
 import org.bbaw.wsp.cms.document.Document;
-import org.bbaw.wsp.cms.document.Facet;
-import org.bbaw.wsp.cms.document.FacetValue;
 import org.bbaw.wsp.cms.document.Facets;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
