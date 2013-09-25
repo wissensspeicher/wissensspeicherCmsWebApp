@@ -470,7 +470,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
         // facets
         Facets facets = hits.getFacets();
-        if (facets != null) {
+        if (facets != null && facets.size() > 0) {
           String facetsStr = facets.toHtmlString();
           htmlStrBuilder.append("<p/>" + "Facets: " + facetsStr);
         }
@@ -483,7 +483,7 @@ public class QueryDocuments extends HttpServlet {
         jsonEncoder.putStrings("searchTerm", query);
         jsonEncoder.putStrings("numberOfHits", String.valueOf(hitsSize));
         Facets facets = hits.getFacets();
-        if (facets != null) {
+        if (facets != null && facets.size() > 0) {
           JSONArray jsonFacets = facets.toJsonArray();
           jsonEncoder.putJsonObj("facets", jsonFacets);
         }
