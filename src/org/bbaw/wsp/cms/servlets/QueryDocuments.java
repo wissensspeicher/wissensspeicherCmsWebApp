@@ -469,12 +469,12 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</form>");
         htmlStrBuilder.append("<p/>");
         htmlStrBuilder.append("Elapsed time: " + elapsedTime + " ms");
-        htmlStrBuilder.append("<br/>" + "Number of different terms in all documents: " + sizeTotalTerms);
+        htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
         // facets
         Facets facets = hits.getFacets();
         if (facets != null) {
-          String facetsStr = facets.toString();
-          htmlStrBuilder.append("<br/>" + "Facets: " + facetsStr);
+          String facetsStr = facets.toHtmlString();
+          htmlStrBuilder.append("<p/>" + "Facets: " + facetsStr);
         }
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
@@ -486,38 +486,8 @@ public class QueryDocuments extends HttpServlet {
         jsonEncoder.putStrings("numberOfHits", String.valueOf(hitsSize));
         Facets facets = hits.getFacets();
         if (facets != null) {
-          Facet languageFacet = facets.getFacet("language");
-          if (languageFacet != null) {
-            jsonEncoder.putStrings("numberOfLanguages", String.valueOf(languageFacet.getValues().size()));
-            JSONArray jsonLanguageFacets = new JSONArray();
-            ArrayList<FacetValue> langFacetValues = languageFacet.getValues();
-            for (int i=0; i<langFacetValues.size(); i++) {
-              FacetValue langFacetValue = langFacetValues.get(i);
-              String langFacetValueName = langFacetValue.getName();
-              String langFacetValueValue = langFacetValue.getValue();
-              JSONObject jsonLangFacetValue = new JSONObject();
-              jsonLangFacetValue.put("language", langFacetValueName);
-              jsonLangFacetValue.put("count", langFacetValueValue); 
-              jsonLanguageFacets.add(jsonLangFacetValue);
-            }
-            jsonEncoder.putJsonObj("languages", jsonLanguageFacets);
-          }
-          Facet collFacet = facets.getFacet("collectionNames");
-          if (collFacet != null) {
-            jsonEncoder.putStrings("numberOfCollectionNames", String.valueOf(collFacet.getValues().size()));
-            JSONArray jsonCollFacets = new JSONArray();
-            ArrayList<FacetValue> collFacetValues = collFacet.getValues();
-            for (int i=0; i<collFacetValues.size(); i++) {
-              FacetValue collFacetValue = collFacetValues.get(i);
-              String collFacetValueName = collFacetValue.getName();
-              String collFacetValueValue = collFacetValue.getValue();
-              JSONObject jsonCollFacetValue = new JSONObject();
-              jsonCollFacetValue.put("collectionName", collFacetValueName);
-              jsonCollFacetValue.put("count", collFacetValueValue); 
-              jsonCollFacets.add(jsonCollFacetValue);
-            }
-            jsonEncoder.putJsonObj("collectionNames", jsonCollFacets);
-          }
+          JSONArray jsonFacets = facets.toJsonArray();
+          jsonEncoder.putJsonObj("facets", jsonFacets);
         }
         jsonEncoder.putStrings("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonEncoder.putStrings("sizeTotalTerms", String.valueOf(sizeTotalTerms));
