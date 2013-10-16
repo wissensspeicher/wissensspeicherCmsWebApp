@@ -220,6 +220,8 @@ public class About extends HttpServlet {
       }
       request = request + "&format=xml";
       pdrXmlStr = performGetRequest(protocol, host, port, request);
+      if (pdrXmlStr.matches("(?s).*Notice.*Error.*"))
+        pdrXmlStr = null;
     } catch (UnsupportedEncodingException e) {
       throw new ApplicationException(e);
     }
