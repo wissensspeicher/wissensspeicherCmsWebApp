@@ -208,11 +208,11 @@ public class About extends HttpServlet {
   private String getPdrPitXmlStr(String personName, String otherNames) throws ApplicationException {
     String pdrXmlStr = null;
     String protocol = "http"; 
-    String host = "pdrdev.bbaw.de"; 
+    String host = "pdrprod.bbaw.de"; 
     String port = "80"; 
     try {
       String personNameEncoded = URLEncoder.encode(personName, "utf-8");
-      String request = "/pit/2-1/getAspects.php?content=" + personNameEncoded;
+      String request = "/pit/2-2/getAspects.php?content=" + personNameEncoded;
       if (otherNames != null) {
         String otherNamesEncoded = URLEncoder.encode(otherNames, "utf-8");
         String blankEncoded = URLEncoder.encode(" ", "utf-8");
