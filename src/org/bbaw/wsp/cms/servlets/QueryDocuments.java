@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
@@ -426,8 +425,10 @@ public class QueryDocuments extends HttpServlet {
           if (webUriField != null)
             webUri = webUriField.stringValue();
           String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
-          if (projectLink != null)
+          if (projectLink != null) {
+            projectLink = URIUtil.encodeQuery(projectLink);
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project-View</a>, ");
+          }
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
           if (docIsXml) {
             if (firstHitPageNumber == null)
@@ -723,11 +724,6 @@ public class QueryDocuments extends HttpServlet {
         projectLink = queryResourceService.toUrlStr();
         String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
         String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
-        try {
-          projectQueryStr = URIUtil.encodeAll(projectQueryStr);
-        } catch (URIException e) {
-          // nothing
-        }
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
@@ -745,11 +741,6 @@ public class QueryDocuments extends HttpServlet {
         projectLink = queryResourceService.toUrlStr();
         String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
         String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
-        try {
-          projectQueryStr = URIUtil.encodeAll(projectQueryStr);
-        } catch (URIException e) {
-          // nothing
-        }
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
