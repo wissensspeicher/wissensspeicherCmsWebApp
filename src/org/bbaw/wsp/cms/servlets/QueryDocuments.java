@@ -24,10 +24,8 @@ import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
-import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
@@ -478,26 +476,25 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
       } else if (outputFormat.equals("json")) {
-        WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-        jsonEncoder.clear();
-        jsonEncoder.putStrings("searchTerm", query);
-        jsonEncoder.putStrings("numberOfHits", String.valueOf(hitsSize));
+        JSONObject jsonOutput = new JSONObject();
+        jsonOutput.put("searchTerm", query);
+        jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
         Facets facets = hits.getFacets();
         if (facets != null && facets.size() > 0) {
-          JSONArray jsonFacets = facets.toJsonArray();
-          jsonEncoder.putJsonObj("facets", jsonFacets);
+          JSONObject jsonFacets = facets.toJsonObject();
+          jsonOutput.put("facets", jsonFacets);
         }
-        jsonEncoder.putStrings("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
-        jsonEncoder.putStrings("sizeTotalTerms", String.valueOf(sizeTotalTerms));
+        jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
+        jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
         JSONArray jsonArray = new JSONArray();
         for (int i=0; i<docsSize; i++) {
-          JSONObject jsonWrapper = new JSONObject();
+          JSONObject jsonHit = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
           String docCollectionName = null;
           if (docCollectionNamesField != null) {
             docCollectionName = docCollectionNamesField.stringValue();
-            jsonWrapper.put("collectionName", docCollectionName);
+            jsonHit.put("collectionName", docCollectionName);
           }
           if (docCollectionName != null) {
             JSONObject jsonProject = new JSONObject();
@@ -513,20 +510,20 @@ public class QueryDocuments extends HttpServlet {
                 String encoded = URIUtil.encodeQuery(projectUrl);
                 jsonProject.put("url", encoded);
               }
-              jsonWrapper.put("project", jsonProject);
+              jsonHit.put("project", jsonProject);
             }
           }
           Fieldable docIdField = doc.getFieldable("docId");
           String docId = null;
           if(docIdField != null) {
             docId = docIdField.stringValue();
-            jsonWrapper.put("docId", docId);
+            jsonHit.put("docId", docId);
           }
           Fieldable docUriField = doc.getFieldable("uri");
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
             String encoded = URIUtil.encodeQuery(docUri);
-            jsonWrapper.put("uri", encoded);
+            jsonHit.put("uri", encoded);
           }
           // project link
           boolean docIsXml = false; 
@@ -544,7 +541,7 @@ public class QueryDocuments extends HttpServlet {
           if (projectLink != null) {
             String encoded = URIUtil.encodeQuery(projectLink);
             encoded = encoded.replaceAll("%23", "#");
-            jsonWrapper.put("webUri", encoded);
+            jsonHit.put("webUri", encoded);
           }
           if (docCollectionName != null) {
             Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
@@ -552,12 +549,12 @@ public class QueryDocuments extends HttpServlet {
               String webBaseUrl = coll.getWebBaseUrl();
               if (webBaseUrl != null) {
                 String encoded = URIUtil.encodeQuery(webBaseUrl);
-                jsonWrapper.put("webBaseUri", encoded);
+                jsonHit.put("webBaseUri", encoded);
               }
               String projectRdfId = coll.getRdfId();
               if (projectRdfId != null) {
                 String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
-                jsonWrapper.put("projectDetailsUri", projectDetailsUrl);
+                jsonHit.put("projectDetailsUri", projectDetailsUrl);
               }
             }
           }
@@ -565,38 +562,38 @@ public class QueryDocuments extends HttpServlet {
           if (docAuthorField != null) {
             String docAuthor = docAuthorField.stringValue();
             docAuthor = StringUtils.resolveXmlEntities(docAuthor);
-            jsonWrapper.put("author", docAuthor);
+            jsonHit.put("author", docAuthor);
           }
           Fieldable docTitleField = doc.getFieldable("title");
           if (docTitleField != null) {
             String docTitle = docTitleField.stringValue();
             docTitle = StringUtils.resolveXmlEntities(docTitle);
-            jsonWrapper.put("title", docTitle);
+            jsonHit.put("title", docTitle);
           }
           Fieldable languageField = doc.getFieldable("language");
           String lang = "";
           if (languageField != null) {
             lang = languageField.stringValue();
-            jsonWrapper.put("language", lang);
+            jsonHit.put("language", lang);
           }
           Fieldable descriptionField = doc.getFieldable("description");
           if (descriptionField != null) {
             String description = descriptionField.stringValue();
             description = StringUtils.resolveXmlEntities(description);
-            jsonWrapper.put("description", description);
+            jsonHit.put("description", description);
           }
           Fieldable docDateField = doc.getFieldable("date");
           if (docDateField != null) {
-            jsonWrapper.put("date", docDateField.stringValue());
+            jsonHit.put("date", docDateField.stringValue());
           }
           Fieldable typeField = doc.getFieldable("type");
           if (typeField != null) {
             String type = typeField.stringValue();
-            jsonWrapper.put("type", type);
+            jsonHit.put("type", type);
           }
           Fieldable docPageCountField = doc.getFieldable("pageCount");
           if (docPageCountField != null) {
-            jsonWrapper.put("pageCount", docPageCountField.stringValue());
+            jsonHit.put("pageCount", docPageCountField.stringValue());
           }
           ArrayList<String> hitFragments = doc.getHitFragments();
           JSONArray jasonFragments = new JSONArray();
@@ -606,7 +603,7 @@ public class QueryDocuments extends HttpServlet {
               jasonFragments.add(hitFragment);
             }
           }
-          jsonWrapper.put("fragments", jasonFragments);
+          jsonHit.put("fragments", jasonFragments);
           
           JSONArray jsonPersons = new JSONArray();
           Fieldable personsField = doc.getFieldable("persons");
@@ -624,7 +621,7 @@ public class QueryDocuments extends HttpServlet {
               jsonPersons.add(persNameAndLink);
             }
           }
-          jsonWrapper.put("persNames", jsonPersons);
+          jsonHit.put("persNames", jsonPersons);
           JSONArray jsonPlaces = new JSONArray();
           Fieldable placesField = doc.getFieldable("places");
           if (placesField != null) {
@@ -641,7 +638,7 @@ public class QueryDocuments extends HttpServlet {
               jsonPlaces.add(placeNameAndLink);
             }
           }
-          jsonWrapper.put("placeNames", jsonPlaces);
+          jsonHit.put("placeNames", jsonPlaces);
           JSONArray jsonSubjects = new JSONArray();
           Fieldable subjectField = doc.getFieldable("subject");
           if (subjectField != null) {
@@ -662,7 +659,7 @@ public class QueryDocuments extends HttpServlet {
               }
             }
           }
-          jsonWrapper.put("subjects", jsonSubjects);
+          jsonHit.put("subjects", jsonSubjects);
           JSONArray jsonSwd = new JSONArray();
           Fieldable swdField = doc.getFieldable("swd");
           if (swdField != null) {
@@ -681,7 +678,7 @@ public class QueryDocuments extends HttpServlet {
               }
             }
           }
-          jsonWrapper.put("swd", jsonSwd);
+          jsonHit.put("swd", jsonSwd);
           JSONArray jsonDdc = new JSONArray();
           Fieldable ddcField = doc.getFieldable("ddc");
           if (ddcField != null) {
@@ -696,12 +693,12 @@ public class QueryDocuments extends HttpServlet {
               jsonDdc.add(ddcNameAndLink);
             }
           }
-          jsonWrapper.put("ddc", jsonDdc);
+          jsonHit.put("ddc", jsonDdc);
 
-          jsonArray.add(jsonWrapper);
+          jsonArray.add(jsonHit);
         }
-        jsonEncoder.putJsonObj("hits", jsonArray);
-        out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+        jsonOutput.put("hits", jsonArray);
+        out.println(jsonOutput.toJSONString());
       }
     } catch (Exception e) {
       throw new ServletException(e);
