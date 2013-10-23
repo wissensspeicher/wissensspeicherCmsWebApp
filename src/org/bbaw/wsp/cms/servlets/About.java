@@ -231,11 +231,11 @@ public class About extends HttpServlet {
   private String getPdrConcordancerXmlStr(String personName, String otherNames) throws ApplicationException {
     String pdrXmlStr = null;
     String protocol = "http"; 
-    String host = "pdrdev.bbaw.de"; 
+    String host = "pdrprod.bbaw.de"; 
     String port = "80"; 
     try {
       String personNameEncoded = URLEncoder.encode(personName, "utf-8");
-      String request = "/concord/1-4/?n=" + personNameEncoded;
+      String request = "/concord/1-5/?n=" + personNameEncoded;
       if (otherNames != null) {
         String otherNamesEncoded = URLEncoder.encode(otherNames, "utf-8");
         request = request + "&on=" + otherNamesEncoded;
