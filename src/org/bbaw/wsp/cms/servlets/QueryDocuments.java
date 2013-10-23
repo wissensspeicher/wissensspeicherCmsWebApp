@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
@@ -722,6 +723,11 @@ public class QueryDocuments extends HttpServlet {
         projectLink = queryResourceService.toUrlStr();
         String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
         String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
+        try {
+          projectQueryStr = URIUtil.encodeAll(projectQueryStr);
+        } catch (URIException e) {
+          // nothing
+        }
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
@@ -739,6 +745,11 @@ public class QueryDocuments extends HttpServlet {
         projectLink = queryResourceService.toUrlStr();
         String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
         String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
+        try {
+          projectQueryStr = URIUtil.encodeAll(projectQueryStr);
+        } catch (URIException e) {
+          // nothing
+        }
         if (queryParam != null)
           projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
         if (resourceParam != null)
@@ -763,7 +774,8 @@ public class QueryDocuments extends HttpServlet {
       // TODO translate lucene query properly to ddc
       outputQuery = inputQuery.replaceAll(".*:", "").trim(); 
       outputQuery = outputQuery.replaceAll("\\(|\\)", "");
-      outputQuery = outputQuery.replaceAll(" ", " || ");
+      if (! outputQuery.contains("\""))  // if it is not a phrase search (like: "schlimme winterzeit") then replace blank (" ") with or ("||")
+        outputQuery = outputQuery.replaceAll(" ", " || ");
       // outputQuery = outputQuery.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
     }
     return outputQuery;
