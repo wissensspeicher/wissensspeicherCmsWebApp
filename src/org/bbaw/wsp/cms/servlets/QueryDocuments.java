@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
@@ -23,15 +25,18 @@ import org.bbaw.wsp.cms.collections.Service;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
 import org.bbaw.wsp.cms.document.Hits;
+import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private XQueryEvaluator xQueryEvaluator = null;
   
   public QueryDocuments() {
     super();
@@ -39,6 +44,8 @@ public class QueryDocuments extends HttpServlet {
 
   public void init(ServletConfig config) throws ServletException  {
     super.init(config);
+    ServletContext context = getServletContext();
+    xQueryEvaluator = (XQueryEvaluator) context.getAttribute("xQueryEvaluator");
   }
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -232,6 +239,11 @@ public class QueryDocuments extends HttpServlet {
           String author = "";
           if (authorField != null)
             author = authorField.stringValue();
+          Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+          if (docAuthorDetailsField != null) {
+            String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
+            author = docAuthorDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);            
+          }
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + author + "</td>");
           Fieldable titleField = doc.getFieldable("title");
           String title = "";
@@ -562,9 +574,25 @@ public class QueryDocuments extends HttpServlet {
           }
           Fieldable docAuthorField = doc.getFieldable("author");
           if (docAuthorField != null) {
-            String docAuthor = docAuthorField.stringValue();
-            docAuthor = StringUtils.resolveXmlEntities(docAuthor);
-            jsonHit.put("author", docAuthor);
+            JSONArray jsonDocAuthorDetails = new JSONArray();
+            Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+            if (docAuthorDetailsField != null) {
+              String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
+              jsonDocAuthorDetails = docAuthorDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);
+            } else {
+              String docAuthor = docAuthorField.stringValue();
+              docAuthor = StringUtils.resolveXmlEntities(docAuthor);
+              JSONObject jsonDocAuthor = new JSONObject();
+              jsonDocAuthor.put("role", "author");
+              jsonDocAuthor.put("name", docAuthor);
+              String aboutPersonLink = baseUrl + "/query/About?query=" + docAuthor + "&type=person";
+              if (language != null && ! language.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
+              jsonDocAuthor.put("aboutLink", aboutLinkEnc);
+              jsonDocAuthorDetails.add(jsonDocAuthor);
+            }
+            jsonHit.put("author", jsonDocAuthorDetails);
           }
           Fieldable docTitleField = doc.getFieldable("title");
           if (docTitleField != null) {
@@ -757,6 +785,39 @@ public class QueryDocuments extends HttpServlet {
     return projectLink;
   }
 
+  private JSONArray docAuthorDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docAuthorDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
+    ArrayList<Person> authors = Person.fromXmlStr(xQueryEvaluator, docAuthorDetailsXmlStr);
+    JSONArray retArray = new JSONArray();
+    for (int i=0; i<authors.size(); i++) {
+      Person author = authors.get(i);
+      String aboutPersonLink = "/query/About?query=" + author.getName() + "&type=person";
+      if (language != null && ! language.isEmpty())
+        aboutPersonLink = aboutPersonLink + "&language=" + language;
+      author.setAboutLink(baseUrl + aboutPersonLink);
+      JSONObject jsonPerson = author.toJsonObject();
+      retArray.add(jsonPerson);
+    }  
+    return retArray;
+  }
+  
+  private String docAuthorDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docAuthorDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
+    ArrayList<Person> authors = Person.fromXmlStr(xQueryEvaluator, docAuthorDetailsXmlStr);
+    String retHtmlStr = "<span class=\"persons\">";
+    for (int i=0; i<authors.size(); i++) {
+      Person author = authors.get(i);
+      author.setLanguage(language);
+      String aboutPersonLink = "/query/About?query=" + author.getName() + "&type=person";
+      if (language != null && ! language.isEmpty())
+        aboutPersonLink = aboutPersonLink + "&language=" + language;
+      author.setAboutLink(baseUrl + aboutPersonLink);
+      String htmlStrPerson = author.toHtmlStr();
+      retHtmlStr = retHtmlStr + htmlStrPerson + ", ";
+    }
+    retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
+    retHtmlStr = retHtmlStr + "</span>";
+    return retHtmlStr;
+  }
+  
   private String translateLuceneToQueryLanguage(String inputQuery, String queryLanguage) {
     String outputQuery = null;
     if (queryLanguage == null) {
