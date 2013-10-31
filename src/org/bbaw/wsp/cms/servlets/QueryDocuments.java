@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
@@ -235,16 +234,28 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tr valign=\"top\">");
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
-          Fieldable authorField = doc.getFieldable("author");
-          String author = "";
-          if (authorField != null)
-            author = authorField.stringValue();
-          Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
-          if (docAuthorDetailsField != null) {
-            String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-            author = docAuthorDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);            
-          }
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + author + "</td>");
+          Fieldable docAuthorField = doc.getFieldable("author");
+          String authorHtml = "";
+          if (docAuthorField != null) {
+            Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+            if (docAuthorDetailsField != null) {
+              String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
+              authorHtml = docAuthorDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);            
+            } else {
+              String authorName = docAuthorField.stringValue();
+              Person author = new Person();
+              author.setName(authorName);
+              String aboutPersonLink = baseUrl + "/query/About?query=" + authorName + "&type=person";
+              if (language != null && ! language.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              author.setAboutLink(aboutPersonLink);
+              String htmlStrPerson = author.toHtmlStr();
+              authorHtml = "<span class=\"persons\">";
+              authorHtml = authorHtml + htmlStrPerson;
+              authorHtml = authorHtml + "</span>";
+            }
+          }          
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + authorHtml + "</td>");
           Fieldable titleField = doc.getFieldable("title");
           String title = "";
           if (titleField != null)
