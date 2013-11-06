@@ -71,6 +71,8 @@ function AttributeQuery() {
   if (schema1checked && schema2checked && schema3checked && !(relOp1ValueLucene == "-" || relOp2ValueLucene == "-"))
     schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
+  if (field1QueryVal == "" && field2QueryVal == "")
+	  luceneQueryStr =  "";
   luceneQuery.value = luceneQueryStr;
   sortBy.value = "author";
 }
@@ -95,6 +97,8 @@ function FulltextQuery() {
   if (schema1checked && schema2checked && schema3checked)
     schemaQueryStr =  "";
   luceneQueryStr = luceneQueryStr + " " + schemaQueryStr;
+  if (fulltextQueryVal == "")
+	  luceneQueryStr =  "";
   luceneQuery.value = luceneQueryStr;
 }
 function changeIsMorph() {
