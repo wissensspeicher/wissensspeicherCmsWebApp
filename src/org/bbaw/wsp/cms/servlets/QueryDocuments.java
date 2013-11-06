@@ -82,8 +82,13 @@ public class QueryDocuments extends HttpServlet {
     else 
       response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
-    if (query == null) {
-      out.print("no query specified: please set parameter \"query\"");
+    if (query == null || query.isEmpty()) {
+      if (outputFormat.equals("xml"))
+        out.print("<error>no query specified: please set parameter &amp;query&amp;</error>");
+      else if (outputFormat.equals("html"))
+        out.print("no query specified: please set parameter \"query\"");
+      else if (outputFormat.equals("json"))
+        out.print("");
       return;
     }
     try {
