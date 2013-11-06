@@ -2,9 +2,11 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,21 +18,27 @@ import net.sf.saxon.s9api.XdmValue;
 
 import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
+import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.util.Util;
+import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class GetDocInfo extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private XQueryEvaluator xQueryEvaluator = null;
+
   public GetDocInfo() {
     super();
   }
 
   public void init(ServletConfig config) throws ServletException  {
     super.init(config);
+    ServletContext context = getServletContext();
+    xQueryEvaluator = (XQueryEvaluator) context.getAttribute("xQueryEvaluator");
   }
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -119,15 +127,31 @@ public class GetDocInfo extends HttpServlet {
         String personsStr = mdRecord.getPersons();
         if (personsStr != null) {
           out.print("<persons>");
-          String[] persons = personsStr.split("###");  // separator of persons
-          for (int i=0; i<persons.length; i++) {
-            String personName = persons[i];
-            out.print("<person>");
-            out.print("<name>" + personName + "</name>");
-            String personLink = baseUrl + "/query/About?query=" + personName + "&type=person";
-            personLink = StringUtils.deresolveXmlEntities(personLink);
-            out.print("<link>" + personLink + "</link>");
-            out.print("</person>");
+          String personsDetails = mdRecord.getPersonsDetails();
+          if (personsDetails != null) {
+            ArrayList<Person> persons = Person.fromXmlStr(xQueryEvaluator, personsDetails);
+            for (int i=0; i<persons.size(); i++) {
+              Person person = persons.get(i);
+              String aboutPersonLink = baseUrl + "/query/About?query=" + person.getName() + "&type=person";
+              if (language != null && ! language.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              person.setAboutLink(aboutPersonLink);
+              String xmlStrPerson = person.toXmlStr();
+              out.print(xmlStrPerson);
+            }
+          } else {
+            String[] persons = personsStr.split("###");  // separator of persons
+            for (int i=0; i<persons.length; i++) {
+              Person person = new Person();
+              String personName = persons[i];
+              person.setName(personName);
+              String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+              if (language != null && ! language.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              person.setAboutLink(aboutPersonLink);
+              String xmlStrPerson = person.toXmlStr();
+              out.print(xmlStrPerson);
+            }
           }
           out.print("</persons>");
         }
