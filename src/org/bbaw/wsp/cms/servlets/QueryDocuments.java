@@ -346,6 +346,7 @@ public class QueryDocuments extends HttpServlet {
               for (int j=0; j<persons.length; j++) {
                 String personName = persons[j];
                 Person person = new Person();
+                person.setRole(Person.MENTIONED);
                 person.setName(personName);
                 String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
                 if (language != null && ! language.isEmpty())
