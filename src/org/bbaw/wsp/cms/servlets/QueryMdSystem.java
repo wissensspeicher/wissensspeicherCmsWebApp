@@ -139,6 +139,10 @@ public class QueryMdSystem extends HttpServlet {
    * key for the JSON attribute for the result priority.
    */
   private static final Object PRIORITY = "priority";
+  /**
+   * key/name for/of the parameter projectId.
+   */
+  private static final String IS_PROJECT_ID = "isProjectId";
 
   public QueryMdSystem() {
     super();
@@ -247,7 +251,13 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else { // neither graphId or subject was set
+    } else 
+      //query all project information
+      if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
+        resultContainer = adapter.buildSparqlQuery(query, true);
+        System.out.println("is project id query : "+query);
+        logger.info("is project id query : "+query);
+      }else { // neither graphId or subject was set
       // query contains the subject URI
       // call sparql adapter and query for the given subject within THE NORMDATA.RDF
       final URL defaultGraphName;
@@ -270,10 +280,50 @@ public class QueryMdSystem extends HttpServlet {
     /*
      * statistics
      */
-    
-    
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
+    /*
+     * ..:: html ::..
+     */
+    if (resultContainer != null && outputFormat.equals("htmlInSchoen")) {
+      final StringBuilder htmlStrBuilder = new StringBuilder();
+      final String cssUrl = request.getContextPath() + "/css/page.css";
+      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+      htmlStrBuilder.append("<html>");
+      htmlStrBuilder.append("\n\t<head>");
+      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
+      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+      htmlStrBuilder.append("\n\t</head>");
+      htmlStrBuilder.append("\n\t<body>");
+      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
+      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+      htmlStrBuilder.append("\n\t\t</table>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + resultContainer.size() + "</p>");
+      htmlStrBuilder.append("\n\t\t<ul>");
+
+      int counter = 0;
+      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
+        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
+        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+        }
+
+        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+      }
+
+      htmlStrBuilder.append("\n\t\t</ul>");
+      htmlStrBuilder.append("\n\t</body>");
+      htmlStrBuilder.append("\n</html>");
+      out.println(htmlStrBuilder.toString()); // print html
+    }
+    
     /*
      * ..:: html ::..
      */
@@ -335,7 +385,7 @@ public class QueryMdSystem extends HttpServlet {
     /*
      * ..:: json ::..
      */
-    else if (resultContainer != null && outputFormat.equals("json")) {
+    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID) == null) {
       response.setContentType("application/json"); // indicates that this
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
@@ -425,6 +475,131 @@ public class QueryMdSystem extends HttpServlet {
       out.println(jsonString); // response
 
     }
+    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID).equals("true")) {
+      response.setContentType("application/json"); // indicates that this
+                                                   // content is pure json
+      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
+      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
+      /*
+       * ..:: hitGraphes: [ ... ::..
+       */
+      final JSONArray jhitGraphes = new JSONArray();
+      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        /*
+         * ...::: singleGraph, element within the hitGraphes array :::...
+         */
+        try {
+          System.out.println(resultContainer);
+          final JSONObject jHitGraph = new JSONObject();
+          /*
+           * ....:::: hitStatements: [... ::::....
+           */
+          final JSONArray jHitStatements = new JSONArray();
+          
+          final JSONObject jHitStatement = new JSONObject();
+          String encodedSubj = null;
+          for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+            encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
+            final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
+            String predReady;
+            //cut the url for gui readability reasons
+            if(encodedPred.contains("%23")){
+              int chAscii = encodedPred.lastIndexOf("%23");
+              predReady = encodedPred.substring(chAscii+3);
+            }else if(encodedPred.contains("#")){
+                int chHash = encodedPred.lastIndexOf("#");
+                predReady = encodedPred.substring(chHash+1);
+            }else if(encodedPred.contains("/")){
+              int chSlash = encodedPred.lastIndexOf('/');
+              predReady = encodedPred.substring(chSlash+1);
+            }
+            //we dont want no nullpointer
+            else{
+              predReady = encodedPred;
+            }
+            final RDFNode hitObject = hitStatement.getObject();
+            if (hitObject.isLiteral()) {
+              final JSONObject hitLiteral = new JSONObject();
+              final String encodedLit = hitStatement.getObject().asLiteral().getLexicalForm();
+//              hitLiteral.put(JSON_FIELD_LEXICAL_VALUE, encodedLit);
+//
+//              jHitStatement.put(JSON_FIELD_LITERAL, hitLiteral);
+              String litReady = null;
+              if (encodedLit != null ){
+                if(encodedLit.startsWith("http://")){
+                  //cut the url for gui readability reasons
+                  if(encodedLit.contains("%23")){
+                    int chAscii = encodedLit.lastIndexOf("%23");
+                    litReady = encodedLit.substring(chAscii+3);
+                  }else if(encodedLit.contains("#")){
+                    int chHash = encodedLit.lastIndexOf("#");
+                    litReady = encodedLit.substring(chHash+1);
+                  }else if(encodedLit.contains("/")){
+                    int chSlash = encodedLit.lastIndexOf('/');
+                    litReady = encodedLit.substring(chSlash+1);
+                  }//we dont want no nullpointer
+                  else{
+                    litReady = encodedLit;
+                  }
+              }else{
+                litReady = encodedLit;
+                }
+              }
+              jHitStatement.put(predReady, litReady );
+//              jHitStatement.put(encodedPred + " ** encodedPred ", encodedLit+" ** encodedLit ");
+            } else { // rdf node is not a literal
+              if (hitObject.isAnon()) {
+                jHitStatement.put(JSON_FIELD_IS_BLANK, true);
+              }
+              jHitStatement.put(JSON_FIELD_OBJECT, "" + hitObject);
+              jHitStatement.put("blabalbalbalbalba   ", hitObject.toString());
+              if(hitObject.toString().startsWith("http://")){
+                //cut the url for gui readability reasons
+                String thing = hitObject.toString();
+                if(thing.contains("%23")){
+                  int chAscii = thing.lastIndexOf("%23");
+                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chAscii+3));
+                }else if(thing.contains("#")){
+                  int chHash = thing.lastIndexOf("#");
+                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chHash+1));
+                }else if(thing.contains("/")){
+                  int chSlash = thing.lastIndexOf('/');
+                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chSlash+1));
+                }//we dont want no nullpointer
+                else{
+                  jHitStatement.put(JSON_FIELD_OBJECT, thing);
+                }
+              }
+//              jHitStatement.put(JSON_FIELD_OBJECT+" irgendein dings", "" + hitObject);
+            }
+            jHitStatements.add(jHitStatement);
+          }
+
+          jHitGraph.put(JSON_FIELD_SUBJECT, encodedSubj);
+          /*
+           * ....:::::::::::::::::::::::::::::....
+           */
+          jHitGraph.put(JSON_FIELD_STATEMENTS, jHitStatement);
+          jhitGraphes.add(jHitGraph);
+          System.out.println(jHitGraph);
+        } catch (final Exception e) {
+          e.printStackTrace();
+        }
+        /*
+         * ...::::::::::::::::::::::::::::::::::::::::::::::::::::::::...
+         */
+      }
+      /*
+       * ..::::::::::::::::::::..
+       */
+      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
+      final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
+      out.println(jsonString); // response
+
+    }
+    
+    
     /*
      * ..:::::::::::..
      */
