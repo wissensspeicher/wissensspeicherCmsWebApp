@@ -98,10 +98,8 @@ public class QueryDocuments extends HttpServlet {
       if (translate != null && translate.equals("true"))
         translateBool = true;
       boolean withHitHighlights = false;
-      if (query.contains("tokenOrig:") || query.contains("tokenMorph:") || query.contains("tokenReg:") || query.contains("tokenNorm:")) {
-        if (requestHitFragments == null || requestHitFragments.equals("true"))
-          withHitHighlights = true;
-      }
+      if (requestHitFragments == null || requestHitFragments.equals("true"))
+        withHitHighlights = true;
       Hits hits = indexHandler.queryDocuments(query, sortFields, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
