@@ -15,7 +15,7 @@
         <ul>
           <li>query (required)
             <ul>
-              <li>Lucene query (e.g. +title:marie* +tokenMorph:gebrauchen +tokenMorph:schmutzig)
+              <li>Lucene query (e.g. +haus +titus)
 	            <ul>
 	              <li>supported fields
 	                <ul>
@@ -75,18 +75,13 @@
             </li>
             </ul>
           </li>
-          <li>language (optional)
+          <li>fieldExpansion (optional)
             <ul>
-              <li>ISO 639-3 specifier</li>
-              <li>default: automatically derived from query</li>
-            </ul>
-          </li>
-          <li>translate (optional)
-            <ul>
-              <li>expansion of the query: translation of the query terms to other languages</li>
-              <li>true</li>
-              <li>false</li>
-              <li>default: false</li>
+              <li>query is expanded automatically by OR on predefined content fields such as: author, title, description, subject, swd, ddc, persons, places, tokenOrig/tokenMorph</li>
+              <li>none</li>
+              <li>all (query is expanded to all predefined fields + tokenOrig)</li>
+              <li>allMorph (query is expanded to all predefined fields + tokenMorph)</li>
+              <li>default: all</li>
             </ul>
           </li>
           <li>page (optional)
@@ -117,23 +112,33 @@
               <li>default: true</li>
             </ul>
           </li>
+          <li>language (optional)
+            <ul>
+              <li>ISO 639-3 specifier</li>
+              <li>default: automatically derived from query</li>
+            </ul>
+          </li>
+          <li>translate (optional)
+            <ul>
+              <li>expansion of the query: translation of the query terms to other languages</li>
+              <li>true</li>
+              <li>false</li>
+              <li>default: false</li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li>Response output
         <ul>
           <li>Resources matching the query</li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper">all resources which contains "körper" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ">all resources which contains "καὶ" in original content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus">all resources which contains "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus&language=deu">all resources which morphological contains german "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist&language=deu">all resources which morphological contains german "ist" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&translate=true">all resources which contains translated "haus" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:house&translate=true">all resources which morphological contains translated "house" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:sur&translate=true">all resources which morphological contains translated "sur" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist&translate=true&language=deu">all resources which morphological contains translated german "ist" in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
-          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:körper&fieldExpansion=none">all resources which contains "körper" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:καὶ&fieldExpansion=none">all resources which contains "καὶ" in original content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:haus&fieldExpansion=none">all resources which contains "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:haus&language=deu&fieldExpansion=none">all resources which morphological contains german "haus" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenMorph:ist&language=deu&fieldExpansion=none">all resources which morphological contains german "ist" in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;&fieldExpansion=none">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=tokenOrig:&quot;durch Fülle&quot;~4&fieldExpansion=none">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
+          <li>Example: <a href="query/QueryDocuments?query=%2Bauthor:alex* %2Btitle:ehren*&fieldExpansion=none">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
           <li>Example: <a href="query/QueryDocuments?query=*&sortBy=author">Browse: all resources</a></li>
           <li>Example: <a href="query/QueryDocuments?query=%2Blanguage:ger">Browse: all german resources</a></li>
         </ul>
