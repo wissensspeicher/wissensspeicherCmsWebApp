@@ -2,14 +2,47 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Berlin-Brandenburg Academy of Sciences and Humanities - Digital Knowledge Store</title>
+    <title>Simple Lucene Web GUI</title>
   </head>
 <body>
-<h2>Berlin-Brandenburg Academy of Sciences and Humanities - Digital Knowledge Store</h2>
 
+<h2>Simple Lucene Web GUI</h2>
 <ul>
-  <li><a href="http://wsp.bbaw.de">Digital Knowledge Store</a></li>
+  <li>Field queries 
+    <ul>
+      <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query power</a> in each field</li>
+    </ul>
+  </li>
+  <li>Fulltext queries
+    <ul>
+      <li>Query is expanded automatically by logical OR on predefined fields (author, title, description, subject, swd, ddc, persons, places, tokenOrig/tokenMorph)</li>
+      <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query power</a></li>
+      <li>Examples
+        <ul>
+          <li>marx engels</li>
+          <li>+marx +engels</li>
+          <li>"karl marx"</li>
+          <li>"karl marx"~3</li>
+          <li>marx~0.7</li>
+          <li>m?rx</li>
+          <li>m*x</li>
+          <li>+(marx engels) +kapital</li>
+        </ul>
+      </li>
+      <li>Limitations
+        <ul>
+          <li>* and ? cannot be used as first query symbol (front wildcard)</li>
+          <li>no fields could be used in query</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<hr/>
+<ul>
+  <li>Project info: <a href="http://wsp.bbaw.de">Digital Knowledge Store</a></li>
   <li><a href="../cms-services.html">CMS Services</a></li>
 </ul>
+
 
 </body></html>
