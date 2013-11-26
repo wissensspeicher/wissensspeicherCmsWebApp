@@ -55,6 +55,9 @@ public class QueryDocuments extends HttpServlet {
     String[] sortFields = null;
     if (sortBy != null && ! sortBy.trim().isEmpty())
       sortFields = sortBy.split(" ");
+    String fieldExpansion = request.getParameter("fieldExpansion");
+    if (fieldExpansion == null)
+      fieldExpansion = "all";
     String language = request.getParameter("language");
     if (language != null && language.equals("none"))
       language = null;
@@ -100,7 +103,7 @@ public class QueryDocuments extends HttpServlet {
       boolean withHitHighlights = false;
       if (requestHitFragments == null || requestHitFragments.equals("true"))
         withHitHighlights = true;
-      Hits hits = indexHandler.queryDocuments(query, sortFields, language, from, to, withHitHighlights, translateBool);
+      Hits hits = indexHandler.queryDocuments(query, sortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
       ArrayList<Document> docs = null;
@@ -462,7 +465,7 @@ public class QueryDocuments extends HttpServlet {
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
-          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
+          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
           if (projectLink != null) {
             projectLink = URIUtil.encodeQuery(projectLink);
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project-View</a>, ");
@@ -577,7 +580,7 @@ public class QueryDocuments extends HttpServlet {
           String webUri = null;
           if (webUriField != null)
             webUri = webUriField.stringValue();
-          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query);
+          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
           if (projectLink != null) {
             String encoded = URIUtil.encodeQuery(projectLink);
             encoded = encoded.replaceAll("%23", "#");
@@ -771,14 +774,14 @@ public class QueryDocuments extends HttpServlet {
     }
   }
 
-  private String buildProjectLink(String docCollectionName, String firstHitPageNumber, String webUri, String query) throws ApplicationException {
+  private String buildProjectLink(String docCollectionName, String firstHitPageNumber, String webUri, String query, String fieldExpansion) throws ApplicationException {
     // project link
     String projectLink = null;
     Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
     Service queryResourceService = projectColl.getService("queryResource");
     Service pageViewService = projectColl.getService("pageView");
     boolean isFulltextQuery = false;
-    if (query.contains("tokenOrig:") || query.contains("tokenNorm:") || query.contains("tokenMorph:"))
+    if (fieldExpansion.equals("all") || fieldExpansion.equals("allMorph") || query.contains("tokenOrig:") || query.contains("tokenNorm:") || query.contains("tokenMorph:"))
       isFulltextQuery = true;
     if (webUri == null) {
       if (queryResourceService != null && isFulltextQuery) {
