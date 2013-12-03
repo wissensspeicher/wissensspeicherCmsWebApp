@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.jena.larq.HitLARQ;
 import org.apache.log4j.Logger;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemResultType;
@@ -41,6 +42,7 @@ import org.json.simple.JSONValue;
 import org.openjena.atlas.json.JsonObject;
 
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -229,7 +231,6 @@ public class QueryMdSystem extends HttpServlet {
     if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
-      System.out.println("look for named graph...");
       URL graphUri;
       try {
         graphUri = new URL(URIUtil.decode(query));
@@ -252,16 +253,13 @@ public class QueryMdSystem extends HttpServlet {
         e.printStackTrace();
       }
     } else 
-      //query all project information
+      //query all project information and resolve uri
       if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
         resultContainer = adapter.buildSparqlQuery(query, true);
-        System.out.println("is project id query : "+query);
-        logger.info("is project id query : "+query);
       }else { // neither graphId or subject was set
       // query contains the subject URI
       // call sparql adapter and query for the given subject within THE NORMDATA.RDF
       final URL defaultGraphName;
-      System.out.println("look for subject in normdata.rdf...");
       try {
         final URL url = new URL(query); // is query URI? -> so it's a subjectz
         try {
@@ -385,7 +383,7 @@ public class QueryMdSystem extends HttpServlet {
     /*
      * ..:: json ::..
      */
-    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID) == null) {
+    else if (resultContainer != null && outputFormat.equals("json") && request.getParameter(IS_PROJECT_ID) == null) {
       response.setContentType("application/json"); // indicates that this
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
@@ -400,7 +398,6 @@ public class QueryMdSystem extends HttpServlet {
          * ...::: singleGraph, element within the hitGraphes array :::...
          */
         try {
-          System.out.println(resultContainer);
           final JSONObject jHitGraph = new JSONObject();
 
           if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
@@ -459,7 +456,6 @@ public class QueryMdSystem extends HttpServlet {
            */
           jHitGraph.put(JSON_FIELD_STATEMENTS, jHitStatements);
           jhitGraphes.add(jHitGraph);
-          System.out.println(jHitGraph);
         } catch (final Exception e) {
           e.printStackTrace();
         }
@@ -490,99 +486,142 @@ public class QueryMdSystem extends HttpServlet {
          * ...::: singleGraph, element within the hitGraphes array :::...
          */
         try {
-          System.out.println(resultContainer);
           final JSONObject jHitGraph = new JSONObject();
           /*
            * ....:::: hitStatements: [... ::::....
            */
           final JSONArray jHitStatements = new JSONArray();
           
-          final JSONObject jHitStatement = new JSONObject();
           String encodedSubj = null;
+          String lastPred = "";
+          String lastLit = "";
+          //resolvedValues Array
+          JSONArray resolvedValues = new JSONArray();
+          JSONObject lastJHitStatement = new JSONObject();
+          JSONObject jHitStatement = new JSONObject();
           for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
-            encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
+            JSONObject literalWrapper = new JSONObject();
+            if(hitStatement.getSubject() !=null){
+              encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
+            }else{
+              encodedSubj = query;
+            }
             final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
-            String predReady;
+            String currentPred;
             //cut the url for gui readability reasons
             if(encodedPred.contains("%23")){
               int chAscii = encodedPred.lastIndexOf("%23");
-              predReady = encodedPred.substring(chAscii+3);
+              currentPred = encodedPred.substring(chAscii+3);
             }else if(encodedPred.contains("#")){
                 int chHash = encodedPred.lastIndexOf("#");
-                predReady = encodedPred.substring(chHash+1);
+                currentPred = encodedPred.substring(chHash+1);
             }else if(encodedPred.contains("/")){
               int chSlash = encodedPred.lastIndexOf('/');
-              predReady = encodedPred.substring(chSlash+1);
+              currentPred = encodedPred.substring(chSlash+1);
             }
             //we dont want no nullpointer
             else{
-              predReady = encodedPred;
+              currentPred = encodedPred;
             }
-            final RDFNode hitObject = hitStatement.getObject();
-            if (hitObject.isLiteral()) {
-              final JSONObject hitLiteral = new JSONObject();
-              final String encodedLit = hitStatement.getObject().asLiteral().getLexicalForm();
-//              hitLiteral.put(JSON_FIELD_LEXICAL_VALUE, encodedLit);
-//
-//              jHitStatement.put(JSON_FIELD_LITERAL, hitLiteral);
-              String litReady = null;
-              if (encodedLit != null ){
-                if(encodedLit.startsWith("http://")){
-                  //cut the url for gui readability reasons
-                  if(encodedLit.contains("%23")){
-                    int chAscii = encodedLit.lastIndexOf("%23");
-                    litReady = encodedLit.substring(chAscii+3);
-                  }else if(encodedLit.contains("#")){
-                    int chHash = encodedLit.lastIndexOf("#");
-                    litReady = encodedLit.substring(chHash+1);
-                  }else if(encodedLit.contains("/")){
-                    int chSlash = encodedLit.lastIndexOf('/');
-                    litReady = encodedLit.substring(chSlash+1);
-                  }//we dont want no nullpointer
-                  else{
-                    litReady = encodedLit;
-                  }
+            String currentLit = null;
+            if(hitStatement.getObject() != null){
+              final String encodedLit = checkForLiteral(hitStatement.getObject());
+              currentLit = cutLiteralUri(encodedLit);
+            }
+            if(lastPred.equals(currentPred) && lastLit.equals(currentLit)){
+            }else{
+              resolvedValues = new JSONArray();
+            }
+            if(hitStatement.getResolvedPer() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedPer());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            
+            if(hitStatement.getResolvedProj() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedProj());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedLoc() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedLoc());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedLing() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedLing());
+              String resolvedReady = cutLiteralUri(obj);
+              JSONObject resolved = new JSONObject();
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedTime() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedTime());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedMed() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedMed());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedOrg() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedOrg());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(hitStatement.getResolvedEvnt() != null){
+              final String obj = checkForLiteral(hitStatement.getResolvedEvnt());
+              String resolvedReady = cutLiteralUri(obj);
+              resolvedValues.add(resolvedReady );
+            }
+            if(!resolvedValues.isEmpty()){
+              literalWrapper.put(currentLit, resolvedValues);
+              //den literalWarpper nur adden, wenn die Kombination aus predikat und literalWrapper noch nicht vorkam
+              if(!lastJHitStatement.containsKey(currentPred)){
+                jHitStatement = new JSONObject();
+                jHitStatement.put(currentPred, literalWrapper);
+                jHitStatements.add(jHitStatement);
               }else{
-                litReady = encodedLit;
+                if(lastJHitStatement.get(currentPred) instanceof JSONObject){
+                  JSONObject literalCastValue  = (JSONObject) lastJHitStatement.get(currentPred);
+                  if(!literalCastValue.containsKey(currentLit)){
+                    jHitStatement = new JSONObject();
+                      jHitStatement.put(currentPred, literalWrapper);
+                      jHitStatements.add(jHitStatement);
+                  }else{
+//                    System.out.println("DASSELBE pred und lit. tue nix");
+                  }
+                }else if(lastJHitStatement.get(currentPred) instanceof String){
+                  String literalCastValue  = (String) lastJHitStatement.get(currentPred);
+                  if(!literalCastValue.equals(currentLit)){
+                    jHitStatement = new JSONObject();
+                    jHitStatement.put(currentPred, literalWrapper);
+                    jHitStatements.add(jHitStatement);
+                  }
+                }else{
+//                  System.out.println("DASSELBE pred und lit. tue nix");
                 }
               }
-              jHitStatement.put(predReady, litReady );
-//              jHitStatement.put(encodedPred + " ** encodedPred ", encodedLit+" ** encodedLit ");
-            } else { // rdf node is not a literal
-              if (hitObject.isAnon()) {
-                jHitStatement.put(JSON_FIELD_IS_BLANK, true);
+            }else{
+//              System.out.println("currentLit : "+currentLit);
+              if(currentLit.equals("")){
+//                System.out.println("literal ist leerer String. tue nix");
+              }else{
+                jHitStatement = new JSONObject();
+                jHitStatement.put(currentPred, currentLit);
+                jHitStatements.add(jHitStatement);
               }
-              jHitStatement.put(JSON_FIELD_OBJECT, "" + hitObject);
-              jHitStatement.put("blabalbalbalbalba   ", hitObject.toString());
-              if(hitObject.toString().startsWith("http://")){
-                //cut the url for gui readability reasons
-                String thing = hitObject.toString();
-                if(thing.contains("%23")){
-                  int chAscii = thing.lastIndexOf("%23");
-                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chAscii+3));
-                }else if(thing.contains("#")){
-                  int chHash = thing.lastIndexOf("#");
-                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chHash+1));
-                }else if(thing.contains("/")){
-                  int chSlash = thing.lastIndexOf('/');
-                  jHitStatement.put(JSON_FIELD_OBJECT, thing.substring(chSlash+1));
-                }//we dont want no nullpointer
-                else{
-                  jHitStatement.put(JSON_FIELD_OBJECT, thing);
-                }
-              }
-//              jHitStatement.put(JSON_FIELD_OBJECT+" irgendein dings", "" + hitObject);
             }
-            jHitStatements.add(jHitStatement);
+            /*
+             * ....:::::::::::::::::::::::::::::....
+             */
+            lastJHitStatement = jHitStatement;
+            lastPred = currentPred;
+            lastLit = currentLit;
           }
-
-          jHitGraph.put(JSON_FIELD_SUBJECT, encodedSubj);
-          /*
-           * ....:::::::::::::::::::::::::::::....
-           */
-          jHitGraph.put(JSON_FIELD_STATEMENTS, jHitStatement);
+          jHitGraph.put(encodedSubj, jHitStatements);
           jhitGraphes.add(jHitGraph);
-          System.out.println(jHitGraph);
+//          System.out.println(jHitGraph);
         } catch (final Exception e) {
           e.printStackTrace();
         }
@@ -606,9 +645,9 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("elapsedTime : " + elapsedTime);
     logger.info("begin json");
     logger.info("resultContainer.size() : " + resultContainer.size());
-    for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-      logger.info("hitGraph : " + hitGraph);
-    }
+//    for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+//      logger.info("hitGraph : " + hitGraph);
+//    }
   }
 
   /**
@@ -755,7 +794,48 @@ public class QueryMdSystem extends HttpServlet {
      * ..:::::::::::::::::..
      */
   }
+  
+  public String cutLiteralUri(String encodedLit){
+   String litReady = null;
+    if (encodedLit != null ){
+      if(encodedLit.startsWith("http://")){
+        //cut the url for gui readability reasons
+        if(encodedLit.contains("%23")){
+          int chAscii = encodedLit.lastIndexOf("%23");
+          litReady = encodedLit.substring(chAscii+3);
+        }else if(encodedLit.contains("#")){
+          int chHash = encodedLit.lastIndexOf("#");
+          litReady = encodedLit.substring(chHash+1);
+        }else if(encodedLit.contains("/")){
+          int chSlash = encodedLit.lastIndexOf('/');
+          litReady = encodedLit.substring(chSlash+1);
+        }//we dont want no nullpointer
+        else{
+          litReady = encodedLit;
+        }
+    }else{
+      litReady = encodedLit;
+      }
+      if(encodedLit.contains("^^")){
+        int beginIndex = encodedLit.indexOf("^^");
+        litReady = encodedLit.substring(beginIndex);
+      }
+    }
+    return litReady;
+  }
 
+  public String checkForLiteral(RDFNode resolved){
+    final Logger logger = Logger.getLogger(QueryMdSystem.class);
+    String obj = null;
+    if(resolved instanceof Literal){
+      obj = resolved.asLiteral().getLexicalForm();
+    }else{
+      obj = resolved.asResource().getLocalName();
+    }
+    logger.info("passiert 3");
+    return obj;
+  }
+  
   public static ISparqlAdapter useFuseki() {
     URL fusekiDatasetUrl;
     try {
