@@ -24,9 +24,9 @@ function AttributeQuery() {
   var relOp2ValueLucene = GetLuceneBoolOp(relOp2Value);
   var luceneQueryStr = "";
   if (field1QueryVal != "")
-	luceneQueryStr = relOp1ValueLucene + field1Val + ":" + field1QueryVal;
+	luceneQueryStr = relOp1ValueLucene + field1Val + ":(" + field1QueryVal + ")";
   if (field2QueryVal != "")
-    luceneQueryStr = luceneQueryStr + " " + relOp2ValueLucene + field2Val + ":" + field2QueryVal;
+    luceneQueryStr = luceneQueryStr + " " + relOp2ValueLucene + field2Val + ":(" + field2QueryVal + ")";
   if (field1QueryVal == "" && field2QueryVal == "")
 	  luceneQueryStr =  "";
   luceneQuery.value = luceneQueryStr;
@@ -211,7 +211,9 @@ function checkCR(event) {
         <tr>
           <td><span style="margin-left:30px;">morphological</span></td>
           <td><span style="margin-left:1px;"></span><input type="checkbox" name="isMorphQuery" id="isMorphQueryId" value="isMorphQuery" onchange="ChangeIsMorph()"/></td>
-          <td><span style="margin-left:3px;">language: </span></td>
+          <td><span style="margin-left:10px;">translate</span><br/></td>
+          <td><span style="margin-left:1px;"></span><input type="checkbox" name="isTranslateQuery" id="isTranslateQueryId" value="translate"/></td>
+          <td><span style="margin-left:10px;">language: </span></td>
           <td style="margin-left:3px;">
             <span style="margin-left:1px;"></span>
             <select name="language" id="languageId">
@@ -227,8 +229,6 @@ function checkCR(event) {
               <option value ="lat">Latin</option>
             </select>
           </td>
-          <td><span style="margin-left:10px;">translate</span><br/></td>
-          <td><span style="margin-left:1px;"></span><input type="checkbox" name="isTranslateQuery" id="isTranslateQueryId" value="translate"/></td>
         </tr>
       </table>
     </td>
