@@ -377,6 +377,7 @@ public class QueryDocuments extends HttpServlet {
             String[] places = placesStr.split("###");  // separator of places
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
+              placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
               String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
               if (lang != null && ! lang.isEmpty())
                 placeLink = placeLink + "&language=" + lang;
@@ -699,6 +700,7 @@ public class QueryDocuments extends HttpServlet {
             String[] places = placesStr.split("###");  // separator of places
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
+              placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
               JSONObject placeNameAndLink = new JSONObject();
               String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
               if (lang != null && ! lang.isEmpty())
@@ -779,6 +781,8 @@ public class QueryDocuments extends HttpServlet {
     // project link
     String projectLink = null;
     Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+    if (projectColl == null)
+      return null;
     Service queryResourceService = projectColl.getService("queryResource");
     Service pageViewService = projectColl.getService("pageView");
     boolean isFulltextQuery = false;
