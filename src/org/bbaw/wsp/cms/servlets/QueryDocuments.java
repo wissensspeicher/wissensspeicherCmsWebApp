@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -905,7 +906,11 @@ public class QueryDocuments extends HttpServlet {
       placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
       names[j] = placeName;
     }
-    return names;
+    // Dubletten entfernen
+    HashSet<String> namesSet = new HashSet<String>(Arrays.asList(names));
+    String[] namesArray = new String[namesSet.size()];
+    namesSet.toArray(namesArray);
+    return namesArray;
   }
   
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
