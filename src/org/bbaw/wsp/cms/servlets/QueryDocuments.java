@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 
 import javax.servlet.ServletConfig;
@@ -118,6 +120,11 @@ public class QueryDocuments extends HttpServlet {
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
       String baseUrl = getBaseUrl(request);
+      Comparator<String> ignoreCaseComparator = new Comparator<String>() {
+        public int compare(String s1, String s2) {
+          return s1.compareToIgnoreCase(s2);
+        }
+      };
       if (outputFormat.equals("xml")) {
         out.print("<result>");
         out.print("<query>");
@@ -375,15 +382,18 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/place.png\" width=\"15\" height=\"15\" border=\"0\"/> ");
             String placesStr = placesField.stringValue();
             String[] places = placesStr.split("###");  // separator of places
+            places = cleanNames(places);
+            Arrays.sort(places, ignoreCaseComparator);
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
-              placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
-              String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
-              if (lang != null && ! lang.isEmpty())
-                placeLink = placeLink + "&language=" + lang;
-              htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
-              if (j != places.length - 1)
-                htmlStrBuilder.append(", ");
+              if (! placeName.isEmpty()) {
+                String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
+                if (lang != null && ! lang.isEmpty())
+                  placeLink = placeLink + "&language=" + lang;
+                htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
+                if (j != places.length - 1)
+                  htmlStrBuilder.append(", ");
+              }
             }
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
@@ -398,8 +408,10 @@ public class QueryDocuments extends HttpServlet {
             String[] subjects = subjectStr.split("[,]");  // one separator of subjects
             if (subjectStr.contains("###"))
               subjects = subjectStr.split("###");  // another separator of subjects
+            subjects = cleanNames(subjects);
+            Arrays.sort(subjects, ignoreCaseComparator);
             for (int j=0; j<subjects.length; j++) {
-              String subjectName = subjects[j].trim();
+              String subjectName = subjects[j];
               if (! subjectName.isEmpty()) {
                 String subjectLink = "/wspCmsWebApp/query/About?query=" + subjectName + "&type=subject";
                 if (lang != null && ! lang.isEmpty())
@@ -420,8 +432,10 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("SWD: ");
             String swdStr = swdField.stringValue();
             String[] swds = swdStr.split("[,]");  // separator of subjects
+            swds = cleanNames(swds);
+            Arrays.sort(swds, ignoreCaseComparator);
             for (int j=0; j<swds.length; j++) {
-              String swdName = swds[j].trim();
+              String swdName = swds[j];
               if (! swdName.isEmpty()) {
                 String swdLink = "/wspCmsWebApp/query/About?query=" + swdName + "&type=swd";
                 if (lang != null && ! lang.isEmpty())
@@ -698,16 +712,19 @@ public class QueryDocuments extends HttpServlet {
             JSONArray jsonPlaces = new JSONArray();
             String placesStr = placesField.stringValue();
             String[] places = placesStr.split("###");  // separator of places
+            places = cleanNames(places);
+            Arrays.sort(places, ignoreCaseComparator);
             for (int j=0; j<places.length; j++) {
               String placeName = places[j];
-              placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
-              JSONObject placeNameAndLink = new JSONObject();
-              String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
-              if (lang != null && ! lang.isEmpty())
-                placeLink = placeLink + "&language=" + lang;
-              placeNameAndLink.put("name", placeName);
-              placeNameAndLink.put("link", placeLink);  
-              jsonPlaces.add(placeNameAndLink);
+              if (! placeName.isEmpty()) {
+                JSONObject placeNameAndLink = new JSONObject();
+                String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
+                if (lang != null && ! lang.isEmpty())
+                  placeLink = placeLink + "&language=" + lang;
+                placeNameAndLink.put("name", placeName);
+                placeNameAndLink.put("link", placeLink);  
+                jsonPlaces.add(placeNameAndLink);
+              }
             }
             jsonHit.put("places", jsonPlaces);
           }
@@ -718,8 +735,10 @@ public class QueryDocuments extends HttpServlet {
             String[] subjects = subjectStr.split("[,]");  // one separator of subjects
             if (subjectStr.contains("###"))
               subjects = subjectStr.split("###");  // another separator of subjects
+            subjects = cleanNames(subjects);
+            Arrays.sort(subjects, ignoreCaseComparator);
             for (int j=0; j<subjects.length; j++) {
-              String subjectName = subjects[j].trim();
+              String subjectName = subjects[j];
               if (! subjectName.isEmpty()) {
                 JSONObject subjectNameAndLink = new JSONObject();
                 subjectNameAndLink.put("name", subjectName);
@@ -737,8 +756,10 @@ public class QueryDocuments extends HttpServlet {
             JSONArray jsonSwd = new JSONArray();
             String swdStr = swdField.stringValue();
             String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
+            swdEntries = cleanNames(swdEntries);
+            Arrays.sort(swdEntries, ignoreCaseComparator);
             for (int j=0; j<swdEntries.length; j++) {
-              String swdName = swdEntries[j].trim();
+              String swdName = swdEntries[j];
               if (! swdName.isEmpty()) {
                 JSONObject swdNameAndLink = new JSONObject();
                 swdNameAndLink.put("name", swdName);
@@ -875,6 +896,16 @@ public class QueryDocuments extends HttpServlet {
       // outputQuery = outputQuery.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
     }
     return outputQuery;
+  }
+
+  private String[] cleanNames(String[] names) {
+    for (int j=0; j<names.length; j++) {
+      String placeName = names[j];
+      placeName = placeName.trim();
+      placeName = placeName.replaceAll("-\\s([^u]?)|\\.|^-", "$1");
+      names[j] = placeName;
+    }
+    return names;
   }
   
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
