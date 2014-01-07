@@ -245,6 +245,10 @@ public class QueryDocuments extends HttpServlet {
           if (docCollectionNamesField != null) {
             docCollectionName = docCollectionNamesField.stringValue();
           }
+          Fieldable languageField = doc.getFieldable("language");
+          String lang = "";
+          if (languageField != null)
+            lang = languageField.stringValue();
           htmlStrBuilder.append("<tr valign=\"top\">");
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
@@ -254,14 +258,14 @@ public class QueryDocuments extends HttpServlet {
             Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
             if (docAuthorDetailsField != null) {
               String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-              authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);            
+              authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);            
             } else {
               String authorName = docAuthorField.stringValue();
               Person author = new Person();
               author.setName(authorName);
               String aboutPersonLink = baseUrl + "/query/About?query=" + authorName + "&type=person";
-              if (language != null && ! language.isEmpty())
-                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              if (lang != null && ! lang.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + lang;
               author.setAboutLink(aboutPersonLink);
               String htmlStrPerson = author.toHtmlStr();
               authorHtml = "<span class=\"persons\">";
@@ -292,10 +296,6 @@ public class QueryDocuments extends HttpServlet {
           if (lastModifiedField != null)
             lastModified = lastModifiedField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + lastModified + "</td>");
-          Fieldable languageField = doc.getFieldable("language");
-          String lang = "";
-          if (languageField != null)
-            lang = languageField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
           Fieldable typeField = doc.getFieldable("type");
           String type = "";
@@ -363,8 +363,8 @@ public class QueryDocuments extends HttpServlet {
                 person.setRole(Person.MENTIONED);
                 person.setName(personName);
                 String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
-                if (language != null && ! language.isEmpty())
-                  aboutPersonLink = aboutPersonLink + "&language=" + language;
+                if (lang != null && ! lang.isEmpty())
+                  aboutPersonLink = aboutPersonLink + "&language=" + lang;
                 person.setAboutLink(aboutPersonLink);
                 String htmlStrPerson = person.toHtmlStr();
                 htmlStrBuilder.append(htmlStrPerson);
@@ -573,6 +573,11 @@ public class QueryDocuments extends HttpServlet {
               jsonHit.put("project", jsonProject);
             }
           }
+          Fieldable languageField = doc.getFieldable("language");
+          String lang = "";
+          if (languageField != null) {
+            lang = languageField.stringValue();
+          }
           Fieldable docIdField = doc.getFieldable("docId");
           String docId = null;
           if(docIdField != null) {
@@ -625,7 +630,7 @@ public class QueryDocuments extends HttpServlet {
             Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
             if (docAuthorDetailsField != null) {
               String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-              jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, language);
+              jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);
             } else {
               String docAuthor = docAuthorField.stringValue();
               docAuthor = StringUtils.resolveXmlEntities(docAuthor);
@@ -633,8 +638,8 @@ public class QueryDocuments extends HttpServlet {
               jsonDocAuthor.put("role", "author");
               jsonDocAuthor.put("name", docAuthor);
               String aboutPersonLink = baseUrl + "/query/About?query=" + docAuthor + "&type=person";
-              if (language != null && ! language.isEmpty())
-                aboutPersonLink = aboutPersonLink + "&language=" + language;
+              if (lang != null && ! lang.isEmpty())
+                aboutPersonLink = aboutPersonLink + "&language=" + lang;
               String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
               jsonDocAuthor.put("referenceAbout", aboutLinkEnc);
               jsonDocAuthorDetails.add(jsonDocAuthor);
@@ -647,10 +652,7 @@ public class QueryDocuments extends HttpServlet {
             docTitle = StringUtils.resolveXmlEntities(docTitle);
             jsonHit.put("title", docTitle);
           }
-          Fieldable languageField = doc.getFieldable("language");
-          String lang = "";
           if (languageField != null) {
-            lang = languageField.stringValue();
             jsonHit.put("language", lang);
           }
           Fieldable descriptionField = doc.getFieldable("description");
@@ -688,7 +690,7 @@ public class QueryDocuments extends HttpServlet {
             Fieldable personsDetailsField = doc.getFieldable("personsDetails");
             if (personsDetailsField != null) {
               String personsDetailsXmlStr = personsDetailsField.stringValue();
-              jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
+              jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
             } else {
               String personsStr = personsField.stringValue();
               String[] persons = personsStr.split("###");  // separator of persons
@@ -699,8 +701,8 @@ public class QueryDocuments extends HttpServlet {
                 jsonDocPerson.put("role", "mentioned");
                 jsonDocPerson.put("name", personName);
                 String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
-                if (language != null && ! language.isEmpty())
-                  aboutPersonLink = aboutPersonLink + "&language=" + language;
+                if (lang != null && ! lang.isEmpty())
+                  aboutPersonLink = aboutPersonLink + "&language=" + lang;
                 String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
                 jsonDocPerson.put("referenceAbout", aboutLinkEnc);
                 jsonDocPersonsDetails.add(jsonDocPerson);
