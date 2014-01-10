@@ -199,7 +199,6 @@ public class QueryMdSystem extends HttpServlet {
       final String baseUrl = getBaseUrl(request);
       logger.info("baseUrl : " + baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
-      mdQueryHandler.init();
       logger.info("******************** ");
 
       if (conceptSearch != null && conceptSearch.equals("true")) {
@@ -216,7 +215,9 @@ public class QueryMdSystem extends HttpServlet {
 
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
     logger.info("detailed Search");
-    final ISparqlAdapter adapter = useFuseki();
+    MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
+    ISparqlAdapter adapter = mdqh.getSparqlAdapter();
+    
 
     // @formatter:off
     /*
@@ -832,7 +833,6 @@ public class QueryMdSystem extends HttpServlet {
     }else{
       obj = resolved.asResource().getLocalName();
     }
-    logger.info("passiert 3");
     return obj;
   }
   
