@@ -14,6 +14,9 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraphContainer;
+import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.ISparqlAdapter;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 import org.bbaw.wsp.cms.transform.PageTransformer;
@@ -25,6 +28,7 @@ public class CmsWebServletContextListener implements ServletContextListener {
   private XslResourceTransformer highlightTransformer = null;
   private XQueryEvaluator xQueryEvaluator = null;  
   private static Logger LOGGER = Logger.getLogger(CmsWebServletContextListener.class);
+  private HitGraphContainer sparqlResults;
   
   public void contextInitialized(ServletContextEvent event) {
     try {
@@ -53,6 +57,10 @@ public class CmsWebServletContextListener implements ServletContextListener {
       xQueryEvaluator = new XQueryEvaluator();
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
+      
+      MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
+      sparqlResults = mdqh.preloadAllProjectInf();
+      
     } catch (Exception e) {
       LOGGER.error(e);
     }
