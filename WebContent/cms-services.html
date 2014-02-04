@@ -70,7 +70,7 @@
                   <li>lastModified</li>
                 </ul>
               </li>
-              <li>default: result is sorted by Lucene score (the most relevant result first)</li>
+              <li>default: hits are sorted by Lucene score (the most relevant hits first)</li>
               </ul>
             </li>
             </ul>
@@ -94,13 +94,13 @@
           </li>
           <li>page (optional)
             <ul>
-              <li>result page number</li>
+              <li>hits page number</li>
               <li>default: 1</li>
             </ul>
           </li>
           <li>pageSize (optional)
             <ul>
-              <li>result page size</li>
+              <li>hits page size</li>
               <li>default: 10</li>
             </ul>
           </li>
@@ -114,7 +114,7 @@
           </li>
           <li>hitFragments (optional)
             <ul>
-              <li>show result with highlighted hit fragments in fulltext</li>
+              <li>show hits with highlighted hit fragments in fulltext</li>
               <li>true</li>
               <li>false</li>
               <li>default: true</li>
@@ -172,13 +172,13 @@
           </li>
           <li>page (optional)
             <ul>
-              <li>result page number</li>
+              <li>hits page number</li>
               <li>default: 1</li>
             </ul>
           </li>
           <li>pageSize (optional)
             <ul>
-              <li>result page size</li>
+              <li>hits page size</li>
               <li>default: 10</li>
             </ul>
           </li>
@@ -308,7 +308,7 @@
         <ul>
           <li>if type = "queries": queries ordered by overall usage frequency of the query word in all queries</li>
           <li>if type = "resources":  resources ordered by frequency of relevance feedback given by users</li>
-          <li>if type = "insert": no result (relevant document for the query is inserted)</li>
+          <li>if type = "insert": no hits (relevant document for the query is inserted)</li>
           <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=queries">user queries which contain "marx"</a></li>
           <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=resources">relevant resources of queries which contain "marx"</a></li>
           <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=insert&url=http://www.bbaw.de/mega/doc1.pdf">insert of a user relevance feedback: for query "marx" the resource "http://www.bbaw.de/mega/doc1.pdf" is notified as relevant</a></li>
@@ -516,13 +516,13 @@
           </li>
           <li>page (optional)
             <ul>
-              <li>result page number</li>
+              <li>hits page number</li>
               <li>default: 1</li>
             </ul>
           </li>
           <li>pageSize (optional)
             <ul>
-              <li>result page size</li>
+              <li>hits page size</li>
               <li>default: 10</li>
             </ul>
           </li>
@@ -565,13 +565,13 @@
           </li>
           <li>page (optional)
             <ul>
-              <li>result page number</li>
+              <li>hits page number</li>
               <li>default: 1</li>
             </ul>
           </li>
           <li>pageSize (optional)
             <ul>
-              <li>result page size</li>
+              <li>hits page size</li>
               <li>default: 10</li>
             </ul>
           </li>
@@ -606,13 +606,13 @@
           </li>
           <li>page (optional)
             <ul>
-              <li>result page number</li>
+              <li>hits page number</li>
               <li>default: 1</li>
             </ul>
           </li>
           <li>pageSize (optional)
             <ul>
-              <li>result page size</li>
+              <li>hits page size</li>
               <li>default: 10</li>
             </ul>
           </li>
@@ -626,7 +626,7 @@
           </li>
           <li>addInf (optional)
             <ul>
-              <li>result with additional information such as person names etc.</li>
+              <li>hits with additional information such as person names etc.</li>
               <li>true</li>
               <li>false</li>
               <li>default: false</li>
