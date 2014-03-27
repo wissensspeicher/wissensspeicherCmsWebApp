@@ -17,6 +17,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmSequenceIterator;
+import net.sf.saxon.s9api.XdmValue;
+
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Query;
@@ -399,12 +403,37 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
+          Fieldable subjectControlledField = doc.getFieldable("subjectControlled");
+          if (subjectControlledField != null) {
+            String subjectControlledStr = subjectControlledField.stringValue();
+            String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
+            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledStr, namespaceDeclaration + "/subjects/dcterms:subject");
+            XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
+            if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("Subjects (<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/> controlled): ");
+              while (xmdValueDcTermsIterator.hasNext()) {
+                XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
+                String xdmItemDcTermStr = xdmItemDcTerm.toString(); // e.g. <dcterms:subject rdf:type="http://www.w3.org/2004/02/skos/core#Concept" rdf:resource="http://de.dbpedia.org/resource/Kategorie:Karl_Marx"/>
+                String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
+                String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
+                String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
+                htmlStrBuilder.append("<a href=\"" + subjectRdfLink + "\">" + subjectName + "</a>");
+                if (xmdValueDcTermsIterator.hasNext())
+                  htmlStrBuilder.append(", ");
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+          }
           Fieldable subjectField = doc.getFieldable("subject");
           if (subjectField != null) {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("Subjects: ");
+            htmlStrBuilder.append("Subjects (free): ");
             String subjectStr = subjectField.stringValue();
             String[] subjects = subjectStr.split("[,]");  // one separator of subjects
             if (subjectStr.contains("###"))
@@ -730,6 +759,29 @@ public class QueryDocuments extends HttpServlet {
               }
             }
             jsonHit.put("places", jsonPlaces);
+          }
+          Fieldable subjectControlledField = doc.getFieldable("subjectControlled");
+          if (subjectControlledField != null) {
+            JSONArray jsonSubjects = new JSONArray();
+            String subjectControlledStr = subjectControlledField.stringValue();
+            String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
+            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledStr, namespaceDeclaration + "/subjects/dcterms:subject");
+            XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
+            if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+              while (xmdValueDcTermsIterator.hasNext()) {
+                XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
+                String xdmItemDcTermStr = xdmItemDcTerm.toString(); // e.g. <dcterms:subject rdf:type="http://www.w3.org/2004/02/skos/core#Concept" rdf:resource="http://de.dbpedia.org/resource/Kategorie:Karl_Marx"/>
+                String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
+                String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
+                String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
+                JSONObject subject = new JSONObject();
+                subject.put("type", subjectRdfType);
+                subject.put("name", subjectName);
+                subject.put("link", subjectRdfLink);
+                jsonSubjects.add(subject);
+              }
+            }
+            jsonHit.put("subjectsControlled", jsonSubjects);
           }
           Fieldable subjectField = doc.getFieldable("subject");
           if (subjectField != null) {
