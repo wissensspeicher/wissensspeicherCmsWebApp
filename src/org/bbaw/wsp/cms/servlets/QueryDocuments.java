@@ -403,11 +403,11 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable subjectControlledField = doc.getFieldable("subjectControlled");
-          if (subjectControlledField != null) {
-            String subjectControlledStr = subjectControlledField.stringValue();
+          Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+          if (subjectControlledDetailsField != null) {
+            String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
             String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledStr, namespaceDeclaration + "/subjects/dcterms:subject");
+            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
             XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
             if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
               htmlStrBuilder.append("<tr valign=\"top\">");
@@ -768,12 +768,12 @@ public class QueryDocuments extends HttpServlet {
             }
             jsonHit.put("places", jsonPlaces);
           }
-          Fieldable subjectControlledField = doc.getFieldable("subjectControlled");
-          if (subjectControlledField != null) {
+          Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+          if (subjectControlledDetailsField != null) {
             JSONArray jsonSubjects = new JSONArray();
-            String subjectControlledStr = subjectControlledField.stringValue();
+            String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
             String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledStr, namespaceDeclaration + "/subjects/dcterms:subject");
+            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
             XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
             if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
               while (xmdValueDcTermsIterator.hasNext()) {
