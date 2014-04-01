@@ -32,6 +32,7 @@
 	                  <li>date (publication date, e.g. 1958)</li>
 	                  <li>description (description, abstract etc.)</li>
 	                  <li>subject (free subject keywords)</li>
+                    <li>subjectControlled (controlled subject keywords (dbPedia categories, GND, DDC))</li>
 	                  <li>ddc (subject keywords from DDC (Dewey Decimal Classification), e.g. "Philosophie")</li>
 	                  <li>swd (subject keywords from SWD (Schlagwortnormdatei), normally separated by commas)</li>
 	                  <li>persons (main persons in resource)</li>
@@ -77,7 +78,7 @@
           </li>
           <li>fieldExpansion (optional)
             <ul>
-              <li>query is expanded automatically by OR on predefined content fields such as: author, title, description, subject, swd, ddc, persons, places, tokenOrig/tokenMorph</li>
+              <li>query is expanded automatically by OR on predefined content fields such as: author, title, description, subject, subjectControlled, swd, ddc, persons, places, tokenOrig/tokenMorph</li>
               <li>none</li>
               <li>all (query is expanded to all predefined fields + tokenOrig)</li>
               <li>allMorph (query is expanded to all predefined fields + tokenMorph)</li>
