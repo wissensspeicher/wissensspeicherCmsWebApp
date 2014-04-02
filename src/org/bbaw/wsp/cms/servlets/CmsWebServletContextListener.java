@@ -58,8 +58,10 @@ public class CmsWebServletContextListener implements ServletContextListener {
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
       
-      MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
-      sparqlResults = mdqh.preloadAllProjectInf();
+//      MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
+//      sparqlResults = mdqh.preloadAllProjectInf();
+//      context.setAttribute("sparqlPreloadResults", sparqlResults);
+//      LOGGER.info(CmsWebServletContextListener.class.getName() + ":Project Metadata loaded");
       
     } catch (Exception e) {
       LOGGER.error(e);
