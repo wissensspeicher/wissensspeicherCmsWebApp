@@ -420,9 +420,9 @@ public class QueryDocuments extends HttpServlet {
                 String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
                 String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
                 String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
-                String sujectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subject:" + subjectName + "&fieldExpansion=none";
+                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
                 String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + sujectSearchUrl + "\">" + subjectName + "</a> (" + subjectRdfImgLink + ")");
+                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + subjectRdfImgLink + ")");
                 if (xmdValueDcTermsIterator.hasNext())
                   htmlStrBuilder.append(", ");
               }
@@ -448,7 +448,7 @@ public class QueryDocuments extends HttpServlet {
                 String subjectLink = "/wspCmsWebApp/query/About?query=" + subjectName + "&type=subject";
                 if (lang != null && ! lang.isEmpty())
                   subjectLink = subjectLink + "&language=" + lang;
-                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subject:" + subjectName + "&fieldExpansion=none";
+                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subject:&quot;" + subjectName + "&quot;&fieldExpansion=none";
                 String subjectImgLink = "<a href=\"" + subjectLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
                 htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + subjectImgLink + ")");
                 if (j != subjects.length - 1)
@@ -474,7 +474,7 @@ public class QueryDocuments extends HttpServlet {
                 String swdLink = "/wspCmsWebApp/query/About?query=" + swdName + "&type=swd";
                 if (lang != null && ! lang.isEmpty())
                   swdLink = swdLink + "&language=" + lang;
-                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=swd:" + swdName + "&fieldExpansion=none";
+                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=swd:&quot;" + swdName + "&quot;&fieldExpansion=none";
                 String subjectImgLink = "<a href=\"" + swdLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
                 htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + swdName + "</a> (" + subjectImgLink + ")");
                 if (j != swds.length - 1)
@@ -495,7 +495,7 @@ public class QueryDocuments extends HttpServlet {
               String ddcLink = "/wspCmsWebApp/query/About?query=" + ddcStr + "&type=ddc";
               if (lang != null && ! lang.isEmpty())
                 ddcLink = ddcLink + "&language=" + lang;
-              String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=ddc:" + ddcStr + "&fieldExpansion=none";
+              String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=ddc:&quot;" + ddcStr + "&quot;&fieldExpansion=none";
               String subjectImgLink = "<a href=\"" + ddcLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
               htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + ddcStr + "</a> (" + subjectImgLink + ")");
             }
