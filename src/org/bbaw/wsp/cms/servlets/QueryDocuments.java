@@ -421,8 +421,12 @@ public class QueryDocuments extends HttpServlet {
                 String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
                 String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
                 String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
-                String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + subjectRdfImgLink + ")");
+                String ontologyName = getOntologyName(subjectRdfType);
+                String ontologyNameStr = ontologyName + ": ";
+                if (ontologyName == null)
+                  ontologyNameStr = "";
+                String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
                 if (xmdValueDcTermsIterator.hasNext())
                   htmlStrBuilder.append(", ");
               }
@@ -979,6 +983,19 @@ public class QueryDocuments extends HttpServlet {
     doGet(request, response);
   }
 
+  private String getOntologyName(String rdfType) {
+    String ontologyName = null; 
+    if (rdfType != null) {
+      if (rdfType.contains("skos"))
+        ontologyName = "DBpedia";
+      else if(rdfType.contains("gnd"))
+        ontologyName = "GND";
+      else if(rdfType.contains("DDC"))
+        ontologyName = "DDC";
+    }
+    return ontologyName;
+  }
+  
   private String getMimeType(String docId) {
     String mimeType = null;
     FileNameMap fileNameMap = URLConnection.getFileNameMap();  // map with 53 entries such as "application/xml"
