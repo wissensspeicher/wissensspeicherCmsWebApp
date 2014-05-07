@@ -43,8 +43,10 @@ public class Suggest extends HttpServlet {
       outputFormat = "json";
     if (outputFormat.equals("xml"))
       response.setContentType("text/xml");
-    else if (outputFormat.equals("html") || outputFormat.equals("json"))
+    else if (outputFormat.equals("html"))
       response.setContentType("text/html");
+    else if (outputFormat.equals("json"))
+      response.setContentType("application/json");
     else 
       response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
@@ -65,7 +67,7 @@ public class Suggest extends HttpServlet {
           float suggestionValue = suggestion.value;
           out.print("<suggestion>");
           out.print("<key>" + suggestionStr + "</key>");
-          out.print("<freq>" + suggestionValue + "</key>");
+          out.print("<freq>" + suggestionValue + "</freq>");
           out.print("</suggestion>");
         }
         out.print("</suggestions>");
@@ -86,6 +88,63 @@ public class Suggest extends HttpServlet {
         }
         jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
         out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
+      } else if (outputFormat.equals("html")) {
+        StringBuilder htmlStrBuilder = new StringBuilder();
+        String title = "Suggest";
+        htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        htmlStrBuilder.append("<html>");
+        String head = 
+            "<head>" + 
+              "<title>" + title + "</title>" +
+              "<link type=\"text/css\" rel=\"stylesheet\" href=\"https://www.gstatic.com/freebase/suggest/4_2/suggest.min.css\"/>" +
+              "<script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js\"></script>" +
+              "<script type=\"text/javascript\" src=\"https://www.gstatic.com/freebase/suggest/4_2/suggest.min.js\"></script>" +
+            "</head>";
+        htmlStrBuilder.append(head);
+        htmlStrBuilder.append("<body onload=\"prettyPrint()\">");
+        htmlStrBuilder.append("<h2>Your query: " + query + "</h2>");
+        htmlStrBuilder.append("<h3>WSP suggestions:</h3>");
+        htmlStrBuilder.append("<ul>");
+        for (int i=0; i<suggestions.size(); i++) {
+          LookupResult suggestion = suggestions.get(i);
+          String suggestionStr = suggestion.key;
+          float suggestionValue = suggestion.value;
+          htmlStrBuilder.append("<li>");
+          htmlStrBuilder.append("key: " + suggestionStr + "; ");
+          htmlStrBuilder.append("freq: " + suggestionValue);
+          htmlStrBuilder.append("</li>");
+        }
+        htmlStrBuilder.append("</ul>");
+        htmlStrBuilder.append("<h3>Freebase suggestions:</h3>");
+        htmlStrBuilder.append("<input type=\"text\" id=\"freebaseSuggestInput\" value=\"" + query + "\">");
+        String jsFreebaseSuggestStr =
+          "<script type=\"text/javascript\">" +
+            "$(function() {" +
+              "$(\"#freebaseSuggestInput\").suggest({\"key\":\"AIzaSyBBJoStIWMWfWkgHIoRtLCCAg8B4ay2Vk8\",\"query\":" + "\"" + query + "\",\"lang\":\"de,en,fr,el\"" + "});" +  // {filter:'(all type:/film/director)'} 
+            "});" +
+          "</script>";
+        htmlStrBuilder.append(jsFreebaseSuggestStr);
+        String jsFocusStr = 
+          "<script type=\"text/javascript\">" +
+          "document.getElementById('freebaseSuggestInput').focus();" +
+          "</script>";
+        htmlStrBuilder.append(jsFocusStr);
+        /*
+        String jsFreebaseTopicStr =
+          "<h3>Freebase get test topic</h3>" + 
+          "<script>" + 
+          "  var topic_id = '/en/san_francisco';" +
+          "  var service_url = 'https://www.googleapis.com/freebase/v1/topic';" +
+          "  var params = {};" +
+          "  $.getJSON(service_url + topic_id + '?callback=?', params, function(topic) {" +
+          "    $('<div>',{text:topic.property['/type/object/name'].values[0].text}).appendTo(document.body);" +
+          "  });" +
+          "</script>";
+        htmlStrBuilder.append(jsFreebaseTopicStr);
+        */
+        htmlStrBuilder.append("</body>");
+        htmlStrBuilder.append("</html>");
+        out.println(htmlStrBuilder.toString());
       }
     } catch (Exception e) {
       throw new ServletException(e);
