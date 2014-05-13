@@ -27,11 +27,12 @@ public class DocumentOperation extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
+    String operation = request.getParameter("operation");  // create, delete, updateCollection
+    String collectionId = request.getParameter("collectionId");  // e.g. mega
     String srcUrlStr = request.getParameter("srcUrl");
     String docId = request.getParameter("docId");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     String mainLanguage = request.getParameter("mainLanguage");  // main language for that document
     String elementNames = request.getParameter("elementNames");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
-    String operation = request.getParameter("operation");
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "xml";
@@ -44,16 +45,14 @@ public class DocumentOperation extends HttpServlet {
     CmsDocOperation docOperation = new CmsDocOperation(operation, srcUrlStr, null, docId); 
     if (mainLanguage != null)
       docOperation.setMainLanguage(mainLanguage);
+    if (collectionId != null)
+      docOperation.setCollectionId(collectionId);
     String[] elementNamesArray = null;
     if (elementNames != null)
       elementNamesArray = elementNames.split(" ");
     docOperation.setElementNames(elementNamesArray);
     try {
-      if (docId == null || docId.isEmpty()) {
-        out.write("Parameter: \"docId\" is not set. Please set parameter \"docId\".");
-        return;
-      }
-      if (operation.equals("create") || operation.equals("delete")) {
+      if (operation.equals("create") || operation.equals("delete") || operation.equals("updateCollection")) {
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         docOperation = scheduler.doOperation(docOperation);
         String jobId = "" + docOperation.getOrderId();
