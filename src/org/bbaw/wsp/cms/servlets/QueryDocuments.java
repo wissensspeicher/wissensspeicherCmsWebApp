@@ -185,6 +185,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<input type=\"hidden\" name=\"page\" id=\"pageId\" value=\"" + page + "\"/>");
         htmlStrBuilder.append("<input type=\"hidden\" name=\"pageSize\" id=\"pageSizeId\" value=\"" + pageSize + "\"/>");
         htmlStrBuilder.append("<input type=\"hidden\" name=\"sortBy\" id=\"sortById\" value=\"" + sortByStr + "\"/>");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"fieldExpansion\" id=\"fieldExpansion\" value=\"" + fieldExpansion + "\"/>");
         htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
         htmlStrBuilder.append("<table>");
         htmlStrBuilder.append("<colgroup>");
