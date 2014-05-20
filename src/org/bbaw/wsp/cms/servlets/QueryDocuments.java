@@ -965,8 +965,12 @@ public class QueryDocuments extends HttpServlet {
       return inputQuery;
     } else if (queryLanguage.equals("ddc")) {
       // TODO translate lucene query properly to ddc
-      outputQuery = inputQuery.replaceAll(".*:", "").trim(); 
-      outputQuery = outputQuery.replaceAll("\\(|\\)", "");
+      outputQuery = inputQuery.trim(); 
+      outputQuery = outputQuery.replaceAll("tokenOrig:|tokenMorph:|tokenNorm:", "");
+      if (outputQuery.matches(".+:.+ *.*")) {  // contains fields, e.g.: +author:("Marx, Karl") +"Das Kapital" +collectionNames:("dta")
+        outputQuery = outputQuery.replaceAll("[\\+\\-].+:[\\(].+?[\\)] | [\\+\\-].+:[\\(].+?[\\)]", ""); // remove fields
+      }
+      outputQuery = outputQuery.replaceAll("\\(|\\)|\\+", "");
       if (! outputQuery.contains("\""))  // if it is not a phrase search (like: "schlimme winterzeit") then replace blank (" ") with or ("||")
         outputQuery = outputQuery.replaceAll(" ", " || ");
       // outputQuery = outputQuery.replaceAll("", "");  // TODO "+searchTerm1 +searchTerm2" ersetzen durch "searchTerm1 && searchTerm2"
