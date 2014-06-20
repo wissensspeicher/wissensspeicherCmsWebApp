@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -145,7 +146,43 @@ public class QueryMdSystem extends HttpServlet {
    * key/name for/of the parameter projectId.
    */
   private static final String IS_PROJECT_ID = "isProjectId";
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadPersonResults;
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadLingResults;
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadLocResults;
 
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadProjResults;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadOrgResults;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadMediaResults;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadPerOfTimeResults;
+  
+  
   public QueryMdSystem() {
     super();
   }
@@ -153,6 +190,16 @@ public class QueryMdSystem extends HttpServlet {
   @Override
   public void init(final ServletConfig config) throws ServletException {
     super.init(config);
+    ServletContext context = getServletContext();
+    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
+    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
+    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
+    sparqlPreloadProjResults = (HitGraphContainer) context.getAttribute("sparqlPreloadProjResults");
+    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
+    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
+    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
+    final Logger logger = Logger.getLogger(QueryMdSystem.class);
+    logger.info("project information preloaded by sparql ");
   }
 
   // zum testen
@@ -218,7 +265,11 @@ public class QueryMdSystem extends HttpServlet {
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
     
-
+//    logger.info("sparqlPreloadLocResults size: "+sparqlPreloadLocResults.size());
+//    logger.info("sparqlPreloadLingResults : "+sparqlPreloadLingResults.toString());
+//    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.toString());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPersonResults.toString());
+    
     // @formatter:off
     /*
      * 
