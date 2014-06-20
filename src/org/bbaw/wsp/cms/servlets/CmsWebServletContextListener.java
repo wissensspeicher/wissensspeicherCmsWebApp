@@ -1,5 +1,7 @@
 package org.bbaw.wsp.cms.servlets;
 
+import java.util.Date;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -28,7 +30,13 @@ public class CmsWebServletContextListener implements ServletContextListener {
   private XslResourceTransformer highlightTransformer = null;
   private XQueryEvaluator xQueryEvaluator = null;  
   private static Logger LOGGER = Logger.getLogger(CmsWebServletContextListener.class);
-  private HitGraphContainer sparqlResults;
+  private HitGraphContainer sparqlPersonResults;
+  private HitGraphContainer sparqlLingResults;
+  private HitGraphContainer sparqlLocResults;
+  private HitGraphContainer sparqlProjResults;
+  private HitGraphContainer sparqlOrgResults;
+  private HitGraphContainer sparqlMediaResults;
+  private HitGraphContainer sparqlPerOfTimeResults;
   
   public void contextInitialized(ServletContextEvent event) {
     try {
@@ -58,10 +66,28 @@ public class CmsWebServletContextListener implements ServletContextListener {
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
       
-//      MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
-//      sparqlResults = mdqh.preloadAllProjectInf();
-//      context.setAttribute("sparqlPreloadResults", sparqlResults);
-//      LOGGER.info(CmsWebServletContextListener.class.getName() + ":Project Metadata loaded");
+
+      final Date begin = new Date();
+      MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
+      sparqlPersonResults = mdqh.preloadPersonInf();
+      sparqlLingResults = mdqh.preloadLingInf();
+      sparqlLocResults = mdqh.preloadLocInf();
+      sparqlProjResults = mdqh.preloadProjInf();
+      sparqlOrgResults = mdqh.preloadOrgInf();
+      sparqlMediaResults = mdqh.preloadMediaInf();
+      sparqlPerOfTimeResults = mdqh.preloadPerOfTimeInf();
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ":starting to preload all Rdf Metadata by sparql");
+      context.setAttribute("sparqlPreloadPersonResults", sparqlPersonResults);
+      context.setAttribute("sparqlPreloadLingResults", sparqlLingResults);
+      context.setAttribute("sparqlPreloadLocResults", sparqlLocResults);
+      context.setAttribute("sparqlPreloadProjResults", sparqlProjResults);
+      context.setAttribute("sparqlPreloadOrgResults", sparqlOrgResults);
+      context.setAttribute("sparqlPreloadMediaResults", sparqlMediaResults);
+      context.setAttribute("sparqlPreloadPerOfTimeResults", sparqlPerOfTimeResults);
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ":Rdf Metadata loaded");
+      final Date end = new Date();
+      final long elapsedTime = end.getTime() - begin.getTime();
+      LOGGER.info("elapsedTime for preloading rdf metadata: " + elapsedTime);
       
     } catch (Exception e) {
       LOGGER.error(e);
