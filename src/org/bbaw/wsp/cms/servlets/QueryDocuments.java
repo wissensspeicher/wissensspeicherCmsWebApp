@@ -582,6 +582,14 @@ public class QueryDocuments extends HttpServlet {
           String facetsStr = facets.toHtmlString();
           htmlStrBuilder.append("<p/>" + "Facets: " + facetsStr);
         }
+        htmlStrBuilder.append("<p/>");
+        htmlStrBuilder.append("Word information:");
+        htmlStrBuilder.append("<ul>");
+        String dwdsQuery = translateLuceneToQueryLanguage(query, "ddc");
+        String dwdsDictionaryUrl = "http://www.dwds.de/?view=311&qu=" + dwdsQuery;
+        dwdsDictionaryUrl = URIUtil.encodeQuery(dwdsDictionaryUrl); 
+        htmlStrBuilder.append("<li>DWDS german dictionaries: <a href=\"" + dwdsDictionaryUrl + "\">" + dwdsQuery + "</a></li>");
+        htmlStrBuilder.append("</ul>");
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
@@ -714,6 +722,10 @@ public class QueryDocuments extends HttpServlet {
           Fieldable docDateField = doc.getFieldable("date");
           if (docDateField != null) {
             jsonHit.put("date", docDateField.stringValue());
+          }
+          Fieldable lastModifiedField = doc.getFieldable("lastModified");
+          if (lastModifiedField != null) {
+            jsonHit.put("lastModified", lastModifiedField.stringValue());
           }
           Fieldable typeField = doc.getFieldable("type");
           if (typeField != null) {
