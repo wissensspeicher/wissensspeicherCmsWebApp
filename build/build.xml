@@ -27,7 +27,7 @@
       </fileset>
     </copy>
     <delete dir="WebContent/WEB-INF/config"/>
-    <copy todir="WebContent/WEB-INF/config">
+    <copy todir="WebContent/WEB-INF/config" preservelastmodified="true">
       <fileset dir="../wspCmsCore/config">
         <include name="**/*.*"/>
       </fileset>
