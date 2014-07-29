@@ -60,7 +60,7 @@ function changeIsMorph() {
       if (language != null)	
         language.parentNode.removeChild(language);	
     } else if (language == null) {
-      var queryDocumentsForm = document.getElementById("queryDocumentsId");
+      var queryDocumentsForm = document.getElementById("queryDocumentsInFulltext");
       var languageElement = document.createElement("input");
       languageElement.setAttribute("type", "hidden");
       languageElement.setAttribute("name", "language");
@@ -75,10 +75,22 @@ function changeIsMorph() {
       language.parentNode.removeChild(language);
   }
 }
-function checkCR(event) {
-  var keyCode = event.keyCode
-  if (keyCode == 13)
-    return false;
+function checkCR(event, element) {
+  var keyCode = event.keyCode;
+  if (keyCode == 13) {
+    var attributeQueryForm = document.getElementById("queryDocumentsByAttributes");
+    var fulltextQueryForm = document.getElementById("queryDocumentsInFulltext");
+	  if (element.id == "field1QueryId" || element.id == "field2QueryId") {
+		  AttributeQuery();
+		  attributeQueryForm.submit();
+	    return true;
+    } else if (element.id == "fulltextQueryId") {
+    	FulltextQuery();
+    	fulltextQueryForm.submit();
+      return true;
+    }
+  } 
+  return true;
 }
 
 -->
@@ -138,10 +150,10 @@ function checkCR(event) {
       </select>          
       </td>
       <td valign="top">
-      <input type="text" size="40" name="field1Query" id="field1QueryId" onkeypress="return checkCR(event)"/>
+        <input type="text" size="40" name="field1Query" id="field1QueryId" onkeypress="return checkCR(event, this)"/>
       </td>
       <td valign="top">
-      <form name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
+      <form id="queryDocumentsByAttributes" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
         <input type="hidden" name="query" id="luceneQueryId2"/>
         <input type="hidden" name="sortBy" id="sortById2"/>
         <input type="hidden" name="fieldExpansion" id="fieldExpansion2" value="none"/>
@@ -181,7 +193,7 @@ function checkCR(event) {
       </select>          
       </td>
       <td valign="top">
-      <input type="text" size="40" name="field2Query" id="field2QueryId" value="" onkeypress="return checkCR(event)"/>
+        <input type="text" size="40" name="field2Query" id="field2QueryId" value="" onkeypress="return checkCR(event, this)"/>
       </td>
       </tr>
       </table>
@@ -196,10 +208,10 @@ function checkCR(event) {
       <table style="vertical-align:top">
         <tr>
         <td valign="top">
-        Resource content contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event)"/>
+          Resource content contains <input type="text" size="40" name="fulltextQuery" id="fulltextQueryId" onkeypress="return checkCR(event, this)"/>
         </td>
         <td valign="top">
-          <form id="queryDocumentsId" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
+          <form id="queryDocumentsInFulltext" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
             <input type="hidden" name="query" id="luceneQueryId3"/>
             <input type="hidden" name="language" id="languageId3"/>
             <input type="hidden" name="translate" id="translateId3"/>
