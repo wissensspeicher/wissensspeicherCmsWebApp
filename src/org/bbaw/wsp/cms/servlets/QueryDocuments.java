@@ -663,9 +663,10 @@ public class QueryDocuments extends HttpServlet {
             webUri = webUriField.stringValue();
           String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
           if (projectLink != null) {
-            String encoded = URIUtil.encodeQuery(projectLink);
-            encoded = encoded.replaceAll("%23", "#");
-            jsonHit.put("webUri", encoded);
+            if (! projectLink.contains("%"))
+              projectLink = URIUtil.encodeQuery(projectLink);
+            projectLink = projectLink.replaceAll("%23", "#");
+            jsonHit.put("webUri", projectLink);
           }
           if (docCollectionName != null) {
             Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
