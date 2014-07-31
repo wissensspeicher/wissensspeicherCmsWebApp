@@ -533,7 +533,8 @@ public class QueryDocuments extends HttpServlet {
             webUri = webUriField.stringValue();
           String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
           if (projectLink != null) {
-            projectLink = URIUtil.encodeQuery(projectLink);  
+            if (! projectLink.contains("%"))
+              projectLink = URIUtil.encodeQuery(projectLink);  
             projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
             htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project-View</a>, ");
           }
