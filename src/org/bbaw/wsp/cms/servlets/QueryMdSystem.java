@@ -191,13 +191,13 @@ public class QueryMdSystem extends HttpServlet {
   public void init(final ServletConfig config) throws ServletException {
     super.init(config);
     ServletContext context = getServletContext();
-    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
-    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
-    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
+//    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
+//    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
+//    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
     sparqlPreloadProjResults = (HitGraphContainer) context.getAttribute("sparqlPreloadProjResults");
-    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
-    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
-    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
+//    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
+//    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
+//    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
     final Logger logger = Logger.getLogger(QueryMdSystem.class);
     logger.info("project information preloaded by sparql ");
   }
@@ -264,11 +264,21 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
-    
+
+//    logger.info("sparqlPreloadLocResults size: "+sparqlPreloadLocResults.toString());
 //    logger.info("sparqlPreloadLocResults size: "+sparqlPreloadLocResults.size());
 //    logger.info("sparqlPreloadLingResults : "+sparqlPreloadLingResults.toString());
-//    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.toString());
+//    logger.info("sparqlPreloadLingResults : "+sparqlPreloadLingResults.size());
+    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.toString());
+    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.size());
 //    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPersonResults.toString());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPersonResults.size());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadMediaResults.size());;
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadMediaResults.toString());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadOrgResults.size());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadOrgResults.toString());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPerOfTimeResults.size());
+//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPerOfTimeResults.toString());
     
     // @formatter:off
     /*
@@ -621,8 +631,8 @@ public class QueryMdSystem extends HttpServlet {
               String resolvedReady = cutLiteralUri(obj);
               resolvedValues.add(resolvedReady );
             }
-            if(hitStatement.getResolvedEvnt() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedEvnt());
+            if(hitStatement.getResolvedEvent()!= null){
+              final String obj = checkForLiteral(hitStatement.getResolvedEvent());
               String resolvedReady = cutLiteralUri(obj);
               resolvedValues.add(resolvedReady );
             }
