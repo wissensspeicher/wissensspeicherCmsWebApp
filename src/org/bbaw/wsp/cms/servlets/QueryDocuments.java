@@ -343,6 +343,8 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
             htmlStrBuilder.append("Description: ");
             String description = descriptionField.stringValue();
+            if (description != null && description.length() > 400)
+              description = description.substring(0, 400) + " (...)";
             htmlStrBuilder.append(description);
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
