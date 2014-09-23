@@ -57,6 +57,9 @@ public class QueryDocuments extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
+    String queryLanguage = request.getParameter("queryLanguage");
+    if (queryLanguage == null)
+      queryLanguage = "gl";  // google like
     String query = request.getParameter("query");
     String sortBy = request.getParameter("sortBy");
     String[] sortFields = null;
@@ -110,7 +113,7 @@ public class QueryDocuments extends HttpServlet {
       boolean withHitHighlights = false;
       if (requestHitFragments == null || requestHitFragments.equals("true"))
         withHitHighlights = true;
-      Hits hits = indexHandler.queryDocuments(query, sortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
+      Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
       ArrayList<Document> docs = null;
