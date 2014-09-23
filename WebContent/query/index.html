@@ -154,6 +154,7 @@ function checkCR(event, element) {
       </td>
       <td valign="top">
       <form id="queryDocumentsByAttributes" name="queryDocuments" action="/wspCmsWebApp/query/QueryDocuments" method="get" accept-charset="utf-8">
+        <input type="hidden" name="queryLanguage" value="lucene"/>
         <input type="hidden" name="query" id="luceneQueryId2"/>
         <input type="hidden" name="sortBy" id="sortById2"/>
         <input type="hidden" name="fieldExpansion" id="fieldExpansion2" value="none"/>
@@ -216,6 +217,10 @@ function checkCR(event, element) {
             <input type="hidden" name="language" id="languageId3"/>
             <input type="hidden" name="translate" id="translateId3"/>
             <input type="hidden" name="fieldExpansion" id="fieldExpansion3" value="all"/>
+            <select name="queryLanguage" id="queryLanguageId">
+              <option value ="gl" selected>Google like</option>
+              <option value ="lucene">Lucene</option>
+            </select>
             <button type="submit" onclick="FulltextQuery()">Query</button>
           </form>
         </td>
