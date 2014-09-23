@@ -2,36 +2,57 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Simple Lucene Web GUI</title>
+    <title>Simple Development Web GUI</title>
   </head>
 <body>
 
-<h2>Simple Lucene Web GUI</h2>
+<h2>Simple Development Web GUI</h2>
 <ul>
   <li>Field queries 
     <ul>
-      <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query power</a> in each field</li>
+      <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query syntax and power</a> in each field</li>
     </ul>
   </li>
   <li>Fulltext queries
     <ul>
       <li>Query is expanded automatically by logical OR on predefined fields (author, title, description, subject, swd, ddc, persons, places, tokenOrig/tokenMorph)</li>
-      <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query power</a></li>
-      <li>Examples
+      <li>Query language: "Google like"         
         <ul>
-          <li>marx engels</li>
-          <li>+marx +engels</li>
-          <li>"karl marx"</li>
-          <li>"karl marx"~3</li>
-          <li>marx~0.7</li>
-          <li>m?rx</li>
-          <li>m*x</li>
-          <li>+(marx engels) +kapital</li>
+		      <li>Google like query syntax</li>
+		      <li>Examples
+		        <ul>
+		          <li>Logical AND: marx engels</li>
+              <li>Phrase: "karl marx"</li>
+              <li>Logical OR: marx|engels</li>
+		          <li>Logical ANDNOT: marx -engels</li>
+		          <li>Many character wildcard: m*x</li>
+              <li>Single character wildcard: m?rx</li>
+              <li>Near/Proximity: "karl marx"~3</li>
+              <li>Fuzzy: marx~0.7</li>
+		        </ul>
+		      </li>
+		    </ul>
+      <li>Query language: "lucene"         
+        <ul>
+          <li><a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query syntax and power</a></li>
+          <li>Examples
+            <ul>
+              <li>Logical OR: marx engels</li>
+              <li>Logical AND: +marx +engels</li>
+              <li>Phrase: "karl marx"</li>
+              <li>Logical ANDNOT: +marx -engels</li>
+              <li>Logical NOT: -engels</li>
+              <li>Many character wildcard: m*x</li>
+              <li>Single character wildcard: m?rx</li>
+              <li>Near/Proximity: "karl marx"~3</li>
+              <li>Fuzzy: marx~0.7</li>
+              <li>Complex query: +(marx engels) +kapital</li>
+            </ul>
+          </li>
         </ul>
-      </li>
       <li>Limitations
         <ul>
-          <li>no fields could be used in query</li>
+          <li>fields could not be used in fulltext queries</li>
         </ul>
       </li>
     </ul>
