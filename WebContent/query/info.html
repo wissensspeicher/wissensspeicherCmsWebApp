@@ -11,6 +11,40 @@
   <li>Field queries 
     <ul>
       <li>with <a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query syntax and power</a> in each field</li>
+      <li>supported fields
+        <ul>
+          <li>docId (local id: resource identifier in index system, e.g. "/edoc/2011/1591/pdf/08_VI.Dokumente.pdf")</li>
+          <li>identifier (local id: identifier field in resources metadata: e.g. "47114711")</li>
+          <li>uri (global id: resource URI (uniform resource identifier), e.g. http://de.wikipedia.org/wiki/Ramones)</li>
+          <li>webUri (global web url, e.g. "http://edoc.bbaw.de/volltexte/2011/1769/")</li>
+          <li>collectionNames (project name(s), e.g. "edoc" or "ig")</li>
+          <li>schemaName (schema name of resource, e.g. TEI, html, quran etc.)</li>
+          <li>author (author(s) of resource)</li>
+          <li>title (title(s) of resource)</li>
+          <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
+          <li>publisher (publisher(s) with place(s), e.g. Springer, New York )</li>
+          <li>date (publication date, e.g. 1958)</li>
+          <li>description (description, abstract etc.)</li>
+          <li>subject (free subject keywords)</li>
+          <li>subjectControlled (controlled subject keywords (dbPedia categories, GND, DDC))</li>
+          <li>ddc (subject keywords from DDC (Dewey Decimal Classification), e.g. "Philosophie")</li>
+          <li>swd (subject keywords from SWD (Schlagwortnormdatei), normally separated by commas)</li>
+          <li>persons (main persons in resource)</li>
+          <li>places (main places in resource)</li>
+          <li>type (mime type: e.g. text/xml)</li>
+          <li>rights (rights string, e.g. open access)</li>
+          <li>license (license string, e.g. "CC-BY-SA"))</li>
+          <li>accessRights (access rights string, e.g. free)</li>
+          <li>lastModified (last modification date (last harvest of this resource)</li>
+          <li>pageCount (number of pages)</li>
+          <li>tokenOrig (original fulltext tokens of resource)</li>
+          <li>tokenReg (regularized fulltext tokens of resource)</li>
+          <li>tokenNorm (normalized fulltext tokens of resource)</li>
+          <li>tokenMorph (morphological base forms of fulltext tokens of resource)</li>
+          <li>content (original text content of the resources file (without xml tags))</li>
+          <li>default: tokenOrig</li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>Fulltext queries
@@ -18,8 +52,7 @@
       <li>Query is expanded automatically by logical OR on predefined fields (author, title, description, subject, swd, ddc, persons, places, tokenOrig/tokenMorph)</li>
       <li>Query language: "Google like"         
         <ul>
-		      <li>Google like query syntax</li>
-		      <li>Examples
+		      <li>Query examples
 		        <ul>
 		          <li>Logical AND: marx engels</li>
               <li>Phrase: "karl marx"</li>
@@ -35,7 +68,7 @@
       <li>Query language: "lucene"         
         <ul>
           <li><a href="http://lucene.apache.org/core/3_6_0/queryparsersyntax.html">Lucene query syntax and power</a></li>
-          <li>Examples
+          <li>Query examples
             <ul>
               <li>Logical OR: marx engels</li>
               <li>Logical AND: +marx +engels</li>
@@ -55,6 +88,24 @@
           <li>fields could not be used in fulltext queries</li>
         </ul>
       </li>
+    </ul>
+  </li>
+  <li>Query examples
+    <ul>
+      <li><a href="QueryDocuments?queryLanguage=gl&query=marx engels">all resources which contains "marx" and "engels" in main content fields and in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=gl&query=&quot;karl marx&quot;">all resources which contains "karl marx" in main content fields and in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=gl&query=marx|engels">all resources which contains "marx" or "engels" in main content fields and in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=gl&query=haus&fieldExpansion=allMorph">all resources which contains "haus" in main content fields and morphological in content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=gl&query=haus&translate=true&fieldExpansion=allMorph">all resources which contains "haus" in main translations in main content fields and morphological in content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenOrig:körper&fieldExpansion=none">all resources which contains "körper" in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenOrig:καὶ&fieldExpansion=none">all resources which contains "καὶ" in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenOrig:haus&fieldExpansion=none">all resources which contains "haus" in original content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenMorph:ist&language=deu&fieldExpansion=none">all resources which contains german "ist" morphological in content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenOrig:&quot;durch grössere stoffliche Fülle&quot;&fieldExpansion=none">Phrase query: all resources which contains "durch grössere stoffliche Fülle"</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=tokenOrig:&quot;durch Fülle&quot;~4&fieldExpansion=none">Near by: all resources which contains "durch" und "Fülle" within 4 words of each other in content</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=%2Bauthor:alex* %2Btitle:ehren*&fieldExpansion=none">Metadata query: all resources which contains "alex*" in author and "ehren*" in title</a></li>
+      <li><a href="QueryDocuments?query=*&sortBy=author">Browse: all resources</a></li>
+      <li><a href="QueryDocuments?queryLanguage=lucene&query=%2Blanguage:ger&fieldExpansion=none">Browse: all german resources</a></li>
     </ul>
   </li>
 </ul>
