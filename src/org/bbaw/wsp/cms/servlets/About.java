@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -21,12 +22,16 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang3.text.WordUtils;
 
+import org.bbaw.wsp.cms.document.Document;
+import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.document.SubjectHandler;
+import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.lt.general.Language;
+import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class About extends HttpServlet {
@@ -128,6 +133,10 @@ public class About extends HttpServlet {
       if (type.equals("person")) {
         String surName = person.getSurname();
         String foreName = person.getForename();
+        String pdrPublishedPersonsXmlStr = getPdrPublishedPersonsXmlStr(surName, foreName);
+        if (pdrPublishedPersonsXmlStr == null)
+          pdrPublishedPersonsXmlStr = "";
+        pdrPublishedPersonsXmlStr = pdrPublishedPersonsXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         String pdrPitXmlStr = getPdrPitXmlStr(surName, foreName);
         if (pdrPitXmlStr == null)
           pdrPitXmlStr = "";
@@ -137,6 +146,7 @@ public class About extends HttpServlet {
           pdrConcordancerXmlStr = "";
         pdrConcordancerXmlStr = pdrConcordancerXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         aboutXmlStrBuilder.append("<pdr>");
+        aboutXmlStrBuilder.append(pdrPublishedPersonsXmlStr);
         aboutXmlStrBuilder.append(pdrPitXmlStr);
         aboutXmlStrBuilder.append(pdrConcordancerXmlStr);
         aboutXmlStrBuilder.append("</pdr>");
@@ -158,7 +168,7 @@ public class About extends HttpServlet {
         String htmlStr = aboutTransformer.transformStr(aboutXmlStrBuilder.toString());
         result = xmlHeader + "<html>" + head + "<body>" + htmlStr + "</body>" + "</html>";
       } else {
-        result = dbPediaXmlStr;
+        result = aboutXmlStrBuilder.toString();
       }
       out.print(result);
     } catch (ApplicationException e) {
@@ -203,6 +213,34 @@ public class About extends HttpServlet {
       throw new ApplicationException(e);
     }
     return dbPediaXmlStr;
+  }
+  
+  private String getPdrPublishedPersonsXmlStr(String surName, String foreName) throws ApplicationException {
+    String pdrXmlStr = null;
+    IndexHandler indexHandler = IndexHandler.getInstance();
+    String queryStr = "+collectionNames:pdr +title:(+" + surName + " +" + foreName + ")";
+    if (foreName == null)
+      queryStr = "+collectionNames:pdr +title:" + surName;
+    Hits hits = indexHandler.queryDocuments("lucene", queryStr, null, "none", null, 0, 9, false, false);
+    if (hits != null) {
+      int hitsSize = hits.getSize();
+      if (hitsSize > 0) {
+        ArrayList<Document> docs = hits.getHits();
+        pdrXmlStr = "<persons>";
+        for (int i=0; i<docs.size(); i++) {
+          Document doc = docs.get(i);
+          pdrXmlStr = pdrXmlStr + "<person>";
+          String title = doc.getFieldable("title").stringValue();
+          pdrXmlStr = pdrXmlStr + "<name>" + title + "</name>";
+          String webUri = doc.getFieldable("webUri").stringValue();
+          webUri = StringUtils.deresolveXmlEntities(webUri);
+          pdrXmlStr = pdrXmlStr + "<webUri>" + webUri + "</webUri>";
+          pdrXmlStr = pdrXmlStr + "</person>";
+        }        
+        pdrXmlStr = pdrXmlStr + "</persons>";
+      }
+    }    
+    return pdrXmlStr;
   }
   
   private String getPdrPitXmlStr(String personName, String otherNames) throws ApplicationException {
