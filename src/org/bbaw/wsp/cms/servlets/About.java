@@ -137,17 +137,12 @@ public class About extends HttpServlet {
         if (pdrPublishedPersonsXmlStr == null)
           pdrPublishedPersonsXmlStr = "";
         pdrPublishedPersonsXmlStr = pdrPublishedPersonsXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
-        String pdrPitXmlStr = getPdrPitXmlStr(surName, foreName);
-        if (pdrPitXmlStr == null)
-          pdrPitXmlStr = "";
-        pdrPitXmlStr = pdrPitXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         String pdrConcordancerXmlStr = getPdrConcordancerXmlStr(surName, foreName);
         if (pdrConcordancerXmlStr == null)
           pdrConcordancerXmlStr = "";
         pdrConcordancerXmlStr = pdrConcordancerXmlStr.replaceAll("<\\?xml.*?\\?>", "");  // remove the xml declaration if it exists
         aboutXmlStrBuilder.append("<pdr>");
         aboutXmlStrBuilder.append(pdrPublishedPersonsXmlStr);
-        aboutXmlStrBuilder.append(pdrPitXmlStr);
         aboutXmlStrBuilder.append(pdrConcordancerXmlStr);
         aboutXmlStrBuilder.append("</pdr>");
       }
@@ -242,7 +237,8 @@ public class About extends HttpServlet {
     }    
     return pdrXmlStr;
   }
-  
+
+  /*
   private String getPdrPitXmlStr(String personName, String otherNames) throws ApplicationException {
     String pdrXmlStr = null;
     String protocol = "http"; 
@@ -265,6 +261,7 @@ public class About extends HttpServlet {
     }
     return pdrXmlStr;
   }
+  **/
   
   private String getPdrConcordancerXmlStr(String personName, String otherNames) throws ApplicationException {
     String pdrXmlStr = null;
