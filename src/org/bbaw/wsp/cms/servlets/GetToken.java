@@ -38,16 +38,22 @@ public class GetToken extends HttpServlet {
     if (countStr == null)
       countStr = "100";
     int count = Integer.parseInt(countStr);
+    String sortByStr = request.getParameter("sortBy");
+    if (sortByStr == null)
+      sortByStr = "alphabetically";  // default; or by frequency
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "xml";
     try {
       IndexHandler indexHandler = IndexHandler.getInstance();
       ArrayList<Token> token = null;
-      if (docId == null)
+      if (docId == null) {
         token = indexHandler.getToken(attribute, query, count);
-      else
+      } else if (sortByStr.equals("alphabetically")) {
         token = indexHandler.getToken(docId, attribute, query, count);
+      } else if (sortByStr.equals("frequency")) {
+        token = indexHandler.getFrequentToken(docId, attribute, count);
+      }
       if (outputFormat.equals("xml"))
         response.setContentType("text/xml");
       else if (outputFormat.equals("html"))
