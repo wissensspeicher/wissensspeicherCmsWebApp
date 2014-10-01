@@ -178,8 +178,9 @@ public class QueryDocuments extends HttpServlet {
         String sortByStr = sortBy;
         if (sortBy == null)
           sortByStr = "";
-        htmlStrBuilder.append("<h4>Query: " + luceneQueryStr + ", sorted by: " + sortByStr + "</h4>");
+        htmlStrBuilder.append("<h4>Lucene query: " + luceneQueryStr + "</h4>");
         htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
+        htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
         htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
         if (translate != null)
           htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
