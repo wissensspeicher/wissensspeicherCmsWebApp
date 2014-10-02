@@ -354,6 +354,37 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</tr>");
           }
           // Knowledge rows
+          Fieldable entitiesField = doc.getFieldable("entities");
+          if (entitiesField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
+            htmlStrBuilder.append("Entities: ");
+            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+            if (entitiesDetailsField != null) {
+              // TODO
+              // String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+              // String entitiesDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
+              // htmlStrBuilder.append(entitiesDetailsHtmlStr);
+            } else {
+              String entitiesStr = entitiesField.stringValue();
+              String[] entities = entitiesStr.split("###");  // separator of entities
+              Arrays.sort(entities, ignoreCaseComparator);
+              for (int j=0; j<entities.length; j++) {
+                String entityName = entities[j];
+                String entityLink = "/wspCmsWebApp/query/About?query=" + entityName;
+                if (lang != null && ! lang.isEmpty())
+                  entityLink = entityLink + "&language=" + lang;
+                String entitySearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=entities:&quot;" + entityName + "&quot;&fieldExpansion=none";
+                String entityImgLink = "<a href=\"" + entityLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                htmlStrBuilder.append("<a href=\"" + entitySearchUrl + "\">" + entityName + "</a> (" + entityImgLink + ")");
+                if (j != entities.length - 1)
+                  htmlStrBuilder.append(", ");
+              }
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
           Fieldable personsField = doc.getFieldable("persons");
           if (personsField != null) {
             htmlStrBuilder.append("<tr valign=\"top\">");
@@ -754,6 +785,28 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonHit.put("fragments", jasonFragments);
           
+          Fieldable entitiesField = doc.getFieldable("entities");
+          if (entitiesField != null) {
+            JSONArray jsonEntities = new JSONArray();
+            String entitiesStr = entitiesField.stringValue();
+            String[] entities = entitiesStr.split("###");
+            entities = cleanNames(entities);
+            Arrays.sort(entities, ignoreCaseComparator);
+            for (int j=0; j<entities.length; j++) {
+              String entityName = entities[j];
+              if (! entityName.isEmpty()) {
+                JSONObject entityNameAndLink = new JSONObject();
+                entityNameAndLink.put("name", entityName);
+                String entityLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(entityName);
+                if (lang != null && ! lang.isEmpty())
+                  entityLink = entityLink + "&language=" + lang;
+                entityNameAndLink.put("link", entityLink);
+                jsonEntities.add(entityNameAndLink);
+              }
+            }
+            jsonHit.put("entities", jsonEntities);
+          }
+
           Fieldable personsField = doc.getFieldable("persons");
           if (personsField != null) {
             JSONArray jsonDocPersonsDetails = new JSONArray();
