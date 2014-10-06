@@ -41,7 +41,6 @@ import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAd
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAdapterFactory;
 import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.JenaMain;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
-import org.bbaw.wsp.cms.test.QueryMdSystemTest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -58,7 +57,6 @@ import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class QueryMdSystem extends HttpServlet {
-
   /**
    * JSON field / key for the lexical/"real" value of a literal.
    */
@@ -68,8 +66,7 @@ public class QueryMdSystem extends HttpServlet {
    */
   private static final Object JSON_FIELD_IS_BLANK = "isBlank";
   /**
-   * JSON field / key for a general object, might be anything although literals
-   * (like blank nodes or resources)
+   * JSON field / key for a general object, might be anything although literals (like blank nodes or resources)
    */
   private static final Object JSON_FIELD_OBJECT = "object";
   /**
@@ -89,8 +86,7 @@ public class QueryMdSystem extends HttpServlet {
    */
   private static final String JSON_FIELD_PARENT_SUBJECT = "parentSubject";
   /**
-   * JSON field / key for the literal which should have a datatype and lexical
-   * type
+   * JSON field / key for the literal which should have a datatype and lexical type
    */
   private static final String JSON_FIELD_LITERAL = "literal";
   /**
@@ -133,6 +129,7 @@ public class QueryMdSystem extends HttpServlet {
    * JSON field / key for the graph name.
    */
   private static final Object JSON_FIELD_GRAPH_URL = "graphName";
+  private static final long serialVersionUID = 1L;
   /**
    * The URI/name of the normdata graph as stored in the triple store.
    */
@@ -140,11 +137,11 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * key/name for/of the parameter graphId.
    */
-  private static final String PARAM_GRAPH_ID = "false";
+  private static final String PARAM_GRAPH_ID = "isGraphId";
   /**
    * key/name for/of the parameter subject.
    */
-  private static final String PARAM_SUBJECT = "false";
+  private static final String PARAM_SUBJECT = "isSubject";
   /**
    * key for the JSON attribute for the result priority.
    */
@@ -152,39 +149,122 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * key/name for/of the parameter projectId.
    */
-  private static final String IS_PROJECT_ID = "true";
+  private static final String IS_PROJECT_ID = "isProjectId";
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadPersonResults;
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadLingResults;
+  
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadLocResults;
 
-  public  void init() {
-    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
-    logger.info("project information preloaded by sparql "); 
-    String url = "http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=http://wsp.normdata.rdf/DTA&detailedSearch=true&outputFormat=json&isProjectId=true";
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer preloadNormdata;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadOrgResults;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadMediaResults;
+
+  /**
+   * results from preloading project information by sparql 
+   */
+  private HitGraphContainer sparqlPreloadPerOfTimeResults;
+  
+  
+  public QueryMdSystem() {
+    super();
+  }
+
+  @Override
+  public void init(final ServletConfig config) throws ServletException {
+    super.init(config);
+    ServletContext context = getServletContext();
+//    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
+//    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
+//    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
+    final Logger logger = Logger.getLogger(QueryMdSystem.class);
+    logger.info("preload normdata Metadata");
+    preloadNormdata = (HitGraphContainer) context.getAttribute("preloadNormdata");
+//    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
+//    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
+//    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
+  }
+
+  // zum testen
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
+  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json[&isGraphId=true][&isSubject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/....
+
+  @Override
+  protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+    // HTTP response print writer
+    final PrintWriter out = response.getWriter();
+    // bla
+
+    final Logger logger = Logger.getLogger(QueryMdSystem.class);
+    request.setCharacterEncoding("utf-8");
+    response.setCharacterEncoding("utf-8");
+    final String query = request.getParameter("query");
+    // new RequestStatisticAnalyser(query);
+    String language = request.getParameter("language");
+    if (language != null && language.equals("none")) {
+      language = null;
+    }
+    String outputFormat = request.getParameter("outputFormat");
+    if (outputFormat == null) {
+      outputFormat = "html";
+    }
+    if (outputFormat.equals("xml")) {
+      response.setContentType("text/xml");
+    } else if (outputFormat.equals("html")) {
+      response.setContentType("text/html");
+    } else if(outputFormat.equals("json")){
+      response.setContentType("application/json");
+    }
+    // Suche nach Konzepten in "Vorhaben-Metadaten"
+    final String conceptSearch = request.getParameter("conceptSearch");
+    // Suche nach Begriffen in einzelnen Triples oder Named Graphen
+    final String detailedSearch = request.getParameter("detailedSearch");
+    if (query == null) {
+      logger.info("no query specified: please set parameter \"query\"");
+      return;
+    }
     try {
-      doGet("false", "true", "http://wsp.normdata.rdf/DTA", "json", "http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=");
-    } catch (IOException e) {
-      e.printStackTrace();
+      final Date begin = new Date();
+
+      final String baseUrl = getBaseUrl(request);
+      logger.info("baseUrl : " + baseUrl);
+      final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
+      logger.info("******************** ");
+
+      if (conceptSearch != null && conceptSearch.equals("true")) {
+        handleConceptQuery(request, response, out, logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
+      }
+
+      if (detailedSearch != null && detailedSearch.equals("true")) {
+        handleDetailedSearch(logger, begin, outputFormat, query, request, response, out);
+      }
+    } catch (final Exception e) {
+      throw new ServletException(e);
     }
   }
 
-  public void doGet(String conceptSearch, String detailedSearch, String query, String outputFormat, String baseUrl) throws IOException {
-
-    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
-
-    final Date begin = new Date();
-
-    final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
-    logger.info("******************** ");
-
-    if (conceptSearch != null && conceptSearch.equals("true")) {
-      handleConceptQuery(logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
-    }
-
-    if (detailedSearch != null && detailedSearch.equals("true")) {
-      handleDetailedSearch(logger, begin, outputFormat, query);
-    }
-
-  }
-
-  private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query) {
+  private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
@@ -399,7 +479,6 @@ public class QueryMdSystem extends HttpServlet {
     // logger.info("resultContainer.size() : " + resultContainer.size());
     // for (final HitGraph hitGraph : resultContainer.getAllHits()) {
     // logger.info("hitGraph : " + hitGraph);
-    // }
   }
 
   /**
@@ -416,7 +495,7 @@ public class QueryMdSystem extends HttpServlet {
    * @param mdQueryHandler
    * @throws URIException
    */
-  private void handleConceptQuery(final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
+  private void handleConceptQuery(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out, final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
     final List<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
@@ -427,6 +506,8 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: show json ::..
      */
     if (outputFormat.equals("json") && conceptHits != null) {
+      response.setContentType("application/json"); // indicates that this
+                                                   // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.clear();
       jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
@@ -451,46 +532,122 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("*******************");
         jsonOuterArray.add(jsonInnerArray);
       }
-      // JSONArray statArray = new JSONArray();
-      // JsonObject statistics = new JsonObject();
-      // statistics.put("totalNumberOfTriple : ",
-      // mdQueryHandler.getTripleCount().toString());
-      // statistics.put("totalNumberOfGraphs : ",
-      // mdQueryHandler.getNumberOfGraphs());
-      // statArray.add(statistics);
-      // jsonOuterArray.add(statArray);
+//      JSONArray statArray = new JSONArray();
+//      JsonObject statistics = new JsonObject();
+//      statistics.put("totalNumberOfTriple : ", mdQueryHandler.getTripleCount().toString());
+//      statistics.put("totalNumberOfGraphs : ", mdQueryHandler.getNumberOfGraphs());
+//      statArray.add(statistics);
+//      jsonOuterArray.add(statArray);
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       logger.info("end json");
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
       logger.info(jsonString);
 
-      logger.info(jsonString); // response
+      out.println(jsonString); // response
     }
-  }
+    /*
+     * ..:::::::::::::::::..
+     */
 
-  public String cutLiteralUri(String encodedLit) {
-    String litReady = null;
-    if (encodedLit != null) {
-      if (encodedLit.startsWith("http://")) {
-        // cut the url for gui readability reasons
-        if (encodedLit.contains("%23")) {
+    /*
+     * ..:: show html ::..
+     */
+    if (outputFormat.equals("html") && conceptHits != null) {
+      final StringBuilder htmlStrBuilder = new StringBuilder();
+      final String cssUrl = request.getContextPath() + "/css/page.css";
+      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+      htmlStrBuilder.append("<html>");
+      htmlStrBuilder.append("\n\t<head>");
+      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
+      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+      htmlStrBuilder.append("\n\t</head>");
+      htmlStrBuilder.append("\n\t<body>");
+      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
+      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+      htmlStrBuilder.append("\n\t\t</table>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + conceptHits.size() + "</p>");
+//      htmlStrBuilder.append("\n\t\t<p>Total Number of Triple :"+mdQueryHandler.getTripleCount().toString()+"</p>");
+//      htmlStrBuilder.append("\n\t\t<p>Total Number of Graphs :"+mdQueryHandler.getNumberOfGraphs().toString()+"</p>");
+      htmlStrBuilder.append("\n\t\t<ul>");
+      // for (int i = 0; i < conceptHits.size(); i++) {
+      // final ConceptQueryResult conceptHit = conceptHits.get(i);
+      // final Set<String> mdFields = conceptHit.getAllMDFields();
+      //
+      // }
+      int counter = 0;
+
+      for (final ConceptQueryResult conceptHit : conceptHits) {
+        htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
+
+        htmlStrBuilder.append("<p>Result priority:" + conceptHit.getResultPriority() + "</p>");
+        htmlStrBuilder.append("\n\t\t\t\t<ul>");
+        for (final String mdField : conceptHit.getAllMDFields()) {
+          final ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
+          final int size = conceptHit.getValue(mdField).size();
+
+          if (size > 1) {
+            logger.info("conceptHits.get(i).getValue(s).size() > 1");
+            final ArrayList<String> values = conceptHit.getValue(mdField);
+            for (final String value : values) {
+              final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+              logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
+              final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+              detailedSearchLinkList.add(nameAndLink);
+            }
+          } else if (size == 1) {
+            logger.info("conceptHits.get(i).getValue(s).size() == 1");
+            final String value = conceptHit.getValue(mdField).get(0);
+            final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
+
+            final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
+            logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
+            logger.info("nameAndLink : " + nameAndLink);
+            detailedSearchLinkList.add(nameAndLink);
+          }
+          htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " + detailedSearchLinkList);
+          htmlStrBuilder.append("</li>");
+          // htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " +
+          // conceptHit.getValue(mdField));
+          // htmlStrBuilder.append("</li>");
+        }
+        htmlStrBuilder.append("\n\t\t\t\t</ul>");
+        htmlStrBuilder.append("\n\t\t\t</li>");
+      }
+
+      htmlStrBuilder.append("\n\t\t</ul>");
+      htmlStrBuilder.append("\n\t</body>");
+      htmlStrBuilder.append("\n</html>");
+      out.println(htmlStrBuilder.toString()); // print html
+    }
+    /*
+     * ..:::::::::::::::::..
+     */
+  }
+  
+  public String cutLiteralUri(String encodedLit){
+   String litReady = null;
+    if (encodedLit != null ){
+      if(encodedLit.startsWith("http://")){
+        //cut the url for gui readability reasons
+        if(encodedLit.contains("%23")){
           int chAscii = encodedLit.lastIndexOf("%23");
-          litReady = encodedLit.substring(chAscii + 3);
-        } else if (encodedLit.contains("#")) {
+          litReady = encodedLit.substring(chAscii+3);
+        }else if(encodedLit.contains("#")){
           int chHash = encodedLit.lastIndexOf("#");
-          litReady = encodedLit.substring(chHash + 1);
-        } else if (encodedLit.contains("/")) {
+          litReady = encodedLit.substring(chHash+1);
+        }else if(encodedLit.contains("/")){
           int chSlash = encodedLit.lastIndexOf('/');
-          litReady = encodedLit.substring(chSlash + 1);
-        }// we dont want no nullpointer
-        else {
+          litReady = encodedLit.substring(chSlash+1);
+        }//we dont want no nullpointer
+        else{
           litReady = encodedLit;
         }
-      } else {
-        litReady = encodedLit;
+    }else{
+      litReady = encodedLit;
       }
-      if (encodedLit.contains("^^")) {
+      if(encodedLit.contains("^^")){
         int beginIndex = encodedLit.indexOf("^^");
         litReady = encodedLit.substring(beginIndex);
       }
@@ -498,17 +655,17 @@ public class QueryMdSystem extends HttpServlet {
     return litReady;
   }
 
-  public String checkForLiteral(RDFNode resolved) {
-    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
+  public String checkForLiteral(RDFNode resolved){
+    final Logger logger = Logger.getLogger(QueryMdSystem.class);
     String obj = null;
-    if (resolved instanceof Literal) {
+    if(resolved instanceof Literal){
       obj = resolved.asLiteral().getLexicalForm();
-    } else {
+    }else{
       obj = resolved.asResource().getLocalName();
     }
     return obj;
   }
-
+  
   public static ISparqlAdapter useFuseki() {
     URL fusekiDatasetUrl;
     try {
@@ -535,7 +692,6 @@ public class QueryMdSystem extends HttpServlet {
     }
     // jenamain.makeDefaultGraphUnion();
   }
-
 
   @Override
   protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
