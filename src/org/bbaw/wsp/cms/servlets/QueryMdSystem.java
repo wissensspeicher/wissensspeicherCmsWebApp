@@ -2,16 +2,20 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -37,6 +41,7 @@ import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAd
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.SparqlAdapterFactory;
 import org.bbaw.wsp.cms.mdsystem.metadata.rdfmanager.JenaMain;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
+import org.bbaw.wsp.cms.test.QueryMdSystemTest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -53,6 +58,7 @@ import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class QueryMdSystem extends HttpServlet {
+
   /**
    * JSON field / key for the lexical/"real" value of a literal.
    */
@@ -62,7 +68,8 @@ public class QueryMdSystem extends HttpServlet {
    */
   private static final Object JSON_FIELD_IS_BLANK = "isBlank";
   /**
-   * JSON field / key for a general object, might be anything although literals (like blank nodes or resources)
+   * JSON field / key for a general object, might be anything although literals
+   * (like blank nodes or resources)
    */
   private static final Object JSON_FIELD_OBJECT = "object";
   /**
@@ -82,7 +89,8 @@ public class QueryMdSystem extends HttpServlet {
    */
   private static final String JSON_FIELD_PARENT_SUBJECT = "parentSubject";
   /**
-   * JSON field / key for the literal which should have a datatype and lexical type
+   * JSON field / key for the literal which should have a datatype and lexical
+   * type
    */
   private static final String JSON_FIELD_LITERAL = "literal";
   /**
@@ -125,7 +133,6 @@ public class QueryMdSystem extends HttpServlet {
    * JSON field / key for the graph name.
    */
   private static final Object JSON_FIELD_GRAPH_URL = "graphName";
-  private static final long serialVersionUID = 1L;
   /**
    * The URI/name of the normdata graph as stored in the triple store.
    */
@@ -133,11 +140,11 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * key/name for/of the parameter graphId.
    */
-  private static final String PARAM_GRAPH_ID = "isGraphId";
+  private static final String PARAM_GRAPH_ID = "false";
   /**
    * key/name for/of the parameter subject.
    */
-  private static final String PARAM_SUBJECT = "isSubject";
+  private static final String PARAM_SUBJECT = "false";
   /**
    * key for the JSON attribute for the result priority.
    */
@@ -145,152 +152,57 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * key/name for/of the parameter projectId.
    */
-  private static final String IS_PROJECT_ID = "isProjectId";
-  
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadPersonResults;
-  
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadLingResults;
-  
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadLocResults;
+  private static final String IS_PROJECT_ID = "true";
 
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadProjResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadOrgResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadMediaResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadPerOfTimeResults;
-  
-  
-  public QueryMdSystem() {
-    super();
-  }
-
-  @Override
-  public void init(final ServletConfig config) throws ServletException {
-    super.init(config);
-    ServletContext context = getServletContext();
-//    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
-//    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
-//    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
-    sparqlPreloadProjResults = (HitGraphContainer) context.getAttribute("sparqlPreloadProjResults");
-//    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
-//    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
-//    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
-    final Logger logger = Logger.getLogger(QueryMdSystem.class);
-    logger.info("project information preloaded by sparql ");
-  }
-
-  // zum testen
-  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&conceptSearch=true&outputFormat=json
-  // http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=marx&detailedSearch=true&outputFormat=json[&isGraphId=true][&isSubject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/....
-
-  @Override
-  protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-    // HTTP response print writer
-    final PrintWriter out = response.getWriter();
-    // bla
-
-    final Logger logger = Logger.getLogger(QueryMdSystem.class);
-    request.setCharacterEncoding("utf-8");
-    response.setCharacterEncoding("utf-8");
-    final String query = request.getParameter("query");
-    // new RequestStatisticAnalyser(query);
-    String language = request.getParameter("language");
-    if (language != null && language.equals("none")) {
-      language = null;
-    }
-    String outputFormat = request.getParameter("outputFormat");
-    if (outputFormat == null) {
-      outputFormat = "html";
-    }
-    if (outputFormat.equals("xml")) {
-      response.setContentType("text/xml");
-    } else if (outputFormat.equals("html")) {
-      response.setContentType("text/html");
-    } else if(outputFormat.equals("json")){
-      response.setContentType("application/json");
-    }
-    // Suche nach Konzepten in "Vorhaben-Metadaten"
-    final String conceptSearch = request.getParameter("conceptSearch");
-    // Suche nach Begriffen in einzelnen Triples oder Named Graphen
-    final String detailedSearch = request.getParameter("detailedSearch");
-    if (query == null) {
-      logger.info("no query specified: please set parameter \"query\"");
-      return;
-    }
+  public  void init() {
+    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
+    logger.info("project information preloaded by sparql "); 
+    String url = "http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=http://wsp.normdata.rdf/DTA&detailedSearch=true&outputFormat=json&isProjectId=true";
     try {
-      final Date begin = new Date();
-
-      final String baseUrl = getBaseUrl(request);
-      logger.info("baseUrl : " + baseUrl);
-      final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
-      logger.info("******************** ");
-
-      if (conceptSearch != null && conceptSearch.equals("true")) {
-        handleConceptQuery(request, response, out, logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
-      }
-
-      if (detailedSearch != null && detailedSearch.equals("true")) {
-        handleDetailedSearch(logger, begin, outputFormat, query, request, response, out);
-      }
-    } catch (final Exception e) {
-      throw new ServletException(e);
+      doGet("false", "true", "http://wsp.normdata.rdf/DTA", "json", "http://localhost:8080/wspCmsWebApp/query/QueryMdSystem?query=");
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
-  private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
+  public void doGet(String conceptSearch, String detailedSearch, String query, String outputFormat, String baseUrl) throws IOException {
+
+    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
+
+    final Date begin = new Date();
+
+    final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
+    logger.info("******************** ");
+
+    if (conceptSearch != null && conceptSearch.equals("true")) {
+      handleConceptQuery(logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
+    }
+
+    if (detailedSearch != null && detailedSearch.equals("true")) {
+      handleDetailedSearch(logger, begin, outputFormat, query);
+    }
+
+  }
+
+  private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query) {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
-
-//    logger.info("sparqlPreloadLocResults size: "+sparqlPreloadLocResults.toString());
-//    logger.info("sparqlPreloadLocResults size: "+sparqlPreloadLocResults.size());
-//    logger.info("sparqlPreloadLingResults : "+sparqlPreloadLingResults.toString());
-//    logger.info("sparqlPreloadLingResults : "+sparqlPreloadLingResults.size());
-    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.toString());
-    logger.info("sparqlPreloadProjResults : "+sparqlPreloadProjResults.size());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPersonResults.toString());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPersonResults.size());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadMediaResults.size());;
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadMediaResults.toString());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadOrgResults.size());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadOrgResults.toString());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPerOfTimeResults.size());
-//    logger.info("sparqlPreloadPersonResults : "+sparqlPreloadPerOfTimeResults.toString());
-    
+    // logger.info("preloadNormdata : "+preloadNormdata.toString());
+    HitGraphContainer preloadNormdata = mdqh.preloadAllProjectInf();
+    Collection<HitGraph> hitGraphsAsMaps = preloadNormdata.getAllHits();
     // @formatter:off
     /*
      * 
-     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/.... 
-     * check, whether a parameter graphId is set. 
+     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName
+     * = http://wsp.normdata.rdf/.... check, whether a parameter graphId is set.
      * If graphId is set to true, query contains a resource.
-     * 
      */
     // @formatter:on
     HitGraphContainer resultContainer = null;
-    if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
+    HashMap<String, List<String>> thatVeryHit = null;
+    HashMap<String, List<HashMap<String, String>>> mainEles = new HashMap<String, List<HashMap<String, String>>>();
+    if (PARAM_GRAPH_ID != null && PARAM_GRAPH_ID.equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
       URL graphUri;
@@ -301,7 +213,7 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
+    } else if (PARAM_SUBJECT != null && PARAM_SUBJECT.equals("true")) {
 
       // query contains the subject uri
       // call sparql adapter and query for the given subject
@@ -314,13 +226,47 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else 
-      //query all project information and resolve uri
-      if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
-        resultContainer = adapter.buildSparqlQuery(query, true);
-      }else { // neither graphId or subject was set
+    } else
+    // query all project information and resolve uri
+    if (IS_PROJECT_ID != null && IS_PROJECT_ID.equals("true")) {
+      HitGraph thatVeryNormdata = null;
+      try {
+        thatVeryNormdata = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+        thatVeryHit = thatVeryNormdata.getStatementBySubject(query);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      }
+
+      List<HashMap<String, String>> hasllist = new ArrayList<HashMap<String, String>>();
+      HashMap<String, String> hash = new HashMap<String, String>();
+      ArrayList<HashMap<String, String>> hashWrapper = new ArrayList<HashMap<String, String>>();
+      for (Entry<String, List<String>> entry : thatVeryHit.entrySet()) {
+        hash.put(entry.getKey(), entry.getValue().get(0));
+      }
+        // Person Project LinguisticSystem Organisation Location MediaType
+        // PeriodOfTime ConferenceOrEvent
+        if (thatVeryHit.get("contributor").size() != 0) {
+          List<String> contributors = thatVeryHit.get("contributor");
+          for (String string : contributors) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+            }
+            logger.info("resolvedValues : " + resolvedValues);
+//            if (resolvedValues.size() != 0) {
+//            }
+            hasllist.add(resolvedValues);
+          }
+        }
+        hashWrapper.add(hash);
+      mainEles.put("single Elements",hashWrapper);
+      mainEles.put("contributors", hasllist);
+      // resultContainer = adapter.buildSparqlQuery(query, true);
+    } else { // neither graphId or subject was set
       // query contains the subject URI
-      // call sparql adapter and query for the given subject within THE NORMDATA.RDF
+      // call sparql adapter and query for the given subject within THE
+      // NORMDATA.RDF
       final URL defaultGraphName;
       try {
         final URL url = new URL(query); // is query URI? -> so it's a subjectz
@@ -342,115 +288,16 @@ public class QueryMdSystem extends HttpServlet {
      */
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
-    /*
-     * ..:: html ::..
-     */
-    if (resultContainer != null && outputFormat.equals("htmlInSchoen")) {
-      final StringBuilder htmlStrBuilder = new StringBuilder();
-      final String cssUrl = request.getContextPath() + "/css/page.css";
-      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
-      htmlStrBuilder.append("<html>");
-      htmlStrBuilder.append("\n\t<head>");
-      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
-      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
-      htmlStrBuilder.append("\n\t</head>");
-      htmlStrBuilder.append("\n\t<body>");
-      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
-      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
-      htmlStrBuilder.append("\n\t\t</table>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + resultContainer.size() + "</p>");
-      htmlStrBuilder.append("\n\t\t<ul>");
 
-      int counter = 0;
-      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-        htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
-        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
-        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
-        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
-          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
-        }
-
-        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
-      }
-
-      htmlStrBuilder.append("\n\t\t</ul>");
-      htmlStrBuilder.append("\n\t</body>");
-      htmlStrBuilder.append("\n</html>");
-      out.println(htmlStrBuilder.toString()); // print html
-    }
-    
-    /*
-     * ..:: html ::..
-     */
-    if (resultContainer != null && outputFormat.equals("html")) {
-      final StringBuilder htmlStrBuilder = new StringBuilder();
-      final String cssUrl = request.getContextPath() + "/css/page.css";
-      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
-      htmlStrBuilder.append("<html>");
-      htmlStrBuilder.append("\n\t<head>");
-      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
-      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
-      htmlStrBuilder.append("\n\t</head>");
-      htmlStrBuilder.append("\n\t<body>");
-      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
-      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
-      htmlStrBuilder.append("\n\t\t</table>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + resultContainer.size() + "</p>");
-      htmlStrBuilder.append("\n\t\t<ul>");
-
-      int counter = 0;
-      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-        htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
-        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
-        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
-        if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
-          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Average score:</strong>" + hitGraph.getAvgScore() + "</li>");
-        }
-        if (hitGraph.getHighestScore() != HitGraph.DEFAULT_SCORE) {
-          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Highest score:</strong>" + hitGraph.getHighestScore() + "</li>");
-        }
-        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
-          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
-          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
-          if (hitStatement.getResultType().equals(MdSystemResultType.LITERAL_DEFAULT_GRAPH) || hitStatement.getResultType().equals(MdSystemResultType.LITERAL_NAMED_GRAPH)) {
-            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
-          }
-          if (hitStatement.getResultType() != null) {
-            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>MdSystemResultType:</strong> " + hitStatement.getResultType() + "</li>");
-          }
-          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
-        }
-
-        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
-      }
-
-      htmlStrBuilder.append("\n\t\t</ul>");
-      htmlStrBuilder.append("\n\t</body>");
-      htmlStrBuilder.append("\n</html>");
-      out.println(htmlStrBuilder.toString()); // print html
-    }
     /*
      * ..:::::::::::..
      */
     /*
      * ..:: json ::..
      */
-    else if (resultContainer != null && outputFormat.equals("json") && request.getParameter(IS_PROJECT_ID) == null) {
-      response.setContentType("application/json"); // indicates that this
-                                                   // content is pure json
-      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
-      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
+    if (resultContainer != null && outputFormat.equals("json") && IS_PROJECT_ID == null) {
+      logger.info(JSON_FIELD_SEARCH_TERM + " " + query);
+      logger.info(JSON_FIELD_NUMBER_OF_HITS + " " + resultContainer.size() + " ");
       /*
        * ..:: hitGraphes: [ ... ::..
        */
@@ -528,188 +375,31 @@ public class QueryMdSystem extends HttpServlet {
       /*
        * ..::::::::::::::::::::..
        */
-      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
-      final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
-      out.println(jsonString); // response
+      logger.info(JSON_FIELD_MD_HITS + " " + jhitGraphes);
+      // final String jsonString = JSONValue.toJSONString();
+      // logger.info(jsonString); // response
 
-    }
-    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID).equals("true")) {
-      response.setContentType("application/json"); // indicates that this
-                                                   // content is pure json
-      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
-      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
-      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
+    } else if (resultContainer != null && outputFormat.equals("json") && IS_PROJECT_ID.equals("true")) {
       /*
        * ..:: hitGraphes: [ ... ::..
        */
       final JSONArray jhitGraphes = new JSONArray();
-      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-        /*
-         * ...::: singleGraph, element within the hitGraphes array :::...
-         */
-        try {
-          final JSONObject jHitGraph = new JSONObject();
-          /*
-           * ....:::: hitStatements: [... ::::....
-           */
-          final JSONArray jHitStatements = new JSONArray();
-          
-          String encodedSubj = null;
-          String lastPred = "";
-          String lastLit = "";
-          //resolvedValues Array
-          JSONArray resolvedValues = new JSONArray();
-          JSONObject lastJHitStatement = new JSONObject();
-          JSONObject jHitStatement = new JSONObject();
-          for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
-            JSONObject literalWrapper = new JSONObject();
-            if(hitStatement.getSubject() !=null){
-              encodedSubj = URIUtil.encodeQuery(hitStatement.getSubject().toString());
-            }else{
-              encodedSubj = query;
-            }
-            final String encodedPred = URIUtil.encodeQuery(hitStatement.getPredicate().toString());
-            String currentPred;
-            //cut the url for gui readability reasons
-            if(encodedPred.contains("%23")){
-              int chAscii = encodedPred.lastIndexOf("%23");
-              currentPred = encodedPred.substring(chAscii+3);
-            }else if(encodedPred.contains("#")){
-                int chHash = encodedPred.lastIndexOf("#");
-                currentPred = encodedPred.substring(chHash+1);
-            }else if(encodedPred.contains("/")){
-              int chSlash = encodedPred.lastIndexOf('/');
-              currentPred = encodedPred.substring(chSlash+1);
-            }
-            //we dont want no nullpointer
-            else{
-              currentPred = encodedPred;
-            }
-            String currentLit = null;
-            if(hitStatement.getObject() != null){
-              final String encodedLit = checkForLiteral(hitStatement.getObject());
-              currentLit = cutLiteralUri(encodedLit);
-            }
-            if(lastPred.equals(currentPred) && lastLit.equals(currentLit)){
-            }else{
-              resolvedValues = new JSONArray();
-            }
-            if(hitStatement.getResolvedPer() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedPer());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            
-            if(hitStatement.getResolvedProj() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedProj());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedLoc() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedLoc());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedLing() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedLing());
-              String resolvedReady = cutLiteralUri(obj);
-              JSONObject resolved = new JSONObject();
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedTime() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedTime());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedMed() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedMed());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedOrg() != null){
-              final String obj = checkForLiteral(hitStatement.getResolvedOrg());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(hitStatement.getResolvedEvent()!= null){
-              final String obj = checkForLiteral(hitStatement.getResolvedEvent());
-              String resolvedReady = cutLiteralUri(obj);
-              resolvedValues.add(resolvedReady );
-            }
-            if(!resolvedValues.isEmpty()){
-              literalWrapper.put(currentLit, resolvedValues);
-              //den literalWarpper nur adden, wenn die Kombination aus predikat und literalWrapper noch nicht vorkam
-              if(!lastJHitStatement.containsKey(currentPred)){
-                jHitStatement = new JSONObject();
-                jHitStatement.put(currentPred, literalWrapper);
-                jHitStatements.add(jHitStatement);
-              }else{
-                if(lastJHitStatement.get(currentPred) instanceof JSONObject){
-                  JSONObject literalCastValue  = (JSONObject) lastJHitStatement.get(currentPred);
-                  if(!literalCastValue.containsKey(currentLit)){
-                    jHitStatement = new JSONObject();
-                      jHitStatement.put(currentPred, literalWrapper);
-                      jHitStatements.add(jHitStatement);
-                  }else{
-//                    System.out.println("DASSELBE pred und lit. tue nix");
-                  }
-                }else if(lastJHitStatement.get(currentPred) instanceof String){
-                  String literalCastValue  = (String) lastJHitStatement.get(currentPred);
-                  if(!literalCastValue.equals(currentLit)){
-                    jHitStatement = new JSONObject();
-                    jHitStatement.put(currentPred, literalWrapper);
-                    jHitStatements.add(jHitStatement);
-                  }
-                }else{
-//                  System.out.println("DASSELBE pred und lit. tue nix");
-                }
-              }
-            }else{
-//              System.out.println("currentLit : "+currentLit);
-              if(currentLit.equals("")){
-//                System.out.println("literal ist leerer String. tue nix");
-              }else{
-                jHitStatement = new JSONObject();
-                jHitStatement.put(currentPred, currentLit);
-                jHitStatements.add(jHitStatement);
-              }
-            }
-            /*
-             * ....:::::::::::::::::::::::::::::....
-             */
-            lastJHitStatement = jHitStatement;
-            lastPred = currentPred;
-            lastLit = currentLit;
-          }
-          jHitGraph.put(encodedSubj, jHitStatements);
-          jhitGraphes.add(jHitGraph);
-//          System.out.println(jHitGraph);
-        } catch (final Exception e) {
-          e.printStackTrace();
-        }
-        /*
-         * ...::::::::::::::::::::::::::::::::::::::::::::::::::::::::...
-         */
-      }
-      /*
-       * ..::::::::::::::::::::..
-       */
-      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
-      final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
-      out.println(jsonString); // response
-
+      //
     }
-    
-    
+
     /*
      * ..:::::::::::..
      */
     logger.info("elapsedTime : " + elapsedTime);
     logger.info("begin json");
-    logger.info("resultContainer.size() : " + resultContainer.size());
-//    for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-//      logger.info("hitGraph : " + hitGraph);
-//    }
+    HashMap<String, HashMap<String, List<HashMap<String, String>>>> wrapper = new HashMap<String, HashMap<String, List<HashMap<String, String>>>>();
+    wrapper.put(query, mainEles);
+    logger.info(JSONValue.toJSONString(wrapper));
+    logger.info("JSONValue.toJSONString(mainelements) : " + JSONValue.toJSONString(wrapper));
+    // logger.info("resultContainer.size() : " + resultContainer.size());
+    // for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+    // logger.info("hitGraph : " + hitGraph);
+    // }
   }
 
   /**
@@ -726,7 +416,7 @@ public class QueryMdSystem extends HttpServlet {
    * @param mdQueryHandler
    * @throws URIException
    */
-  private void handleConceptQuery(final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out, final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
+  private void handleConceptQuery(final Logger logger, final String query, final String outputFormat, final Date begin, final MdSystemQueryHandler mdQueryHandler, final String baseUrl) throws URIException {
     final List<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
@@ -737,8 +427,6 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: show json ::..
      */
     if (outputFormat.equals("json") && conceptHits != null) {
-      response.setContentType("application/json"); // indicates that this
-                                                   // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.clear();
       jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
@@ -763,122 +451,46 @@ public class QueryMdSystem extends HttpServlet {
         logger.info("*******************");
         jsonOuterArray.add(jsonInnerArray);
       }
-//      JSONArray statArray = new JSONArray();
-//      JsonObject statistics = new JsonObject();
-//      statistics.put("totalNumberOfTriple : ", mdQueryHandler.getTripleCount().toString());
-//      statistics.put("totalNumberOfGraphs : ", mdQueryHandler.getNumberOfGraphs());
-//      statArray.add(statistics);
-//      jsonOuterArray.add(statArray);
+      // JSONArray statArray = new JSONArray();
+      // JsonObject statistics = new JsonObject();
+      // statistics.put("totalNumberOfTriple : ",
+      // mdQueryHandler.getTripleCount().toString());
+      // statistics.put("totalNumberOfGraphs : ",
+      // mdQueryHandler.getNumberOfGraphs());
+      // statArray.add(statistics);
+      // jsonOuterArray.add(statArray);
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       logger.info("end json");
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
       logger.info(jsonString);
 
-      out.println(jsonString); // response
+      logger.info(jsonString); // response
     }
-    /*
-     * ..:::::::::::::::::..
-     */
-
-    /*
-     * ..:: show html ::..
-     */
-    if (outputFormat.equals("html") && conceptHits != null) {
-      final StringBuilder htmlStrBuilder = new StringBuilder();
-      final String cssUrl = request.getContextPath() + "/css/page.css";
-      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
-      htmlStrBuilder.append("<html>");
-      htmlStrBuilder.append("\n\t<head>");
-      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
-      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
-      htmlStrBuilder.append("\n\t</head>");
-      htmlStrBuilder.append("\n\t<body>");
-      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
-      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
-      htmlStrBuilder.append("\n\t\t</table>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
-      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + conceptHits.size() + "</p>");
-//      htmlStrBuilder.append("\n\t\t<p>Total Number of Triple :"+mdQueryHandler.getTripleCount().toString()+"</p>");
-//      htmlStrBuilder.append("\n\t\t<p>Total Number of Graphs :"+mdQueryHandler.getNumberOfGraphs().toString()+"</p>");
-      htmlStrBuilder.append("\n\t\t<ul>");
-      // for (int i = 0; i < conceptHits.size(); i++) {
-      // final ConceptQueryResult conceptHit = conceptHits.get(i);
-      // final Set<String> mdFields = conceptHit.getAllMDFields();
-      //
-      // }
-      int counter = 0;
-
-      for (final ConceptQueryResult conceptHit : conceptHits) {
-        htmlStrBuilder.append("\n\t\t\t<li><strong>ConceptHit #" + (++counter) + "</strong>");
-
-        htmlStrBuilder.append("<p>Result priority:" + conceptHit.getResultPriority() + "</p>");
-        htmlStrBuilder.append("\n\t\t\t\t<ul>");
-        for (final String mdField : conceptHit.getAllMDFields()) {
-          final ArrayList<String> detailedSearchLinkList = new ArrayList<String>();
-          final int size = conceptHit.getValue(mdField).size();
-
-          if (size > 1) {
-            logger.info("conceptHits.get(i).getValue(s).size() > 1");
-            final ArrayList<String> values = conceptHit.getValue(mdField);
-            for (final String value : values) {
-              final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
-              logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
-              final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
-              detailedSearchLinkList.add(nameAndLink);
-            }
-          } else if (size == 1) {
-            logger.info("conceptHits.get(i).getValue(s).size() == 1");
-            final String value = conceptHit.getValue(mdField).get(0);
-            final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
-
-            final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
-            logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
-            logger.info("nameAndLink : " + nameAndLink);
-            detailedSearchLinkList.add(nameAndLink);
-          }
-          htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " + detailedSearchLinkList);
-          htmlStrBuilder.append("</li>");
-          // htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " +
-          // conceptHit.getValue(mdField));
-          // htmlStrBuilder.append("</li>");
-        }
-        htmlStrBuilder.append("\n\t\t\t\t</ul>");
-        htmlStrBuilder.append("\n\t\t\t</li>");
-      }
-
-      htmlStrBuilder.append("\n\t\t</ul>");
-      htmlStrBuilder.append("\n\t</body>");
-      htmlStrBuilder.append("\n</html>");
-      out.println(htmlStrBuilder.toString()); // print html
-    }
-    /*
-     * ..:::::::::::::::::..
-     */
   }
-  
-  public String cutLiteralUri(String encodedLit){
-   String litReady = null;
-    if (encodedLit != null ){
-      if(encodedLit.startsWith("http://")){
-        //cut the url for gui readability reasons
-        if(encodedLit.contains("%23")){
+
+  public String cutLiteralUri(String encodedLit) {
+    String litReady = null;
+    if (encodedLit != null) {
+      if (encodedLit.startsWith("http://")) {
+        // cut the url for gui readability reasons
+        if (encodedLit.contains("%23")) {
           int chAscii = encodedLit.lastIndexOf("%23");
-          litReady = encodedLit.substring(chAscii+3);
-        }else if(encodedLit.contains("#")){
+          litReady = encodedLit.substring(chAscii + 3);
+        } else if (encodedLit.contains("#")) {
           int chHash = encodedLit.lastIndexOf("#");
-          litReady = encodedLit.substring(chHash+1);
-        }else if(encodedLit.contains("/")){
+          litReady = encodedLit.substring(chHash + 1);
+        } else if (encodedLit.contains("/")) {
           int chSlash = encodedLit.lastIndexOf('/');
-          litReady = encodedLit.substring(chSlash+1);
-        }//we dont want no nullpointer
-        else{
+          litReady = encodedLit.substring(chSlash + 1);
+        }// we dont want no nullpointer
+        else {
           litReady = encodedLit;
         }
-    }else{
-      litReady = encodedLit;
+      } else {
+        litReady = encodedLit;
       }
-      if(encodedLit.contains("^^")){
+      if (encodedLit.contains("^^")) {
         int beginIndex = encodedLit.indexOf("^^");
         litReady = encodedLit.substring(beginIndex);
       }
@@ -886,17 +498,17 @@ public class QueryMdSystem extends HttpServlet {
     return litReady;
   }
 
-  public String checkForLiteral(RDFNode resolved){
-    final Logger logger = Logger.getLogger(QueryMdSystem.class);
+  public String checkForLiteral(RDFNode resolved) {
+    final Logger logger = Logger.getLogger(QueryMdSystemTest.class);
     String obj = null;
-    if(resolved instanceof Literal){
+    if (resolved instanceof Literal) {
       obj = resolved.asLiteral().getLexicalForm();
-    }else{
+    } else {
       obj = resolved.asResource().getLocalName();
     }
     return obj;
   }
-  
+
   public static ISparqlAdapter useFuseki() {
     URL fusekiDatasetUrl;
     try {
@@ -923,6 +535,7 @@ public class QueryMdSystem extends HttpServlet {
     }
     // jenamain.makeDefaultGraphUnion();
   }
+
 
   @Override
   protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
