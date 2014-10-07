@@ -195,15 +195,9 @@ public class QueryMdSystem extends HttpServlet {
   public void init(final ServletConfig config) throws ServletException {
     super.init(config);
     ServletContext context = getServletContext();
-//    sparqlPreloadPersonResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPersonResults");
-//    sparqlPreloadLingResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLingResults");
-//    sparqlPreloadLocResults = (HitGraphContainer) context.getAttribute("sparqlPreloadLocResults");
     final Logger logger = Logger.getLogger(QueryMdSystem.class);
     logger.info("preload normdata Metadata");
     preloadNormdata = (HitGraphContainer) context.getAttribute("preloadNormdata");
-//    sparqlPreloadOrgResults = (HitGraphContainer) context.getAttribute("sparqlPreloadOrgResults");
-//    sparqlPreloadMediaResults = (HitGraphContainer) context.getAttribute("sparqlPreloadMediaResults");
-//    sparqlPreloadPerOfTimeResults = (HitGraphContainer) context.getAttribute("sparqlPreloadPerOfTimeResults");
   }
 
   // zum testen
@@ -250,7 +244,6 @@ public class QueryMdSystem extends HttpServlet {
       final String baseUrl = getBaseUrl(request);
       logger.info("baseUrl : " + baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
-      logger.info("******************** ");
 
       if (conceptSearch != null && conceptSearch.equals("true")) {
         handleConceptQuery(request, response, out, logger, query, outputFormat, begin, mdQueryHandler, baseUrl);
@@ -268,8 +261,6 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
-//    logger.info("preloadNormdata : "+preloadNormdata.toString());
-    Collection<HitGraph> hitGraphsAsMaps = preloadNormdata.getAllHits();
     // @formatter:off
     /*
      * 
@@ -280,7 +271,7 @@ public class QueryMdSystem extends HttpServlet {
      */
     // @formatter:on
     HitGraphContainer resultContainer = null;
-    HashMap<String, List<String>> thatVeryHit = null;
+    HashMap<String, List<String>> normdataHit = null;
     HashMap<String, Object> mainEles = new HashMap<String, Object>();
     if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
@@ -309,27 +300,29 @@ public class QueryMdSystem extends HttpServlet {
     } else 
       //query all project information and resolve uri
       if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
-        HitGraph thatVeryNormdata = null;
+        HitGraph normdatacomplete = null;
         try {
-          thatVeryNormdata = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
-          thatVeryHit = thatVeryNormdata.getStatementBySubject(query);
+          normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+          normdataHit = normdatacomplete.getStatementBySubject(query);
         } catch (MalformedURLException e) {
           e.printStackTrace();
         }
 
         List<HashMap<String, String>> hasllist = null;
-        for (Entry<String, List<String>> entry : thatVeryHit.entrySet()) {
-          mainEles.put(entry.getKey(), entry.getValue().get(0));
+        if(normdataHit.entrySet() != null){
+          for (Entry<String, List<String>> entry : normdataHit.entrySet()) {
+            mainEles.put(entry.getKey(), entry.getValue().get(0));
+          }
         }
           // Person Project LinguisticSystem Organisation Location MediaType
           // PeriodOfTime ConferenceOrEvent
-        if (thatVeryHit.get("contributor") != null && thatVeryHit.get("contributor").size() != 0) {
+        if (normdataHit.get("contributor") != null && normdataHit.get("contributor").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> contributors = thatVeryHit.get("contributor");
+          List<String> contributors = normdataHit.get("contributor");
           for (String string : contributors) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -341,13 +334,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("contributors", hasllist);
         }
         //#############
-        if (thatVeryHit.get("relatedCorporateBody") != null && thatVeryHit.get("relatedCorporateBody").size() != 0) {
+        if (normdataHit.get("relatedCorporateBody") != null && normdataHit.get("relatedCorporateBody").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> relatedCorporateBodys = thatVeryHit.get("relatedCorporateBody");
+          List<String> relatedCorporateBodys = normdataHit.get("relatedCorporateBody");
           for (String string : relatedCorporateBodys) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -359,13 +352,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("relatedCorporateBody", hasllist);
         }
         //#############
-        if (thatVeryHit.get("coverage") != null && thatVeryHit.get("coverage").size() != 0) {
+        if (normdataHit.get("coverage") != null && normdataHit.get("coverage").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> coverages = thatVeryHit.get("coverage");
+          List<String> coverages = normdataHit.get("coverage");
           for (String string : coverages) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -377,13 +370,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("coverage", hasllist);
         }
         //
-        if (thatVeryHit.get("description") != null && thatVeryHit.get("description").size() != 0) {
+        if (normdataHit.get("description") != null && normdataHit.get("description").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> descriptions = thatVeryHit.get("description");
+          List<String> descriptions = normdataHit.get("description");
           for (String string : descriptions) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -395,13 +388,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("description", hasllist);
         }
         //
-        if (thatVeryHit.get("language") != null && thatVeryHit.get("language").size() != 0) {
+        if (normdataHit.get("language") != null && normdataHit.get("language").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> languages = thatVeryHit.get("description");
+          List<String> languages = normdataHit.get("description");
           for (String string : languages) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -413,13 +406,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("language", hasllist);
         }
         //
-        if (thatVeryHit.get("topic") != null && thatVeryHit.get("topic").size() != 0) {
+        if (normdataHit.get("topic") != null && normdataHit.get("topic").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> topics = thatVeryHit.get("topic");
+          List<String> topics = normdataHit.get("topic");
           for (String string : topics) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -431,13 +424,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("topic", hasllist); 
         }
         //
-        if (thatVeryHit.get("contributingCorporateBody") != null && thatVeryHit.get("contributingCorporateBody").size() != 0) {
+        if (normdataHit.get("contributingCorporateBody") != null && normdataHit.get("contributingCorporateBody").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> contributingCorporateBodys = thatVeryHit.get("contributingCorporateBody");
+          List<String> contributingCorporateBodys = normdataHit.get("contributingCorporateBody");
           for (String string : contributingCorporateBodys) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -449,13 +442,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("contributingCorporateBody", hasllist);
         } 
         //
-        if (thatVeryHit.get("fundedBy") != null && thatVeryHit.get("fundedBy").size() != 0) {
+        if (normdataHit.get("fundedBy") != null && normdataHit.get("fundedBy").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> fundedBys = thatVeryHit.get("fundedBy");
+          List<String> fundedBys = normdataHit.get("fundedBy");
           for (String string : fundedBys) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -467,13 +460,13 @@ public class QueryMdSystem extends HttpServlet {
           mainEles.put("fundedBy", hasllist);
         } 
         //
-        if (thatVeryHit.get("contributingPerson") != null && thatVeryHit.get("contributingPerson").size() != 0) {
+        if (normdataHit.get("contributingPerson") != null && normdataHit.get("contributingPerson").size() != 0) {
           hasllist = new ArrayList<HashMap<String, String>>();
-          List<String> contributingPersons = thatVeryHit.get("contributingPerson");
+          List<String> contributingPersons = normdataHit.get("contributingPerson");
           for (String string : contributingPersons) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
-            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            if(resolved != null){
+            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+            if(resolved != null && resolved.entrySet() != null){
               for (Entry<String, List<String>> entrie : resolved.entrySet()) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
               }
@@ -712,8 +705,6 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("begin json");
     HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
     wrapper.put(query, mainEles);
-    logger.info(JSONValue.toJSONString(wrapper));
-    logger.info("JSONValue.toJSONString(mainelements) : " + JSONValue.toJSONString(wrapper));
     out.println(JSONValue.toJSONString(wrapper));
   }
 
@@ -751,21 +742,16 @@ public class QueryMdSystem extends HttpServlet {
       final JSONArray jsonOuterArray = new JSONArray();
       JSONObject jsonWrapper = null;
       for (int i = 0; i < conceptHits.size(); i++) {
-        logger.info("**************");
-        logger.info("results.get(i) : " + conceptHits.get(i));
-        logger.info("getSet() : " + conceptHits.get(i).getAllMDFields());
         final Set<String> keys = conceptHits.get(i).getAllMDFields();
         final JSONArray jsonInnerArray = new JSONArray();
         final JSONObject simpleHitInfo = new JSONObject();
         simpleHitInfo.put(PRIORITY, "" + conceptHits.get(i).getResultPriority());
         jsonInnerArray.add(simpleHitInfo);
         for (final String s : keys) {
-          logger.info("concepts.get(i).getValue(s) : " + conceptHits.get(i).getValue(s));
           jsonWrapper = new JSONObject();
           jsonWrapper.put(s, conceptHits.get(i).getValue(s));
           jsonInnerArray.add(jsonWrapper);
         }
-        logger.info("*******************");
         jsonOuterArray.add(jsonInnerArray);
       }
 //      JSONArray statArray = new JSONArray();
@@ -776,7 +762,6 @@ public class QueryMdSystem extends HttpServlet {
 //      jsonOuterArray.add(statArray);
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
-      logger.info("end json");
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
       logger.info(jsonString);
 
@@ -824,22 +809,18 @@ public class QueryMdSystem extends HttpServlet {
           final int size = conceptHit.getValue(mdField).size();
 
           if (size > 1) {
-            logger.info("conceptHits.get(i).getValue(s).size() > 1");
             final ArrayList<String> values = conceptHit.getValue(mdField);
             for (final String value : values) {
               final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
-              logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
+              
               final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
               detailedSearchLinkList.add(nameAndLink);
             }
           } else if (size == 1) {
-            logger.info("conceptHits.get(i).getValue(s).size() == 1");
             final String value = conceptHit.getValue(mdField).get(0);
             final String detailedSearchLink = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(value) + "&detailedSearch=true&outputFormat=html";
 
             final String nameAndLink = "<a href=\"" + detailedSearchLink + "\">" + value + "</a>";
-            logger.info("concepts.get(i).getValue(s) : " + conceptHit.getValue(mdField));
-            logger.info("nameAndLink : " + nameAndLink);
             detailedSearchLinkList.add(nameAndLink);
           }
           htmlStrBuilder.append("\n\t\t\t\t\t<li>" + mdField + " : " + detailedSearchLinkList);
