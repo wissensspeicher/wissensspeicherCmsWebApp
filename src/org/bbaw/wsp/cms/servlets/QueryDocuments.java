@@ -28,6 +28,7 @@ import org.apache.lucene.search.Query;
 import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.collections.Service;
+import org.bbaw.wsp.cms.document.DBpediaResource;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
 import org.bbaw.wsp.cms.document.Hits;
@@ -359,28 +360,12 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("Entities: ");
+            htmlStrBuilder.append("<img src=\"../images/rdfSmall.gif\" alt=\"DBpedia resource\" border=\"0\" height=\"15\" width=\"15\">");
             Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
             if (entitiesDetailsField != null) {
-              // TODO
-              // String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
-              // String entitiesDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
-              // htmlStrBuilder.append(entitiesDetailsHtmlStr);
-            } else {
-              String entitiesStr = entitiesField.stringValue();
-              String[] entities = entitiesStr.split("###");  // separator of entities
-              Arrays.sort(entities, ignoreCaseComparator);
-              for (int j=0; j<entities.length; j++) {
-                String entityName = entities[j];
-                String entityLink = "/wspCmsWebApp/query/About?query=" + entityName;
-                if (lang != null && ! lang.isEmpty())
-                  entityLink = entityLink + "&language=" + lang;
-                String entitySearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=entities:&quot;" + entityName + "&quot;&fieldExpansion=none";
-                String entityImgLink = "<a href=\"" + entityLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + entitySearchUrl + "\">" + entityName + "</a> (" + entityImgLink + ")");
-                if (j != entities.length - 1)
-                  htmlStrBuilder.append(", ");
-              }
+              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+              String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
+              htmlStrBuilder.append(" " + entitiesDetailsHtmlStr);
             }
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
@@ -785,26 +770,11 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonHit.put("fragments", jasonFragments);
           
-          Fieldable entitiesField = doc.getFieldable("entities");
-          if (entitiesField != null) {
-            JSONArray jsonEntities = new JSONArray();
-            String entitiesStr = entitiesField.stringValue();
-            String[] entities = entitiesStr.split("###");
-            entities = cleanNames(entities);
-            Arrays.sort(entities, ignoreCaseComparator);
-            for (int j=0; j<entities.length; j++) {
-              String entityName = entities[j];
-              if (! entityName.isEmpty()) {
-                JSONObject entityNameAndLink = new JSONObject();
-                entityNameAndLink.put("name", entityName);
-                String entityLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(entityName);
-                if (lang != null && ! lang.isEmpty())
-                  entityLink = entityLink + "&language=" + lang;
-                entityNameAndLink.put("link", entityLink);
-                jsonEntities.add(entityNameAndLink);
-              }
-            }
-            jsonHit.put("entities", jsonEntities);
+          Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+          if (entitiesDetailsField != null) {
+            String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+            JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
+            jsonHit.put("entities", jsonDocEntitiesDetails);
           }
 
           Fieldable personsField = doc.getFieldable("persons");
@@ -999,6 +969,32 @@ public class QueryDocuments extends HttpServlet {
     return projectLink;
   }
 
+  private JSONArray docEntitiesDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
+    ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
+    JSONArray retArray = new JSONArray();
+    for (int i=0; i<entities.size(); i++) {
+      DBpediaResource entity = entities.get(i);
+      entity.setBaseUrl(baseUrl);
+      JSONObject jsonEntity = entity.toJsonObject();
+      retArray.add(jsonEntity);
+    }  
+    return retArray;
+  }
+  
+  private String docEntitiesDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
+    ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
+    String retHtmlStr = "<span class=\"persons\">";
+    for (int i=0; i<entities.size(); i++) {
+      DBpediaResource entity = entities.get(i);
+      entity.setBaseUrl(baseUrl);
+      String htmlStrPerson = entity.toHtmlStr();
+      retHtmlStr = retHtmlStr + htmlStrPerson + ", ";
+    }
+    retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
+    retHtmlStr = retHtmlStr + "</span>";
+    return retHtmlStr;
+  }
+  
   private JSONArray docPersonsDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docPersonsDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
     ArrayList<Person> persons = Person.fromXmlStr(xQueryEvaluator, docPersonsDetailsXmlStr);
     JSONArray retArray = new JSONArray();
