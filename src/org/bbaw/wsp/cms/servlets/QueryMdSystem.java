@@ -268,21 +268,21 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
-    // logger.info("preloadNormdata : "+preloadNormdata.toString());
-    HitGraphContainer preloadNormdata = mdqh.preloadAllProjectInf();
+//    logger.info("preloadNormdata : "+preloadNormdata.toString());
     Collection<HitGraph> hitGraphsAsMaps = preloadNormdata.getAllHits();
     // @formatter:off
     /*
      * 
-     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName
-     * = http://wsp.normdata.rdf/.... check, whether a parameter graphId is set.
+     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/.... 
+     * check, whether a parameter graphId is set. 
      * If graphId is set to true, query contains a resource.
+     * 
      */
     // @formatter:on
     HitGraphContainer resultContainer = null;
     HashMap<String, List<String>> thatVeryHit = null;
-    HashMap<String, List<HashMap<String, String>>> mainEles = new HashMap<String, List<HashMap<String, String>>>();
-    if (PARAM_GRAPH_ID != null && PARAM_GRAPH_ID.equals("true")) {
+    HashMap<String, Object> mainEles = new HashMap<String, Object>();
+    if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
       URL graphUri;
@@ -293,7 +293,7 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else if (PARAM_SUBJECT != null && PARAM_SUBJECT.equals("true")) {
+    } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
 
       // query contains the subject uri
       // call sparql adapter and query for the given subject
@@ -306,47 +306,187 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else
-    // query all project information and resolve uri
-    if (IS_PROJECT_ID != null && IS_PROJECT_ID.equals("true")) {
-      HitGraph thatVeryNormdata = null;
-      try {
-        thatVeryNormdata = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
-        thatVeryHit = thatVeryNormdata.getStatementBySubject(query);
-      } catch (MalformedURLException e) {
-        e.printStackTrace();
-      }
+    } else 
+      //query all project information and resolve uri
+      if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
+        HitGraph thatVeryNormdata = null;
+        try {
+          thatVeryNormdata = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+          thatVeryHit = thatVeryNormdata.getStatementBySubject(query);
+        } catch (MalformedURLException e) {
+          e.printStackTrace();
+        }
 
-      List<HashMap<String, String>> hasllist = new ArrayList<HashMap<String, String>>();
-      HashMap<String, String> hash = new HashMap<String, String>();
-      ArrayList<HashMap<String, String>> hashWrapper = new ArrayList<HashMap<String, String>>();
-      for (Entry<String, List<String>> entry : thatVeryHit.entrySet()) {
-        hash.put(entry.getKey(), entry.getValue().get(0));
-      }
-        // Person Project LinguisticSystem Organisation Location MediaType
-        // PeriodOfTime ConferenceOrEvent
-        if (thatVeryHit.get("contributor").size() != 0) {
+        List<HashMap<String, String>> hasllist = null;
+        for (Entry<String, List<String>> entry : thatVeryHit.entrySet()) {
+          mainEles.put(entry.getKey(), entry.getValue().get(0));
+        }
+          // Person Project LinguisticSystem Organisation Location MediaType
+          // PeriodOfTime ConferenceOrEvent
+        if (thatVeryHit.get("contributor") != null && thatVeryHit.get("contributor").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
           List<String> contributors = thatVeryHit.get("contributor");
           for (String string : contributors) {
             HashMap<String, String> resolvedValues = new HashMap<String, String>();
             HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
-            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
-              resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("contributor", string);
             }
-            logger.info("resolvedValues : " + resolvedValues);
-//            if (resolvedValues.size() != 0) {
-//            }
             hasllist.add(resolvedValues);
           }
+          mainEles.put("contributors", hasllist);
         }
-        hashWrapper.add(hash);
-      mainEles.put("single Elements",hashWrapper);
-      mainEles.put("contributors", hasllist);
-      // resultContainer = adapter.buildSparqlQuery(query, true);
-    } else { // neither graphId or subject was set
+        //#############
+        if (thatVeryHit.get("relatedCorporateBody") != null && thatVeryHit.get("relatedCorporateBody").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> relatedCorporateBodys = thatVeryHit.get("relatedCorporateBody");
+          for (String string : relatedCorporateBodys) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("relatedCorporateBody", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("relatedCorporateBody", hasllist);
+        }
+        //#############
+        if (thatVeryHit.get("coverage") != null && thatVeryHit.get("coverage").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> coverages = thatVeryHit.get("coverage");
+          for (String string : coverages) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("coverage", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("coverage", hasllist);
+        }
+        //
+        if (thatVeryHit.get("description") != null && thatVeryHit.get("description").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> descriptions = thatVeryHit.get("description");
+          for (String string : descriptions) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("description", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("description", hasllist);
+        }
+        //
+        if (thatVeryHit.get("language") != null && thatVeryHit.get("language").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> languages = thatVeryHit.get("description");
+          for (String string : languages) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("language", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("language", hasllist);
+        }
+        //
+        if (thatVeryHit.get("topic") != null && thatVeryHit.get("topic").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> topics = thatVeryHit.get("topic");
+          for (String string : topics) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("topic", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("topic", hasllist); 
+        }
+        //
+        if (thatVeryHit.get("contributingCorporateBody") != null && thatVeryHit.get("contributingCorporateBody").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> contributingCorporateBodys = thatVeryHit.get("contributingCorporateBody");
+          for (String string : contributingCorporateBodys) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("contributingCorporateBody", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("contributingCorporateBody", hasllist);
+        } 
+        //
+        if (thatVeryHit.get("fundedBy") != null && thatVeryHit.get("fundedBy").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> fundedBys = thatVeryHit.get("fundedBy");
+          for (String string : fundedBys) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("fundedBy", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("fundedBy", hasllist);
+        } 
+        //
+        if (thatVeryHit.get("contributingPerson") != null && thatVeryHit.get("contributingPerson").size() != 0) {
+          hasllist = new ArrayList<HashMap<String, String>>();
+          List<String> contributingPersons = thatVeryHit.get("contributingPerson");
+          for (String string : contributingPersons) {
+            HashMap<String, String> resolvedValues = new HashMap<String, String>();
+            HashMap<String, List<String>> resolved = thatVeryNormdata.getStatementBySubject(string);
+            if(resolved != null){
+              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              }
+            }else{
+              resolvedValues.put("contributingPerson", string);
+            }
+            hasllist.add(resolvedValues);
+          }
+          mainEles.put("contributingPerson", hasllist);
+        }
+      }else { // neither graphId or subject was set
       // query contains the subject URI
-      // call sparql adapter and query for the given subject within THE
-      // NORMDATA.RDF
+      // call sparql adapter and query for the given subject within THE NORMDATA.RDF
       final URL defaultGraphName;
       try {
         final URL url = new URL(query); // is query URI? -> so it's a subjectz
@@ -368,16 +508,115 @@ public class QueryMdSystem extends HttpServlet {
      */
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
+    /*
+     * ..:: html ::..
+     */
+    if (resultContainer != null && outputFormat.equals("htmlInSchoen")) {
+      final StringBuilder htmlStrBuilder = new StringBuilder();
+      final String cssUrl = request.getContextPath() + "/css/page.css";
+      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+      htmlStrBuilder.append("<html>");
+      htmlStrBuilder.append("\n\t<head>");
+      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
+      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+      htmlStrBuilder.append("\n\t</head>");
+      htmlStrBuilder.append("\n\t<body>");
+      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
+      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+      htmlStrBuilder.append("\n\t\t</table>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + resultContainer.size() + "</p>");
+      htmlStrBuilder.append("\n\t\t<ul>");
 
+      int counter = 0;
+      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
+        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
+        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+        }
+
+        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+      }
+
+      htmlStrBuilder.append("\n\t\t</ul>");
+      htmlStrBuilder.append("\n\t</body>");
+      htmlStrBuilder.append("\n</html>");
+      out.println(htmlStrBuilder.toString()); // print html
+    }
+    
+    /*
+     * ..:: html ::..
+     */
+    if (resultContainer != null && outputFormat.equals("html")) {
+      final StringBuilder htmlStrBuilder = new StringBuilder();
+      final String cssUrl = request.getContextPath() + "/css/page.css";
+      htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+      htmlStrBuilder.append("<html>");
+      htmlStrBuilder.append("\n\t<head>");
+      htmlStrBuilder.append("\n\t\t<title>Query: " + query + "</title>");
+      htmlStrBuilder.append("\n\t\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+      htmlStrBuilder.append("\n\t</head>");
+      htmlStrBuilder.append("\n\t<body>");
+      htmlStrBuilder.append("\n\t\t<table align=\"right\" valign=\"top\">");
+      htmlStrBuilder.append("\n\t\t<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+      htmlStrBuilder.append("\n\t\t</table>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Search term:</strong> " + query + "</p>");
+      htmlStrBuilder.append("\n\t\t<p><strong>Number of hits:</strong> " + resultContainer.size() + "</p>");
+      htmlStrBuilder.append("\n\t\t<ul>");
+
+      int counter = 0;
+      for (final HitGraph hitGraph : resultContainer.getAllHits()) {
+        htmlStrBuilder.append("\n\t\t\t<li><strong>QueryHit #" + (++counter) + "</strong></li>");
+        htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+        htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>NamedGraphUrl:</strong> " + hitGraph.getNamedGraphUrl() + "</li>");
+        if (hitGraph.getAvgScore() != HitGraph.DEFAULT_SCORE) {
+          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Average score:</strong>" + hitGraph.getAvgScore() + "</li>");
+        }
+        if (hitGraph.getHighestScore() != HitGraph.DEFAULT_SCORE) {
+          htmlStrBuilder.append("\n\t\t\t\t\t<li><strong>Highest score:</strong>" + hitGraph.getHighestScore() + "</li>");
+        }
+        for (final HitStatement hitStatement : hitGraph.getAllHitStatements()) {
+          htmlStrBuilder.append("\n\t\t\t\t<li><ul>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Subject:</strong> " + hitStatement.getSubject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Predicate:</strong> " + hitStatement.getPredicate() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Object:</strong> " + hitStatement.getObject() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent subject:</strong> " + hitStatement.getSubjParent() + "</li>");
+          htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Parent predicate:</strong> " + hitStatement.getPredParent() + "</li>");
+          if (hitStatement.getResultType().equals(MdSystemResultType.LITERAL_DEFAULT_GRAPH) || hitStatement.getResultType().equals(MdSystemResultType.LITERAL_NAMED_GRAPH)) {
+            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>Score:</strong> " + hitStatement.getScore() + "</li>");
+          }
+          if (hitStatement.getResultType() != null) {
+            htmlStrBuilder.append("\n\t\t\t\t\t\t<li><strong>MdSystemResultType:</strong> " + hitStatement.getResultType() + "</li>");
+          }
+          htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+        }
+
+        htmlStrBuilder.append("\n\t\t\t\t</li></ul>");
+      }
+
+      htmlStrBuilder.append("\n\t\t</ul>");
+      htmlStrBuilder.append("\n\t</body>");
+      htmlStrBuilder.append("\n</html>");
+      out.println(htmlStrBuilder.toString()); // print html
+    }
     /*
      * ..:::::::::::..
      */
     /*
      * ..:: json ::..
      */
-    if (resultContainer != null && outputFormat.equals("json") && IS_PROJECT_ID == null) {
-      logger.info(JSON_FIELD_SEARCH_TERM + " " + query);
-      logger.info(JSON_FIELD_NUMBER_OF_HITS + " " + resultContainer.size() + " ");
+    else if (resultContainer != null && outputFormat.equals("json") && request.getParameter(IS_PROJECT_ID) == null) {
+      response.setContentType("application/json"); // indicates that this
+                                                   // content is pure json
+      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
+      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
       /*
        * ..:: hitGraphes: [ ... ::..
        */
@@ -455,30 +694,27 @@ public class QueryMdSystem extends HttpServlet {
       /*
        * ..::::::::::::::::::::..
        */
-      logger.info(JSON_FIELD_MD_HITS + " " + jhitGraphes);
-      // final String jsonString = JSONValue.toJSONString();
-      // logger.info(jsonString); // response
+      jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
+      final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
+      out.println(jsonString); // response
 
-    } else if (resultContainer != null && outputFormat.equals("json") && IS_PROJECT_ID.equals("true")) {
-      /*
-       * ..:: hitGraphes: [ ... ::..
-       */
-      final JSONArray jhitGraphes = new JSONArray();
-      //
     }
-
+    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID).equals("true")) {
+      response.setContentType("application/json"); // indicates that this content is pure json
+      final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
+      jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
+      jsonEncoder.putStrings(JSON_FIELD_NUMBER_OF_HITS, resultContainer.size() + " ");
+    }
     /*
      * ..:::::::::::..
      */
     logger.info("elapsedTime : " + elapsedTime);
     logger.info("begin json");
-    HashMap<String, HashMap<String, List<HashMap<String, String>>>> wrapper = new HashMap<String, HashMap<String, List<HashMap<String, String>>>>();
+    HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
     wrapper.put(query, mainEles);
     logger.info(JSONValue.toJSONString(wrapper));
     logger.info("JSONValue.toJSONString(mainelements) : " + JSONValue.toJSONString(wrapper));
-    // logger.info("resultContainer.size() : " + resultContainer.size());
-    // for (final HitGraph hitGraph : resultContainer.getAllHits()) {
-    // logger.info("hitGraph : " + hitGraph);
+    out.println(JSONValue.toJSONString(wrapper));
   }
 
   /**
