@@ -983,12 +983,12 @@ public class QueryDocuments extends HttpServlet {
   
   private String docEntitiesDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
     ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
-    String retHtmlStr = "<span class=\"persons\">";
+    String retHtmlStr = "<span class=\"entities\">";
     for (int i=0; i<entities.size(); i++) {
       DBpediaResource entity = entities.get(i);
       entity.setBaseUrl(baseUrl);
-      String htmlStrPerson = entity.toHtmlStr();
-      retHtmlStr = retHtmlStr + htmlStrPerson + ", ";
+      String htmlStrEntity = entity.toHtmlStr();
+      retHtmlStr = retHtmlStr + htmlStrEntity + ", ";
     }
     retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
     retHtmlStr = retHtmlStr + "</span>";
