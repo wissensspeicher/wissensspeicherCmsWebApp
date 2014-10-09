@@ -154,37 +154,10 @@ public class QueryMdSystem extends HttpServlet {
   /**
    * results from preloading project information by sparql 
    */
-  private HitGraphContainer sparqlPreloadPersonResults;
-  
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadLingResults;
-  
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadLocResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
   private HitGraphContainer preloadNormdata;
+  
 
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadOrgResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadMediaResults;
-
-  /**
-   * results from preloading project information by sparql 
-   */
-  private HitGraphContainer sparqlPreloadPerOfTimeResults;
+  private static final String GET_ALL_PROJECTS = "true";
   
   
   public QueryMdSystem() {
@@ -273,6 +246,30 @@ public class QueryMdSystem extends HttpServlet {
     HitGraphContainer resultContainer = null;
     HashMap<String, List<String>> normdataHit = null;
     HashMap<String, Object> mainEles = new HashMap<String, Object>();
+    
+  //einfach alle Einträge vom Typ Projekt aus der normdata
+    if(GET_ALL_PROJECTS != null && GET_ALL_PROJECTS == "true"){
+      HitGraph normdatacomplete = null;
+      HashMap<String,  HashMap<String, List<String>>> allStatements = new HashMap<String, HashMap<String, List<String>> >();
+      try {
+        normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+        allStatements = normdatacomplete.getAllHitStatementsAsMap();
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      }
+      ArrayList<HashMap<String, List<String>>> allPros = new ArrayList<HashMap<String, List<String>>>();
+      for (Entry<String, HashMap<String, List<String>>> entry : allStatements.entrySet()) {
+        HashMap<String, List<String>> sdfghjkl = entry.getValue();
+        for (Entry<String, List<String>> entrie : sdfghjkl.entrySet()){
+        if(entrie.getValue().get(0) != null && entrie.getValue().get(0).equals("Project")){
+//            logger.info("Project : "+entry.getValue().toString());
+            allPros.add(sdfghjkl);
+        }
+      }
+    }
+//      logger.info("allPros.size() : "+allPros.size());
+    }
+    
     if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
