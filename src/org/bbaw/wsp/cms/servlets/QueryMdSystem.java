@@ -157,7 +157,7 @@ public class QueryMdSystem extends HttpServlet {
   private HitGraphContainer preloadNormdata;
   
 
-  private static final String GET_ALL_PROJECTS = "true";
+  private static final String GET_ALL_PROJECTS = "getAllProjects";
   
   
   public QueryMdSystem() {
@@ -486,7 +486,7 @@ public class QueryMdSystem extends HttpServlet {
         
       }else
       //einfach alle Einträge vom Typ Projekt aus der normdata
-      if(GET_ALL_PROJECTS != null && GET_ALL_PROJECTS == "true"){
+      if(request.getParameter(GET_ALL_PROJECTS) != null && request.getParameter(GET_ALL_PROJECTS)  == "true"){
         HitGraph normdatacomplete = null;
         HashMap<String,  HashMap<String, List<String>>> allStatements = new HashMap<String, HashMap<String, List<String>> >();
         try {
