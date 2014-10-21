@@ -213,7 +213,6 @@ public class QueryMdSystem extends HttpServlet {
     }
     try {
       final Date begin = new Date();
-
       final String baseUrl = getBaseUrl(request);
       logger.info("baseUrl : " + baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
@@ -234,19 +233,19 @@ public class QueryMdSystem extends HttpServlet {
     logger.info("detailed Search");
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
+//    logger.info("all md : " + preloadNormdata.toString());
     // @formatter:off
     /*
      * 
-     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName = http://wsp.normdata.rdf/.... 
-     * check, whether a parameter graphId is set. 
+     * [&graphId=true][&subject=true] default: subject=true und defaultGraphName
+     * = http://wsp.normdata.rdf/.... check, whether a parameter graphId is set.
      * If graphId is set to true, query contains a resource.
-     * 
      */
     // @formatter:on
     HitGraphContainer resultContainer = null;
     HashMap<String, List<String>> normdataHit = null;
     HashMap<String, Object> mainEles = new HashMap<String, Object>();
-    
+   
     if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
@@ -259,7 +258,6 @@ public class QueryMdSystem extends HttpServlet {
         e.printStackTrace();
       }
     } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
-
       // query contains the subject uri
       // call sparql adapter and query for the given subject
       String resourceUri;
@@ -271,222 +269,259 @@ public class QueryMdSystem extends HttpServlet {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else 
-      //query all project information and resolve uri
-      if(request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")){
-        HitGraph normdatacomplete = null;
-        try {
-          normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
-          normdataHit = normdatacomplete.getStatementBySubject(query);
-        } catch (MalformedURLException e) {
-          e.printStackTrace();
-        }
+    } else
+    // query all project information and resolve uri
+    if (request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")) {
+      HitGraph normdatacomplete = null;
+      try {
+        normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+        normdataHit = normdatacomplete.getStatementBySubject(query);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      }
 
-        List<HashMap<String, Object>> hasllist = null;
-        if(normdataHit.entrySet() != null){
-          for (Entry<String, List<String>> entry : normdataHit.entrySet()) {
+      List<HashMap<String, Object>> hasllist = null;
+      if (normdataHit.entrySet() != null) {
+        for (Entry<String, List<String>> entry : normdataHit.entrySet()) {
+          if (entry.getValue().size() == 1) {
             mainEles.put(entry.getKey(), entry.getValue().get(0));
+          } else {
+            mainEles.put(entry.getKey(), entry.getValue());
           }
         }
-          // Person Project LinguisticSystem Organisation Location MediaType
-          // PeriodOfTime ConferenceOrEvent
-        if (normdataHit.get("contributor") != null && normdataHit.get("contributor").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> contributors = normdataHit.get("contributor");
-          for (String string : contributors) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+      }
+      // Person Project LinguisticSystem Organisation Location MediaType
+      // PeriodOfTime ConferenceOrEvent
+      if (normdataHit.get("contributor") != null && normdataHit.get("contributor").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> contributors = normdataHit.get("contributor");
+        for (String string : contributors) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("contributor", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("contributor", string);
           }
-          mainEles.put("contributors", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //#############
-        if (normdataHit.get("relatedCorporateBody") != null && normdataHit.get("relatedCorporateBody").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> relatedCorporateBodys = normdataHit.get("relatedCorporateBody");
-          for (String string : relatedCorporateBodys) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("contributors", hasllist);
+      }
+      // #############
+      if (normdataHit.get("relatedCorporateBody") != null && normdataHit.get("relatedCorporateBody").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> relatedCorporateBodys = normdataHit.get("relatedCorporateBody");
+        for (String string : relatedCorporateBodys) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("relatedCorporateBody", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("relatedCorporateBody", string);
           }
-          mainEles.put("relatedCorporateBody", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //#############
-        if (normdataHit.get("coverage") != null && normdataHit.get("coverage").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> coverages = normdataHit.get("coverage");
-          for (String string : coverages) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("relatedCorporateBody", hasllist);
+      }
+      // #############
+      if (normdataHit.get("coverage") != null && normdataHit.get("coverage").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> coverages = normdataHit.get("coverage");
+        for (String string : coverages) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("coverage", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("coverage", string);
           }
-          mainEles.put("coverage", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //
-        if (normdataHit.get("description") != null && normdataHit.get("description").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> descriptions = normdataHit.get("description");
-          for (String string : descriptions) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("coverage", hasllist);
+      }
+      //
+      if (normdataHit.get("description") != null && normdataHit.get("description").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> descriptions = normdataHit.get("description");
+        for (String string : descriptions) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("description", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("description", string);
           }
-          mainEles.put("description", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //
-        if (normdataHit.get("language") != null && normdataHit.get("language").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> languages = normdataHit.get("description");
-          for (String string : languages) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("description", hasllist);
+      }
+      //
+      if (normdataHit.get("language") != null && normdataHit.get("language").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> languages = normdataHit.get("description");
+        for (String string : languages) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("language", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("language", string);
           }
-          mainEles.put("language", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //
-        if (normdataHit.get("topic") != null && normdataHit.get("topic").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> topics = normdataHit.get("topic");
-          for (String string : topics) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("language", hasllist);
+      }
+      //
+      if (normdataHit.get("topic") != null && normdataHit.get("topic").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> topics = normdataHit.get("topic");
+        for (String string : topics) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("topic", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("topic", string);
           }
-          mainEles.put("topic", hasllist); 
+          hasllist.add(resolvedValues);
         }
-        //
-        if (normdataHit.get("contributingCorporateBody") != null && normdataHit.get("contributingCorporateBody").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> contributingCorporateBodys = normdataHit.get("contributingCorporateBody");
-          for (String string : contributingCorporateBodys) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+        mainEles.put("topic", hasllist);
+      }
+      //
+      if (normdataHit.get("contributingCorporateBody") != null && normdataHit.get("contributingCorporateBody").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> contributingCorporateBodys = normdataHit.get("contributingCorporateBody");
+        for (String string : contributingCorporateBodys) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
                 resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            }else{
-              resolvedValues.put("contributingCorporateBody", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("contributingCorporateBody", string);
           }
-          mainEles.put("contributingCorporateBody", hasllist);
-        } 
-        //
-        if (normdataHit.get("fundedBy") != null && normdataHit.get("fundedBy").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> fundedBys = normdataHit.get("fundedBy");
-          for (String string : fundedBys) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
-                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
-              }
-            }else{
-              resolvedValues.put("fundedBy", string);
-            }
-            hasllist.add(resolvedValues);
-          }
-          mainEles.put("fundedBy", hasllist);
-        } 
-        //
-        if (normdataHit.get("contributingPerson") != null && normdataHit.get("contributingPerson").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> contributingPersons = normdataHit.get("contributingPerson");
-          for (String string : contributingPersons) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if(resolved != null && resolved.entrySet() != null){
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
-                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
-              }
-            }else{
-              resolvedValues.put("contributingPerson", string);
-            }
-            hasllist.add(resolvedValues);
-          }
-          mainEles.put("contributingPerson", hasllist);
+          hasllist.add(resolvedValues);
         }
-        //
-        if (normdataHit.get("identifier") != null && normdataHit.get("identifier").size() != 0) {
-          hasllist = new ArrayList<HashMap<String, Object>>();
-          List<String> identifiers = normdataHit.get("identifier");
-          for (String string : identifiers) {
-            HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
-            HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
-            if (resolved != null && resolved.entrySet() != null) {
-              for (Entry<String, List<String>> entrie : resolved.entrySet()) {
-                if (entrie.getValue().size() == 1) {
-                  resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
-                } else {
-                  resolvedValues.put(entrie.getKey(), entrie.getValue());
-                }
+        mainEles.put("contributingCorporateBody", hasllist);
+      }
+      //
+      if (normdataHit.get("fundedBy") != null && normdataHit.get("fundedBy").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> fundedBys = normdataHit.get("fundedBy");
+        for (String string : fundedBys) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
               }
-            } else {
-              resolvedValues.put("identifier", string);
             }
-            hasllist.add(resolvedValues);
+          } else {
+            resolvedValues.put("fundedBy", string);
           }
+          hasllist.add(resolvedValues);
         }
-        mainEles.put("identifier", hasllist);
-        
-        ///////
-        final Date end = new Date();
-        final long elapsedTime = end.getTime() - begin.getTime();
-        logger.info("elapsedTime : " + elapsedTime);
-        logger.info("begin json");
-        HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
-        wrapper.put(query, mainEles);
-        logger.info(JSONValue.toJSONString(wrapper));
-        
-        
-      }else
+        mainEles.put("fundedBy", hasllist);
+      }
+      //
+      if (normdataHit.get("contributingPerson") != null && normdataHit.get("contributingPerson").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> contributingPersons = normdataHit.get("contributingPerson");
+        for (String string : contributingPersons) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
+              }
+            }
+          } else {
+            resolvedValues.put("contributingPerson", string);
+          }
+          hasllist.add(resolvedValues);
+        }
+        mainEles.put("contributingPerson", hasllist);
+      }
+      //
+      if (normdataHit.get("identifier") != null && normdataHit.get("identifier").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> identifiers = normdataHit.get("identifier");
+        for (String string : identifiers) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
+              }
+            }
+          } else {
+            resolvedValues.put("identifier", string);
+          }
+          hasllist.add(resolvedValues);
+        }
+      }
+      mainEles.put("identifier", hasllist);
+      /////
+      final Date end = new Date();
+      final long elapsedTime = end.getTime() - begin.getTime();
+      logger.info("elapsedTime : " + elapsedTime);
+      logger.info("begin json");
+      HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
+      wrapper.put(query, mainEles);
+      out.println(JSONValue.toJSONString(wrapper));
+    }else
       //einfach alle Einträge vom Typ Projekt aus der normdata
-      if(request.getParameter(GET_ALL_PROJECTS) != null && request.getParameter(GET_ALL_PROJECTS)  == "true"){
+      if(request.getParameter(GET_ALL_PROJECTS) != null && request.getParameter(GET_ALL_PROJECTS).equals("true")){
         HitGraph normdatacomplete = null;
         HashMap<String,  HashMap<String, List<String>>> allStatements = new HashMap<String, HashMap<String, List<String>> >();
         try {
@@ -495,33 +530,37 @@ public class QueryMdSystem extends HttpServlet {
         } catch (MalformedURLException e) {
           e.printStackTrace();
         }
-  //      logger.info("allStatements keyset: "+allStatements.keySet().toString());
+//        logger.info("allStatements keyset: "+allStatements.keySet().toString());
         ArrayList<HashMap<String, List<String>>> allPros = new ArrayList<HashMap<String, List<String>>>();
         for (Entry<String, HashMap<String, List<String>>> entry : allStatements.entrySet()) {
           HashMap<String, List<String>> sdfghjkl = entry.getValue();
           for (Entry<String, List<String>> entrie : sdfghjkl.entrySet()){
-  //          logger.info("entrie.getValue() : "+entrie.getValue());
+//            logger.info("entrie.getValue() : "+entrie.getValue());
           if(entrie.getValue().get(0) != null && entrie.getValue().get(0).equals("Project")){
-  //            logger.info("Project : "+entry.getValue().toString());
+//              logger.info("Project : "+entry.getValue().toString());
               allPros.add(sdfghjkl);
           }
         }
       }
         mainEles.put("allProjects", allPros);
-//        logger.info("allPros.size() : "+allPros.size());
         final Date end = new Date();
         final long elapsedTime = end.getTime() - begin.getTime();
         logger.info("elapsedTime : " + elapsedTime);
         logger.info("begin json");
         logger.info(JSONValue.toJSONString(mainEles));
+      out.println(JSONValue.toJSONString(mainEles));
       } 
-      // neither graphId or subject was set
+   
+    else 
+      if(request.getParameter(PARAM_GRAPH_ID) == null && request.getParameter(GET_ALL_PROJECTS) == null && request.getParameter(PARAM_SUBJECT) == null){
+       
+        // neither graphId or subject was set
       // query contains the subject URI
-      // call sparql adapter and query for the given subject within THE NORMDATA.RDF
-      else { 
+      // call sparql adapter and query for the given subject within THE
+      // NORMDATA.RDF
       final URL defaultGraphName;
       try {
-        final URL url = new URL(query); // is query URI? -> so it's a subjectz
+        final URL url = new URL(query); // is query URI? -> so it's a subject
         try {
           defaultGraphName = new URL(NORMDATA_GRAPH_URI);
           final String subject = "<" + URIUtil.decode(query) + ">";
@@ -742,9 +781,9 @@ public class QueryMdSystem extends HttpServlet {
      */
     logger.info("elapsedTime : " + elapsedTime);
     logger.info("begin json");
-    HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
-    wrapper.put(query, mainEles);
-    out.println(JSONValue.toJSONString(wrapper));
+//    HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
+//    wrapper.put(query, mainEles);
+//    out.println(JSONValue.toJSONString(wrapper));
   }
 
   /**
