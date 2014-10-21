@@ -274,12 +274,16 @@ public class QueryMdSystem extends HttpServlet {
     if (request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")) {
       HitGraph normdatacomplete = null;
       try {
-        normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/"));
+        normdatacomplete = preloadNormdata.getHitGraph(new URL("http://wsp.normdata.rdf/")); 
+        if (normdatacomplete.getStatementBySubject(query) == null) {
+          logger.info("the dataset does not contain this project id : \"query\"");
+          return;
+        }
         normdataHit = normdatacomplete.getStatementBySubject(query);
       } catch (MalformedURLException e) {
         e.printStackTrace();
       }
-
+     
       List<HashMap<String, Object>> hasllist = null;
       if (normdataHit.entrySet() != null) {
         for (Entry<String, List<String>> entry : normdataHit.entrySet()) {
@@ -512,10 +516,6 @@ public class QueryMdSystem extends HttpServlet {
       }
       mainEles.put("identifier", hasllist);
       /////
-      final Date end = new Date();
-      final long elapsedTime = end.getTime() - begin.getTime();
-      logger.info("elapsedTime : " + elapsedTime);
-      logger.info("begin json");
       HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
       wrapper.put(query, mainEles);
       out.println(JSONValue.toJSONString(wrapper));
@@ -543,11 +543,6 @@ public class QueryMdSystem extends HttpServlet {
         }
       }
         mainEles.put("allProjects", allPros);
-        final Date end = new Date();
-        final long elapsedTime = end.getTime() - begin.getTime();
-        logger.info("elapsedTime : " + elapsedTime);
-        logger.info("begin json");
-        logger.info(JSONValue.toJSONString(mainEles));
       out.println(JSONValue.toJSONString(mainEles));
       } 
    
@@ -778,9 +773,9 @@ public class QueryMdSystem extends HttpServlet {
     }
     /*
      * ..:::::::::::..
-     */
-    logger.info("elapsedTime : " + elapsedTime);
-    logger.info("begin json");
+//     */
+//    logger.info("elapsedTime : " + elapsedTime);
+//    logger.info("begin json");
 //    HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
 //    wrapper.put(query, mainEles);
 //    out.println(JSONValue.toJSONString(wrapper));
