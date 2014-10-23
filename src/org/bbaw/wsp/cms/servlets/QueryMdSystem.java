@@ -214,7 +214,6 @@ public class QueryMdSystem extends HttpServlet {
     try {
       final Date begin = new Date();
       final String baseUrl = getBaseUrl(request);
-      logger.info("baseUrl : " + baseUrl);
       final MdSystemQueryHandler mdQueryHandler = MdSystemQueryHandler.getInstance();
 
       if (conceptSearch != null && conceptSearch.equals("true")) {
@@ -230,7 +229,7 @@ public class QueryMdSystem extends HttpServlet {
   }
 
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
-    logger.info("detailed Search");
+    
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
 //    logger.info("all md : " + preloadNormdata.toString());
@@ -799,8 +798,6 @@ public class QueryMdSystem extends HttpServlet {
     final List<ConceptQueryResult> conceptHits = mdQueryHandler.getConcept(query);
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
-    logger.info("elapsedTime : " + elapsedTime);
-    logger.info("begin json");
 
     /*
      * ..:: show json ::..
@@ -836,7 +833,6 @@ public class QueryMdSystem extends HttpServlet {
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jsonOuterArray);
 
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
-      logger.info(jsonString);
 
       out.println(jsonString); // response
     }
