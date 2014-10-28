@@ -314,7 +314,7 @@ public class QueryMdSystem extends HttpServlet {
           }
           hasllist.add(resolvedValues);
         }
-        mainEles.put("contributors", hasllist);
+        mainEles.put("contributor", hasllist);
       }
       // #############
       if (normdataHit.get("relatedCorporateBody") != null && normdataHit.get("relatedCorporateBody").size() != 0) {
@@ -385,7 +385,7 @@ public class QueryMdSystem extends HttpServlet {
       //
       if (normdataHit.get("language") != null && normdataHit.get("language").size() != 0) {
         hasllist = new ArrayList<HashMap<String, Object>>();
-        List<String> languages = normdataHit.get("description");
+        List<String> languages = normdataHit.get("language");
         for (String string : languages) {
           HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
           HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
@@ -512,8 +512,8 @@ public class QueryMdSystem extends HttpServlet {
           }
           hasllist.add(resolvedValues);
         }
+        mainEles.put("identifier", hasllist);
       }
-      mainEles.put("identifier", hasllist);
       /////
       HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
       wrapper.put(query, mainEles);
@@ -529,14 +529,11 @@ public class QueryMdSystem extends HttpServlet {
         } catch (MalformedURLException e) {
           e.printStackTrace();
         }
-//        logger.info("allStatements keyset: "+allStatements.keySet().toString());
         ArrayList<HashMap<String, List<String>>> allPros = new ArrayList<HashMap<String, List<String>>>();
         for (Entry<String, HashMap<String, List<String>>> entry : allStatements.entrySet()) {
           HashMap<String, List<String>> sdfghjkl = entry.getValue();
           for (Entry<String, List<String>> entrie : sdfghjkl.entrySet()){
-//            logger.info("entrie.getValue() : "+entrie.getValue());
           if(entrie.getValue().get(0) != null && entrie.getValue().get(0).equals("Project")){
-//              logger.info("Project : "+entry.getValue().toString());
               allPros.add(sdfghjkl);
           }
         }
