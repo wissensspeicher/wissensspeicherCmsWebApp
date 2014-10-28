@@ -43,6 +43,8 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private static final String WBP_LINK = "http://www.woerterbuch-portal.de/wbp/woebus_alle/Suche/result?SUBMIT=Suche&WDG=1&DRW=1&GRIMM=1&GRIMM2=1&GWB=1&ELEXIKO=1&VIPM=1&DWDS=9&eingabe=";
+
   private XQueryEvaluator xQueryEvaluator = null;
   
   public QueryDocuments() {
@@ -608,10 +610,9 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<p/>");
         htmlStrBuilder.append("Word information:");
         htmlStrBuilder.append("<ul>");
-        String dwdsQuery = translateLuceneToQueryLanguage(query, "ddc");
-        String dwdsDictionaryUrl = "http://www.dwds.de/?view=311&qu=" + dwdsQuery;
-        dwdsDictionaryUrl = URIUtil.encodeQuery(dwdsDictionaryUrl); 
-        htmlStrBuilder.append("<li>DWDS german dictionaries: <a href=\"" + dwdsDictionaryUrl + "\">" + dwdsQuery + "</a></li>");
+        String dictionaryUrl = WBP_LINK + query;
+        dictionaryUrl = URIUtil.encodeQuery(dictionaryUrl); 
+        htmlStrBuilder.append("<li>Dictionary information for: <a href=\"" + dictionaryUrl + "\">" + query + "</a></li>");
         htmlStrBuilder.append("</ul>");
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
@@ -627,6 +628,9 @@ public class QueryDocuments extends HttpServlet {
         }
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
+        String dictUrl = WBP_LINK + query;
+        String encodedDictUrl = URIUtil.encodeQuery(dictUrl);
+        jsonOutput.put("dictUrl", encodedDictUrl);
         JSONArray jsonArray = new JSONArray();
         for (int i=0; i<docsSize; i++) {
           JSONObject jsonHit = new JSONObject();
