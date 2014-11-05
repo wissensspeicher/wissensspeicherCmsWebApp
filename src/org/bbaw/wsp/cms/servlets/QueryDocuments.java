@@ -604,6 +604,7 @@ public class QueryDocuments extends HttpServlet {
         // facets
         Facets facets = hits.getFacets();
         if (facets != null && facets.size() > 0) {
+          facets.setBaseUrl(baseUrl);
           String facetsStr = facets.toHtmlString();
           htmlStrBuilder.append("<p/>" + "Facets: " + facetsStr);
         }
@@ -623,6 +624,7 @@ public class QueryDocuments extends HttpServlet {
         jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
         Facets facets = hits.getFacets();
         if (facets != null && facets.size() > 0) {
+          facets.setBaseUrl(baseUrl);
           JSONObject jsonFacets = facets.toJsonObject();
           jsonOutput.put("facets", jsonFacets);
         }
