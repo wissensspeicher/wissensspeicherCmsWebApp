@@ -315,8 +315,30 @@ public class QueryDocuments extends HttpServlet {
             type = typeField.stringValue();
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + type + "</td>");
           htmlStrBuilder.append("</tr>");
-          // project link row
+          // hit fragments row
+          ArrayList<String> hitFragments = doc.getHitFragments();
+          if (hitFragments != null) {
+            StringBuilder hitFragmentsStrBuilder = new StringBuilder();
+            hitFragmentsStrBuilder.append("<b>Hit summary: </b>");
+            hitFragmentsStrBuilder.append("(...) ");
+            for (int j=0; j<hitFragments.size(); j++) {
+              String hitFragment = hitFragments.get(j);
+              hitFragmentsStrBuilder.append(hitFragment + " (...) ");
+            }
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">" + hitFragmentsStrBuilder.toString() + "</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          // project links row
           String projectUrl = null;
+          boolean docIsXml = false; 
+          String firstHitPageNumber = null;
+          String mimeType = getMimeType(docId);
+          if (mimeType != null && mimeType.contains("xml"))
+            docIsXml = true;
+          if (docIsXml)
+            firstHitPageNumber = doc.getFirstHitPageNumber();
           if (docCollectionName != null) {
             Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
             if (projectColl != null) {
@@ -326,18 +348,26 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-              htmlStrBuilder.append("Project: ");
-              String projectStr = docCollectionName;
-              if (projectName != null)
-                projectStr = projectName + " (Id: " + docCollectionName + "): ";
+              htmlStrBuilder.append("<b>Project links</b>: ");
+              Fieldable webUriField = doc.getFieldable("webUri");
+              String webUri = null;
+              if (webUriField != null)
+                webUri = webUriField.stringValue();
+              String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
+              if (projectLink != null) {
+                if (! projectLink.contains("%"))
+                  projectLink = URIUtil.encodeQuery(projectLink);  
+                projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project view</a> ");
+              }
+              htmlStrBuilder.append("(" + projectName + " (" + docCollectionName + "): ");
               if (projectUrl != null) {
-                projectStr = projectStr + "<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Homepage</a> ";
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
               }
               if (projectRdfId != null) {
                 String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
-                projectStr = projectStr + "<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Details</a>";
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Project details</a>)");
               }
-              htmlStrBuilder.append(projectStr);
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
@@ -348,27 +378,11 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("Description: ");
+            htmlStrBuilder.append("<b>Description</b>: ");
             String description = descriptionField.stringValue();
             if (description != null && description.length() > 400)
               description = description.substring(0, 400) + " (...)";
             htmlStrBuilder.append(description);
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          // Knowledge rows
-          Fieldable entitiesField = doc.getFieldable("entities");
-          if (entitiesField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("<img src=\"../images/rdfSmall.gif\" alt=\"DBpedia resource\" border=\"0\" height=\"15\" width=\"15\">");
-            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
-            if (entitiesDetailsField != null) {
-              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
-              String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
-              htmlStrBuilder.append(" " + entitiesDetailsHtmlStr);
-            }
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
@@ -377,7 +391,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/persons.png\" width=\"15\" height=\"15\" border=\"0\"/> ");
+            htmlStrBuilder.append("<b>Persons</b>: ");
             Fieldable personsDetailsField = doc.getFieldable("personsDetails");
             if (personsDetailsField != null) {
               String personsDetailsXmlStr = personsDetailsField.stringValue();
@@ -409,7 +423,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/place.png\" width=\"15\" height=\"15\" border=\"0\"/> ");
+            htmlStrBuilder.append("<b>Places</b>: ");
             String placesStr = placesField.stringValue();
             String[] places = placesStr.split("###");  // separator of places
             places = cleanNames(places);
@@ -438,7 +452,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-              htmlStrBuilder.append("Subjects (controlled): ");
+              htmlStrBuilder.append("<b>Subjects (controlled)</b>: ");
               while (xmdValueDcTermsIterator.hasNext()) {
                 XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
                 /* e.g.:
@@ -472,7 +486,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("Subjects (free): ");
+            htmlStrBuilder.append("<b>Subjects (free)</b>: ");
             String subjectStr = subjectField.stringValue();
             String[] subjects = subjectStr.split("[,]");  // one separator of subjects
             if (subjectStr.contains("###"))
@@ -500,7 +514,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("SWD: ");
+            htmlStrBuilder.append("<b>SWD</b>: ");
             String swdStr = swdField.stringValue();
             String[] swds = swdStr.split("[,]");  // separator of subjects
             swds = cleanNames(swds);
@@ -526,7 +540,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("DDC: ");
+            htmlStrBuilder.append("<b>DDC</b>: ");
             String ddcStr = ddcField.stringValue();
             if (! ddcStr.isEmpty()) {
               String ddcLink = "/wspCmsWebApp/query/About?query=" + ddcStr + "&type=ddc";
@@ -539,29 +553,27 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          // Link row
-          boolean docIsXml = false; 
-          String mimeType = getMimeType(docId);
-          if (mimeType != null && mimeType.contains("xml"))
-            docIsXml = true;
+          // Knowledge rows
+          Fieldable entitiesField = doc.getFieldable("entities");
+          if (entitiesField != null) {
+            htmlStrBuilder.append("<tr valign=\"top\">");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
+            htmlStrBuilder.append("<b>DBpedia spotlight entities:</b>");
+            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+            if (entitiesDetailsField != null) {
+              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+              String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
+              htmlStrBuilder.append(" " + entitiesDetailsHtmlStr);
+            }
+            htmlStrBuilder.append("</td>");
+            htmlStrBuilder.append("</tr>");
+          }
+          // WSP-Page-View / WSP-Download / Lucene-Metadata-View 
           htmlStrBuilder.append("<tr valign=\"top\">");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-          // project link
-          String firstHitPageNumber = null;
-          if (docIsXml)
-            firstHitPageNumber = doc.getFirstHitPageNumber();
-          Fieldable webUriField = doc.getFieldable("webUri");
-          String webUri = null;
-          if (webUriField != null)
-            webUri = webUriField.stringValue();
-          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-          if (projectLink != null) {
-            if (! projectLink.contains("%"))
-              projectLink = URIUtil.encodeQuery(projectLink);  
-            projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
-            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project-View</a>, ");
-          }
+          htmlStrBuilder.append("<b>WSP internal:</b>");
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
           if (docIsXml) {
             if (firstHitPageNumber == null)
@@ -579,21 +591,6 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetDocInfo?docId=" + docIdPercentEscaped + "\">MetadataView</a>");
           htmlStrBuilder.append("</td>");
           htmlStrBuilder.append("</tr>");
-          // hit fragments row
-          ArrayList<String> hitFragments = doc.getHitFragments();
-          if (hitFragments != null) {
-            StringBuilder hitFragmentsStrBuilder = new StringBuilder();
-            hitFragmentsStrBuilder.append("<b>Hit summary: </b>");
-            hitFragmentsStrBuilder.append("(...) ");
-            for (int j=0; j<hitFragments.size(); j++) {
-              String hitFragment = hitFragments.get(j);
-              hitFragmentsStrBuilder.append(hitFragment + " (...) ");
-            }
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">" + hitFragmentsStrBuilder.toString() + "</td>");
-            htmlStrBuilder.append("</tr>");
-          }
         }
         htmlStrBuilder.append("</tbody>");
         htmlStrBuilder.append("</table>");
@@ -606,7 +603,7 @@ public class QueryDocuments extends HttpServlet {
         if (facets != null && facets.size() > 0) {
           facets.setBaseUrl(baseUrl);
           String facetsStr = facets.toHtmlString();
-          htmlStrBuilder.append("<p/>" + "Facets: " + facetsStr);
+          htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
         }
         htmlStrBuilder.append("<p/>");
         htmlStrBuilder.append("Word information:");
@@ -989,16 +986,58 @@ public class QueryDocuments extends HttpServlet {
   
   private String docEntitiesDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
     ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
-    String retHtmlStr = "<span class=\"entities\">";
+    ArrayList<DBpediaResource> entitiesPerson = new ArrayList<DBpediaResource>();
+    ArrayList<DBpediaResource> entitiesConcept = new ArrayList<DBpediaResource>();
+    ArrayList<DBpediaResource> entitiesPlace = new ArrayList<DBpediaResource>();
     for (int i=0; i<entities.size(); i++) {
       DBpediaResource entity = entities.get(i);
       entity.setBaseUrl(baseUrl);
-      String htmlStrEntity = entity.toHtmlStr();
-      retHtmlStr = retHtmlStr + htmlStrEntity + ", ";
+      String type = entity.getType();
+      if (type != null && type.equals("person"))
+        entitiesPerson.add(entity);
+      else if (type != null && type.equals("concept"))
+        entitiesConcept.add(entity);
+      else if (type != null && type.equals("place"))
+        entitiesPlace.add(entity);
     }
-    retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
-    retHtmlStr = retHtmlStr + "</span>";
-    return retHtmlStr;
+    StringBuilder retHtmlStrBuilder = new StringBuilder(); 
+    if (entitiesPerson.size() > 0) {
+      retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Persons</b>: ");
+      for (int i=0; i<entitiesPerson.size(); i++) {
+        DBpediaResource entity = entitiesPerson.get(i);
+        String htmlStrEntity = entity.toHtmlStr();
+        if (i == entitiesPerson.size() - 1)
+          retHtmlStrBuilder.append(htmlStrEntity);
+        else 
+          retHtmlStrBuilder.append(htmlStrEntity + ", ");
+      }
+      retHtmlStrBuilder.append("</li>");
+    }
+    if (entitiesPerson.size() > 0) {
+      retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Concepts</b>: ");
+      for (int i=0; i<entitiesConcept.size(); i++) {
+        DBpediaResource entity = entitiesConcept.get(i);
+        String htmlStrEntity = entity.toHtmlStr();
+        if (i == entitiesConcept.size() - 1)
+          retHtmlStrBuilder.append(htmlStrEntity);
+        else 
+          retHtmlStrBuilder.append(htmlStrEntity + ", ");
+      }
+      retHtmlStrBuilder.append("</li>");
+    }
+    if (entitiesPlace.size() > 0) {
+      retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Places</b>: ");
+      for (int i=0; i<entitiesPlace.size(); i++) {
+        DBpediaResource entity = entitiesPlace.get(i);
+        String htmlStrEntity = entity.toHtmlStr();
+        if (i == entitiesPlace.size() - 1)
+          retHtmlStrBuilder.append(htmlStrEntity);
+        else 
+          retHtmlStrBuilder.append(htmlStrEntity + ", ");
+      }
+      retHtmlStrBuilder.append("</li>");
+    }
+    return retHtmlStrBuilder.toString();
   }
   
   private JSONArray docPersonsDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docPersonsDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
