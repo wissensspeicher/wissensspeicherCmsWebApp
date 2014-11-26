@@ -128,6 +128,7 @@ public class QueryDocuments extends HttpServlet {
         hitsSize = hits.getSize();
       if (docs != null)
         docsSize = docs.size();
+      ArrayList<Float> luceneScores = hits.getScores();
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
       String baseUrl = getBaseUrl(request);
@@ -252,6 +253,9 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<tbody>");
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
+          float luceneScore = -1;
+          if (luceneScores != null)
+            luceneScore = luceneScores.get(i);
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
           String docCollectionName = null;
           if (docCollectionNamesField != null) {
@@ -573,7 +577,7 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tr valign=\"top\">");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
           htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-          htmlStrBuilder.append("<b>WSP internal:</b>");
+          htmlStrBuilder.append("<b>WSP internal:</b>" + " Lucene score: " + luceneScore + ", ");
           String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
           if (docIsXml) {
             if (firstHitPageNumber == null)
@@ -634,6 +638,10 @@ public class QueryDocuments extends HttpServlet {
         for (int i=0; i<docsSize; i++) {
           JSONObject jsonHit = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
+          if (luceneScores != null) {
+            float luceneScore = luceneScores.get(i);
+            jsonHit.put("luceneScore", luceneScore);
+          }
           Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
           String docCollectionName = null;
           if (docCollectionNamesField != null) {
