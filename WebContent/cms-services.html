@@ -97,11 +97,26 @@
               <li>default: automatically derived from query</li>
             </ul>
           </li>
+          <li>outputOptions (optional)
+            <ul>
+              <li>outputOptions separated by blank (response hits)
+                <ul>
+                  <li>showAll (all information)</li>
+                  <li>showHits (all hits)</li>
+                  <li>showAllFacets (all facets)</li>
+                  <li>showMainEntitiesFacet (mainEntities facet)</li>
+                  <li>showNumberOfDifferentTerms (show this number)</li>
+                  <li>showWordInfo (word information)</li>
+                  <li>default: showAll</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li>Response output
         <ul>
-          <li>Resources matching the query (as outputFormat is set)</li>
+          <li>Resources matching the query (as outputFormat and outputOptions are set)</li>
         </ul>
       </li>
     </ul>
