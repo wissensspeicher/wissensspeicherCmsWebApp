@@ -86,6 +86,9 @@ public class QueryDocuments extends HttpServlet {
     int from = (page * pageSize) - pageSize;  // e.g. 0
     int to = page * pageSize - 1;  // e.g. 9
     String requestHitFragments = request.getParameter("hitFragments");  // if "true": show result with highlighted hit fragments
+    String outputOptions = request.getParameter("outputOptions");
+    if (outputOptions == null)
+      outputOptions = "showAll";
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "html";
@@ -183,439 +186,447 @@ public class QueryDocuments extends HttpServlet {
         if (sortBy == null)
           sortByStr = "";
         htmlStrBuilder.append("<h4>Lucene query: " + luceneQueryStr + "</h4>");
-        htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
-        if (translate != null)
-          htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
-        if (language != null)
-          htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"page\" id=\"pageId\" value=\"" + page + "\"/>");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"pageSize\" id=\"pageSizeId\" value=\"" + pageSize + "\"/>");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"sortBy\" id=\"sortById\" value=\"" + sortByStr + "\"/>");
-        htmlStrBuilder.append("<input type=\"hidden\" name=\"fieldExpansion\" id=\"fieldExpansion\" value=\"" + fieldExpansion + "\"/>");
-        htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
-        htmlStrBuilder.append("<table>");
-        htmlStrBuilder.append("<colgroup>");
-        htmlStrBuilder.append("<col width=\"3%\"/>");
-        htmlStrBuilder.append("<col width=\"7%\"/>");
-        htmlStrBuilder.append("<col width=\"3%\"/>");
-        htmlStrBuilder.append("<col width=\"12%\"/>");
-        htmlStrBuilder.append("<col width=\"70%\"/>");
-        htmlStrBuilder.append("</colgroup>");
-        htmlStrBuilder.append("<tr>");
-        int countPages = hitsSize / pageSize + 1;
-        if (hitsSize % pageSize == 0) // modulo operator: e.g. 280 % 10 is 0
-          countPages = hitsSize / pageSize;
-        int pageLeft = page - 1;
-        if (page == 1)
-          pageLeft = 1;
-        int pageRight = page + 1; 
-        if (page == countPages)
-          pageRight = countPages;
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
-        htmlStrBuilder.append("<td align=\"middle\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
-        int fromDisplay = from + 1;
-        int toDisplay = to + 1;
-        if (hitsSize < toDisplay)
-          toDisplay = hitsSize;
-        htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
-        htmlStrBuilder.append("</tr>");
-        htmlStrBuilder.append("</table>");
-        htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("<table width=\"100%\" align=\"right\" border=\"2\" rules=\"groups\">");
-        htmlStrBuilder.append("<colgroup>");
-        htmlStrBuilder.append("<col width=\"3%\"/>");
-        htmlStrBuilder.append("<col width=\"15%\"/>");
-        htmlStrBuilder.append("<col width=\"45%\"/>");
-        htmlStrBuilder.append("<col width=\"10%\"/>");
-        htmlStrBuilder.append("<col width=\"5%\"/>");
-        htmlStrBuilder.append("<col width=\"10%\"/>");
-        htmlStrBuilder.append("<col width=\"6%\"/>");
-        htmlStrBuilder.append("<col width=\"5%\"/>");
-        htmlStrBuilder.append("<col width=\"4%\"/>");
-        htmlStrBuilder.append("</colgroup>");
-        htmlStrBuilder.append("<thead>");
-        htmlStrBuilder.append("<tr>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "No" + "</td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='author'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Author" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='title'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Title" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='publisher'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Publisher" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='date'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Year" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='docId'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Id" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='lastModified'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Last modified" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='language'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Language" + "</button></td>");
-        htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='type'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Type" + "</button></td>");
-        htmlStrBuilder.append("</tr>");
-        htmlStrBuilder.append("</thead>");
-        htmlStrBuilder.append("<tbody>");
-        for (int i=0; i<docsSize; i++) {
-          Document doc = docs.get(i);
-          float luceneScore = -1;
-          if (luceneScores != null)
-            luceneScore = luceneScores.get(i);
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
-          String docCollectionName = null;
-          if (docCollectionNamesField != null) {
-            docCollectionName = docCollectionNamesField.stringValue();
-          }
-          Fieldable languageField = doc.getFieldable("language");
-          String lang = "";
-          if (languageField != null)
-            lang = languageField.stringValue();
-          htmlStrBuilder.append("<tr valign=\"top\">");
-          int num = (page - 1) * pageSize + i + 1;
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
-          Fieldable docAuthorField = doc.getFieldable("author");
-          String authorHtml = "";
-          if (docAuthorField != null) {
-            Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
-            if (docAuthorDetailsField != null) {
-              String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-              authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);            
-            } else {
-              String authorName = docAuthorField.stringValue();
-              Person author = new Person();
-              author.setName(authorName);
-              String aboutPersonLink = baseUrl + "/query/About?query=" + authorName + "&type=person";
-              if (lang != null && ! lang.isEmpty())
-                aboutPersonLink = aboutPersonLink + "&language=" + lang;
-              author.setAboutLink(aboutPersonLink);
-              String htmlStrPerson = author.toHtmlStr();
-              authorHtml = "<span class=\"persons\">";
-              authorHtml = authorHtml + htmlStrPerson;
-              authorHtml = authorHtml + "</span>";
-            }
-          }          
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + authorHtml + "</td>");
-          Fieldable titleField = doc.getFieldable("title");
-          String title = "";
-          if (titleField != null)
-            title = titleField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + title + "</td>");
-          Fieldable publisherField = doc.getFieldable("publisher");
-          String publisher = "";
-          if (publisherField != null)
-            publisher = publisherField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + publisher + "</td>");
-          Fieldable yearField = doc.getFieldable("date");
-          String year = "";
-          if (yearField != null)
-            year = yearField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + year + "</td>");
-          String docId = doc.getFieldable("docId").stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + docId + "</td>");
-          Fieldable lastModifiedField = doc.getFieldable("lastModified");
-          String lastModified = "";
-          if (lastModifiedField != null)
-            lastModified = lastModifiedField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + lastModified + "</td>");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
-          Fieldable typeField = doc.getFieldable("type");
-          String type = "";
-          if (typeField != null)
-            type = typeField.stringValue();
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + type + "</td>");
+        if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
+          htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
+          if (translate != null)
+            htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
+          if (language != null)
+            htmlStrBuilder.append("<input type=\"hidden\" name=\"language\" value=\"" + language + "\"/>");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"page\" id=\"pageId\" value=\"" + page + "\"/>");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"pageSize\" id=\"pageSizeId\" value=\"" + pageSize + "\"/>");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"sortBy\" id=\"sortById\" value=\"" + sortByStr + "\"/>");
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"fieldExpansion\" id=\"fieldExpansion\" value=\"" + fieldExpansion + "\"/>");
+          htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
+          htmlStrBuilder.append("<table>");
+          htmlStrBuilder.append("<colgroup>");
+          htmlStrBuilder.append("<col width=\"3%\"/>");
+          htmlStrBuilder.append("<col width=\"7%\"/>");
+          htmlStrBuilder.append("<col width=\"3%\"/>");
+          htmlStrBuilder.append("<col width=\"12%\"/>");
+          htmlStrBuilder.append("<col width=\"70%\"/>");
+          htmlStrBuilder.append("</colgroup>");
+          htmlStrBuilder.append("<tr>");
+          int countPages = hitsSize / pageSize + 1;
+          if (hitsSize % pageSize == 0) // modulo operator: e.g. 280 % 10 is 0
+            countPages = hitsSize / pageSize;
+          int pageLeft = page - 1;
+          if (page == 1)
+            pageLeft = 1;
+          int pageRight = page + 1; 
+          if (page == countPages)
+            pageRight = countPages;
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
+          htmlStrBuilder.append("<td align=\"middle\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
+          int fromDisplay = from + 1;
+          int toDisplay = to + 1;
+          if (hitsSize < toDisplay)
+            toDisplay = hitsSize;
+          htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
           htmlStrBuilder.append("</tr>");
-          // hit fragments row
-          ArrayList<String> hitFragments = doc.getHitFragments();
-          if (hitFragments != null) {
-            StringBuilder hitFragmentsStrBuilder = new StringBuilder();
-            hitFragmentsStrBuilder.append("<b>Hit summary: </b>");
-            hitFragmentsStrBuilder.append("(...) ");
-            for (int j=0; j<hitFragments.size(); j++) {
-              String hitFragment = hitFragments.get(j);
-              hitFragmentsStrBuilder.append(hitFragment + " (...) ");
+          htmlStrBuilder.append("</table>");
+          htmlStrBuilder.append("<p/>");
+          htmlStrBuilder.append("<table width=\"100%\" align=\"right\" border=\"2\" rules=\"groups\">");
+          htmlStrBuilder.append("<colgroup>");
+          htmlStrBuilder.append("<col width=\"3%\"/>");
+          htmlStrBuilder.append("<col width=\"15%\"/>");
+          htmlStrBuilder.append("<col width=\"45%\"/>");
+          htmlStrBuilder.append("<col width=\"10%\"/>");
+          htmlStrBuilder.append("<col width=\"5%\"/>");
+          htmlStrBuilder.append("<col width=\"10%\"/>");
+          htmlStrBuilder.append("<col width=\"6%\"/>");
+          htmlStrBuilder.append("<col width=\"5%\"/>");
+          htmlStrBuilder.append("<col width=\"4%\"/>");
+          htmlStrBuilder.append("</colgroup>");
+          htmlStrBuilder.append("<thead>");
+          htmlStrBuilder.append("<tr>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"font-weight:bold;\">" + "No" + "</td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='author'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Author" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='title'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Title" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='publisher'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Publisher" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='date'\"  style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Year" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='docId'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Id" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='lastModified'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Last modified" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='language'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Language" + "</button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + "<button onclick=\"document.getElementById('sortById').value='type'\" style=\"padding:0px;font-weight:bold;font-size:14px;background:none;border:none;\">" + "Type" + "</button></td>");
+          htmlStrBuilder.append("</tr>");
+          htmlStrBuilder.append("</thead>");
+          htmlStrBuilder.append("<tbody>");
+          for (int i=0; i<docsSize; i++) {
+            Document doc = docs.get(i);
+            float luceneScore = -1;
+            if (luceneScores != null)
+              luceneScore = luceneScores.get(i);
+            Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+            String docCollectionName = null;
+            if (docCollectionNamesField != null) {
+              docCollectionName = docCollectionNamesField.stringValue();
             }
+            Fieldable languageField = doc.getFieldable("language");
+            String lang = "";
+            if (languageField != null)
+              lang = languageField.stringValue();
             htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">" + hitFragmentsStrBuilder.toString() + "</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          // project links row
-          String projectUrl = null;
-          boolean docIsXml = false; 
-          String firstHitPageNumber = null;
-          String mimeType = getMimeType(docId);
-          if (mimeType != null && mimeType.contains("xml"))
-            docIsXml = true;
-          if (docIsXml)
-            firstHitPageNumber = doc.getFirstHitPageNumber();
-          if (docCollectionName != null) {
-            Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-            if (projectColl != null) {
-              projectUrl = projectColl.getWebBaseUrl();
-              String projectRdfId = projectColl.getRdfId();
-              String projectName = projectColl.getName();
-              htmlStrBuilder.append("<tr valign=\"top\">");
-              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-              htmlStrBuilder.append("<b>Project links</b>: ");
-              Fieldable webUriField = doc.getFieldable("webUri");
-              String webUri = null;
-              if (webUriField != null)
-                webUri = webUriField.stringValue();
-              String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-              if (projectLink != null) {
-                if (! projectLink.contains("%"))
-                  projectLink = URIUtil.encodeQuery(projectLink);  
-                projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project view</a> ");
-              }
-              htmlStrBuilder.append("(" + projectName + " (" + docCollectionName + "): ");
-              if (projectUrl != null) {
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
-              }
-              if (projectRdfId != null) {
-                String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Project details</a>)");
-              }
-              htmlStrBuilder.append("</td>");
-              htmlStrBuilder.append("</tr>");
-            }
-          }
-          // description row
-          Fieldable descriptionField = doc.getFieldable("description");
-          if (descriptionField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<b>Description</b>: ");
-            String description = descriptionField.stringValue();
-            if (description != null && description.length() > 400)
-              description = description.substring(0, 400) + " (...)";
-            htmlStrBuilder.append(description);
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          Fieldable personsField = doc.getFieldable("persons");
-          if (personsField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("<b>Persons</b>: ");
-            Fieldable personsDetailsField = doc.getFieldable("personsDetails");
-            if (personsDetailsField != null) {
-              String personsDetailsXmlStr = personsDetailsField.stringValue();
-              String personsDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
-              htmlStrBuilder.append(personsDetailsHtmlStr);
-            } else {
-              String personsStr = personsField.stringValue();
-              String[] persons = personsStr.split("###");  // separator of persons
-              for (int j=0; j<persons.length; j++) {
-                String personName = persons[j];
-                Person person = new Person();
-                person.setRole(Person.MENTIONED);
-                person.setName(personName);
-                String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+            int num = (page - 1) * pageSize + i + 1;
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
+            Fieldable docAuthorField = doc.getFieldable("author");
+            String authorHtml = "";
+            if (docAuthorField != null) {
+              Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+              if (docAuthorDetailsField != null) {
+                String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
+                authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);            
+              } else {
+                String authorName = docAuthorField.stringValue();
+                Person author = new Person();
+                author.setName(authorName);
+                String aboutPersonLink = baseUrl + "/query/About?query=" + authorName + "&type=person";
                 if (lang != null && ! lang.isEmpty())
                   aboutPersonLink = aboutPersonLink + "&language=" + lang;
-                person.setAboutLink(aboutPersonLink);
-                String htmlStrPerson = person.toHtmlStr();
-                htmlStrBuilder.append(htmlStrPerson);
-                if (j != persons.length - 1)
-                  htmlStrBuilder.append(", ");
+                author.setAboutLink(aboutPersonLink);
+                String htmlStrPerson = author.toHtmlStr();
+                authorHtml = "<span class=\"persons\">";
+                authorHtml = authorHtml + htmlStrPerson;
+                authorHtml = authorHtml + "</span>";
+              }
+            }          
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + authorHtml + "</td>");
+            Fieldable titleField = doc.getFieldable("title");
+            String title = "";
+            if (titleField != null)
+              title = titleField.stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + title + "</td>");
+            Fieldable publisherField = doc.getFieldable("publisher");
+            String publisher = "";
+            if (publisherField != null)
+              publisher = publisherField.stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + publisher + "</td>");
+            Fieldable yearField = doc.getFieldable("date");
+            String year = "";
+            if (yearField != null)
+              year = yearField.stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + year + "</td>");
+            String docId = doc.getFieldable("docId").stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + docId + "</td>");
+            Fieldable lastModifiedField = doc.getFieldable("lastModified");
+            String lastModified = "";
+            if (lastModifiedField != null)
+              lastModified = lastModifiedField.stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + lastModified + "</td>");
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
+            Fieldable typeField = doc.getFieldable("type");
+            String type = "";
+            if (typeField != null)
+              type = typeField.stringValue();
+            htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + type + "</td>");
+            htmlStrBuilder.append("</tr>");
+            // hit fragments row
+            ArrayList<String> hitFragments = doc.getHitFragments();
+            if (hitFragments != null) {
+              StringBuilder hitFragmentsStrBuilder = new StringBuilder();
+              hitFragmentsStrBuilder.append("<b>Hit summary: </b>");
+              hitFragmentsStrBuilder.append("(...) ");
+              for (int j=0; j<hitFragments.size(); j++) {
+                String hitFragment = hitFragments.get(j);
+                hitFragmentsStrBuilder.append(hitFragment + " (...) ");
+              }
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">" + hitFragmentsStrBuilder.toString() + "</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            // project links row
+            String projectUrl = null;
+            boolean docIsXml = false; 
+            String firstHitPageNumber = null;
+            String mimeType = getMimeType(docId);
+            if (mimeType != null && mimeType.contains("xml"))
+              docIsXml = true;
+            if (docIsXml)
+              firstHitPageNumber = doc.getFirstHitPageNumber();
+            if (docCollectionName != null) {
+              Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
+              if (projectColl != null) {
+                projectUrl = projectColl.getWebBaseUrl();
+                String projectRdfId = projectColl.getRdfId();
+                String projectName = projectColl.getName();
+                htmlStrBuilder.append("<tr valign=\"top\">");
+                htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+                htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+                htmlStrBuilder.append("<b>Project links</b>: ");
+                Fieldable webUriField = doc.getFieldable("webUri");
+                String webUri = null;
+                if (webUriField != null)
+                  webUri = webUriField.stringValue();
+                String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
+                if (projectLink != null) {
+                  if (! projectLink.contains("%"))
+                    projectLink = URIUtil.encodeQuery(projectLink);  
+                  projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
+                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project view</a> ");
+                }
+                htmlStrBuilder.append("(" + projectName + " (" + docCollectionName + "): ");
+                if (projectUrl != null) {
+                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
+                }
+                if (projectRdfId != null) {
+                  String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
+                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Project details</a>)");
+                }
+                htmlStrBuilder.append("</td>");
+                htmlStrBuilder.append("</tr>");
               }
             }
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          Fieldable placesField = doc.getFieldable("places");
-          if (placesField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<b>Places</b>: ");
-            String placesStr = placesField.stringValue();
-            String[] places = placesStr.split("###");  // separator of places
-            places = cleanNames(places);
-            Arrays.sort(places, ignoreCaseComparator);
-            for (int j=0; j<places.length; j++) {
-              String placeName = places[j];
-              if (! placeName.isEmpty()) {
-                String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
-                if (lang != null && ! lang.isEmpty())
-                  placeLink = placeLink + "&language=" + lang;
-                htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
-                if (j != places.length - 1)
-                  htmlStrBuilder.append(", ");
-              }
-            }
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
-          if (subjectControlledDetailsField != null) {
-            String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-            String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
-            XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
-            if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+            // description row
+            Fieldable descriptionField = doc.getFieldable("description");
+            if (descriptionField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-              htmlStrBuilder.append("<b>Subjects (controlled)</b>: ");
-              while (xmdValueDcTermsIterator.hasNext()) {
-                XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
-                /* e.g.:
-                 * <dcterms:subject>
-                     <rdf:Description rdf:about="http://de.dbpedia.org/resource/Kategorie:Karl_Marx">
-                       <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
-                       <rdfs:label>Karl Marx</rdfs:label>
-                     </rdf:description>
-                   </dcterms:subject>
-                 */
-                String xdmItemDcTermStr = xdmItemDcTerm.toString();
-                String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/rdf:type/@rdf:resource)");
-                String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/@rdf:about)");
-                String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/rdf:Description/rdfs:label/text()");
-                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
-                String ontologyName = getOntologyName(subjectRdfType);
-                String ontologyNameStr = ontologyName + ": ";
-                if (ontologyName == null)
-                  ontologyNameStr = "";
-                String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
-                if (xmdValueDcTermsIterator.hasNext())
-                  htmlStrBuilder.append(", ");
+              htmlStrBuilder.append("<b>Description</b>: ");
+              String description = descriptionField.stringValue();
+              if (description != null && description.length() > 400)
+                description = description.substring(0, 400) + " (...)";
+              htmlStrBuilder.append(description);
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            Fieldable personsField = doc.getFieldable("persons");
+            if (personsField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
+              htmlStrBuilder.append("<b>Persons</b>: ");
+              Fieldable personsDetailsField = doc.getFieldable("personsDetails");
+              if (personsDetailsField != null) {
+                String personsDetailsXmlStr = personsDetailsField.stringValue();
+                String personsDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
+                htmlStrBuilder.append(personsDetailsHtmlStr);
+              } else {
+                String personsStr = personsField.stringValue();
+                String[] persons = personsStr.split("###");  // separator of persons
+                for (int j=0; j<persons.length; j++) {
+                  String personName = persons[j];
+                  Person person = new Person();
+                  person.setRole(Person.MENTIONED);
+                  person.setName(personName);
+                  String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+                  if (lang != null && ! lang.isEmpty())
+                    aboutPersonLink = aboutPersonLink + "&language=" + lang;
+                  person.setAboutLink(aboutPersonLink);
+                  String htmlStrPerson = person.toHtmlStr();
+                  htmlStrBuilder.append(htmlStrPerson);
+                  if (j != persons.length - 1)
+                    htmlStrBuilder.append(", ");
+                }
               }
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-          }
-          Fieldable subjectField = doc.getFieldable("subject");
-          if (subjectField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<b>Subjects (free)</b>: ");
-            String subjectStr = subjectField.stringValue();
-            String[] subjects = subjectStr.split("[,]");  // one separator of subjects
-            if (subjectStr.contains("###"))
-              subjects = subjectStr.split("###");  // another separator of subjects
-            subjects = cleanNames(subjects);
-            Arrays.sort(subjects, ignoreCaseComparator);
-            for (int j=0; j<subjects.length; j++) {
-              String subjectName = subjects[j];
-              if (! subjectName.isEmpty()) {
-                String subjectLink = "/wspCmsWebApp/query/About?query=" + subjectName + "&type=subject";
-                if (lang != null && ! lang.isEmpty())
-                  subjectLink = subjectLink + "&language=" + lang;
-                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subject:&quot;" + subjectName + "&quot;&fieldExpansion=none";
-                String subjectImgLink = "<a href=\"" + subjectLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + subjectImgLink + ")");
-                if (j != subjects.length - 1)
-                  htmlStrBuilder.append(", ");
+            Fieldable placesField = doc.getFieldable("places");
+            if (placesField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("<b>Places</b>: ");
+              String placesStr = placesField.stringValue();
+              String[] places = placesStr.split("###");  // separator of places
+              places = cleanNames(places);
+              Arrays.sort(places, ignoreCaseComparator);
+              for (int j=0; j<places.length; j++) {
+                String placeName = places[j];
+                if (! placeName.isEmpty()) {
+                  String placeLink = "/wspCmsWebApp/query/About?query=" + placeName + "&type=place";
+                  if (lang != null && ! lang.isEmpty())
+                    placeLink = placeLink + "&language=" + lang;
+                  htmlStrBuilder.append("<a href=\"" + placeLink + "\">" + placeName +"</a>");
+                  if (j != places.length - 1)
+                    htmlStrBuilder.append(", ");
+                }
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+            if (subjectControlledDetailsField != null) {
+              String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
+              String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
+              XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
+              XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
+              if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+                htmlStrBuilder.append("<tr valign=\"top\">");
+                htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+                htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+                htmlStrBuilder.append("<b>Subjects (controlled)</b>: ");
+                while (xmdValueDcTermsIterator.hasNext()) {
+                  XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
+                  /* e.g.:
+                   * <dcterms:subject>
+                       <rdf:Description rdf:about="http://de.dbpedia.org/resource/Kategorie:Karl_Marx">
+                         <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+                         <rdfs:label>Karl Marx</rdfs:label>
+                       </rdf:description>
+                     </dcterms:subject>
+                   */
+                  String xdmItemDcTermStr = xdmItemDcTerm.toString();
+                  String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/rdf:type/@rdf:resource)");
+                  String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/@rdf:about)");
+                  String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/rdf:Description/rdfs:label/text()");
+                  String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
+                  String ontologyName = getOntologyName(subjectRdfType);
+                  String ontologyNameStr = ontologyName + ": ";
+                  if (ontologyName == null)
+                    ontologyNameStr = "";
+                  String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                  htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
+                  if (xmdValueDcTermsIterator.hasNext())
+                    htmlStrBuilder.append(", ");
+                }
+                htmlStrBuilder.append("</td>");
+                htmlStrBuilder.append("</tr>");
               }
             }
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          Fieldable swdField = doc.getFieldable("swd");
-          if (swdField != null) {
+            Fieldable subjectField = doc.getFieldable("subject");
+            if (subjectField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("<b>Subjects (free)</b>: ");
+              String subjectStr = subjectField.stringValue();
+              String[] subjects = subjectStr.split("[,]");  // one separator of subjects
+              if (subjectStr.contains("###"))
+                subjects = subjectStr.split("###");  // another separator of subjects
+              subjects = cleanNames(subjects);
+              Arrays.sort(subjects, ignoreCaseComparator);
+              for (int j=0; j<subjects.length; j++) {
+                String subjectName = subjects[j];
+                if (! subjectName.isEmpty()) {
+                  String subjectLink = "/wspCmsWebApp/query/About?query=" + subjectName + "&type=subject";
+                  if (lang != null && ! lang.isEmpty())
+                    subjectLink = subjectLink + "&language=" + lang;
+                  String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subject:&quot;" + subjectName + "&quot;&fieldExpansion=none";
+                  String subjectImgLink = "<a href=\"" + subjectLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                  htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + subjectImgLink + ")");
+                  if (j != subjects.length - 1)
+                    htmlStrBuilder.append(", ");
+                }
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            Fieldable swdField = doc.getFieldable("swd");
+            if (swdField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("<b>SWD</b>: ");
+              String swdStr = swdField.stringValue();
+              String[] swds = swdStr.split("[,]");  // separator of subjects
+              swds = cleanNames(swds);
+              Arrays.sort(swds, ignoreCaseComparator);
+              for (int j=0; j<swds.length; j++) {
+                String swdName = swds[j];
+                if (! swdName.isEmpty()) {
+                  String swdLink = "/wspCmsWebApp/query/About?query=" + swdName + "&type=swd";
+                  if (lang != null && ! lang.isEmpty())
+                    swdLink = swdLink + "&language=" + lang;
+                  String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=swd:&quot;" + swdName + "&quot;&fieldExpansion=none";
+                  String subjectImgLink = "<a href=\"" + swdLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                  htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + swdName + "</a> (" + subjectImgLink + ")");
+                  if (j != swds.length - 1)
+                    htmlStrBuilder.append(", ");
+                }
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            Fieldable ddcField = doc.getFieldable("ddc");
+            if (ddcField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              htmlStrBuilder.append("<b>DDC</b>: ");
+              String ddcStr = ddcField.stringValue();
+              if (! ddcStr.isEmpty()) {
+                String ddcLink = "/wspCmsWebApp/query/About?query=" + ddcStr + "&type=ddc";
+                if (lang != null && ! lang.isEmpty())
+                  ddcLink = ddcLink + "&language=" + lang;
+                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=ddc:&quot;" + ddcStr + "&quot;&fieldExpansion=none";
+                String subjectImgLink = "<a href=\"" + ddcLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + ddcStr + "</a> (" + subjectImgLink + ")");
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            // Knowledge rows
+            Fieldable entitiesField = doc.getFieldable("entities");
+            if (entitiesField != null) {
+              htmlStrBuilder.append("<tr valign=\"top\">");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
+              htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
+              htmlStrBuilder.append("<b>DBpedia spotlight entities:</b>");
+              Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+              if (entitiesDetailsField != null) {
+                String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+                String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
+                htmlStrBuilder.append(" " + entitiesDetailsHtmlStr);
+              }
+              htmlStrBuilder.append("</td>");
+              htmlStrBuilder.append("</tr>");
+            }
+            // WSP-Page-View / WSP-Download / Lucene-Metadata-View 
             htmlStrBuilder.append("<tr valign=\"top\">");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<b>SWD</b>: ");
-            String swdStr = swdField.stringValue();
-            String[] swds = swdStr.split("[,]");  // separator of subjects
-            swds = cleanNames(swds);
-            Arrays.sort(swds, ignoreCaseComparator);
-            for (int j=0; j<swds.length; j++) {
-              String swdName = swds[j];
-              if (! swdName.isEmpty()) {
-                String swdLink = "/wspCmsWebApp/query/About?query=" + swdName + "&type=swd";
-                if (lang != null && ! lang.isEmpty())
-                  swdLink = swdLink + "&language=" + lang;
-                String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=swd:&quot;" + swdName + "&quot;&fieldExpansion=none";
-                String subjectImgLink = "<a href=\"" + swdLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + swdName + "</a> (" + subjectImgLink + ")");
-                if (j != swds.length - 1)
-                  htmlStrBuilder.append(", ");
+            htmlStrBuilder.append("<b>WSP internal:</b>" + " Lucene score: " + luceneScore + ", ");
+            String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
+            if (docIsXml) {
+              if (firstHitPageNumber == null)
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "\">WSP-View</a>, ");
+              else
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "&page=" + firstHitPageNumber + "&highlightQuery=" + query + "\">WSP-View</a>, ");
+            }
+            Fieldable content = doc.getFieldable("content");
+            if (content != null) {
+              String contentStr = content.stringValue();
+              if (contentStr != null && ! contentStr.isEmpty()) {
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/doc/GetDocument?id=" + docIdPercentEscaped + "\">Download</a>, ");
               }
             }
+            htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetDocInfo?docId=" + docIdPercentEscaped + "\">MetadataView</a>");
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable ddcField = doc.getFieldable("ddc");
-          if (ddcField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-            htmlStrBuilder.append("<b>DDC</b>: ");
-            String ddcStr = ddcField.stringValue();
-            if (! ddcStr.isEmpty()) {
-              String ddcLink = "/wspCmsWebApp/query/About?query=" + ddcStr + "&type=ddc";
-              if (lang != null && ! lang.isEmpty())
-                ddcLink = ddcLink + "&language=" + lang;
-              String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=ddc:&quot;" + ddcStr + "&quot;&fieldExpansion=none";
-              String subjectImgLink = "<a href=\"" + ddcLink + "\">" + "<img src=\"/wspCmsWebApp/images/rdfSmall.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-              htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + ddcStr + "</a> (" + subjectImgLink + ")");
-            }
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          // Knowledge rows
-          Fieldable entitiesField = doc.getFieldable("entities");
-          if (entitiesField != null) {
-            htmlStrBuilder.append("<tr valign=\"top\">");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-            htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
-            htmlStrBuilder.append("<b>DBpedia spotlight entities:</b>");
-            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
-            if (entitiesDetailsField != null) {
-              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
-              String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language);
-              htmlStrBuilder.append(" " + entitiesDetailsHtmlStr);
-            }
-            htmlStrBuilder.append("</td>");
-            htmlStrBuilder.append("</tr>");
-          }
-          // WSP-Page-View / WSP-Download / Lucene-Metadata-View 
-          htmlStrBuilder.append("<tr valign=\"top\">");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
-          htmlStrBuilder.append("<b>WSP internal:</b>" + " Lucene score: " + luceneScore + ", ");
-          String docIdPercentEscaped = docId.replaceAll("%", "%25"); // e.g. if docId contains "%20" then it is modified to "%2520"
-          if (docIsXml) {
-            if (firstHitPageNumber == null)
-              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "\">WSP-View</a>, ");
-            else
-              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "&page=" + firstHitPageNumber + "&highlightQuery=" + query + "\">WSP-View</a>, ");
-          }
-          Fieldable content = doc.getFieldable("content");
-          if (content != null) {
-            String contentStr = content.stringValue();
-            if (contentStr != null && ! contentStr.isEmpty()) {
-              htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/download.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/doc/GetDocument?id=" + docIdPercentEscaped + "\">Download</a>, ");
-            }
-          }
-          htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetDocInfo?docId=" + docIdPercentEscaped + "\">MetadataView</a>");
-          htmlStrBuilder.append("</td>");
-          htmlStrBuilder.append("</tr>");
+          htmlStrBuilder.append("</tbody>");
+          htmlStrBuilder.append("</table>");
         }
-        htmlStrBuilder.append("</tbody>");
-        htmlStrBuilder.append("</table>");
         htmlStrBuilder.append("</form>");
         htmlStrBuilder.append("<p/>");
         htmlStrBuilder.append("Elapsed time: " + elapsedTime + " ms");
-        htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
-        // facets
-        Facets facets = hits.getFacets();
-        if (facets != null && facets.size() > 0) {
-          facets.setBaseUrl(baseUrl);
-          String facetsStr = facets.toHtmlString();
-          htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
+        if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
+          htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
         }
-        htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("Word information:");
-        htmlStrBuilder.append("<ul>");
-        String dictionaryUrl = WBP_LINK + query;
-        dictionaryUrl = URIUtil.encodeQuery(dictionaryUrl); 
-        htmlStrBuilder.append("<li>Dictionary information for: <a href=\"" + dictionaryUrl + "\">" + query + "</a></li>");
-        htmlStrBuilder.append("</ul>");
+        if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
+          Facets facets = hits.getFacets();
+          if (facets != null && facets.size() > 0) {
+            facets.setBaseUrl(baseUrl);
+            facets.setOutputOptions(outputOptions);
+            String facetsStr = facets.toHtmlString();
+            htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
+          }
+        }
+        if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
+          htmlStrBuilder.append("<p/>");
+          htmlStrBuilder.append("Word information:");
+          htmlStrBuilder.append("<ul>");
+          String dictionaryUrl = WBP_LINK + query;
+          dictionaryUrl = URIUtil.encodeQuery(dictionaryUrl); 
+          htmlStrBuilder.append("<li>Dictionary information for: <a href=\"" + dictionaryUrl + "\">" + query + "</a></li>");
+          htmlStrBuilder.append("</ul>");
+        }
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
@@ -623,304 +634,311 @@ public class QueryDocuments extends HttpServlet {
         JSONObject jsonOutput = new JSONObject();
         jsonOutput.put("searchTerm", query);
         jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
-        Facets facets = hits.getFacets();
-        if (facets != null && facets.size() > 0) {
-          facets.setBaseUrl(baseUrl);
-          JSONObject jsonFacets = facets.toJsonObject();
-          jsonOutput.put("facets", jsonFacets);
+        if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
+          Facets facets = hits.getFacets();
+          if (facets != null && facets.size() > 0) {
+            facets.setBaseUrl(baseUrl);
+            facets.setOutputOptions(outputOptions);
+            JSONObject jsonFacets = facets.toJsonObject();
+            jsonOutput.put("facets", jsonFacets);
+          }
         }
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
-        String dictUrl = WBP_LINK + query;
-        String encodedDictUrl = URIUtil.encodeQuery(dictUrl);
-        jsonOutput.put("dictUrl", encodedDictUrl);
-        JSONArray jsonArray = new JSONArray();
-        for (int i=0; i<docsSize; i++) {
-          JSONObject jsonHit = new JSONObject();
-          org.bbaw.wsp.cms.document.Document doc = docs.get(i);
-          if (luceneScores != null) {
-            float luceneScore = luceneScores.get(i);
-            jsonHit.put("luceneScore", luceneScore);
-          }
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
-          String docCollectionName = null;
-          if (docCollectionNamesField != null) {
-            docCollectionName = docCollectionNamesField.stringValue();
-            jsonHit.put("collectionName", docCollectionName);
-          }
-          if (docCollectionName != null) {
-            JSONObject jsonProject = new JSONObject();
-            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-            jsonProject.put("id", docCollectionName);
-            if (coll != null) {
-              String projectName = coll.getName();
-              if (projectName != null) {
-                jsonProject.put("name", projectName);
-              }
-              String projectUrl = coll.getWebBaseUrl();
-              if (projectUrl != null) {
-                String encoded = URIUtil.encodeQuery(projectUrl);
-                jsonProject.put("url", encoded);
-              }
-              jsonHit.put("project", jsonProject);
+        if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
+          String dictUrl = WBP_LINK + query;
+          String encodedDictUrl = URIUtil.encodeQuery(dictUrl);
+          jsonOutput.put("dictUrl", encodedDictUrl);
+        }
+        if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
+          JSONArray jsonArray = new JSONArray();
+          for (int i=0; i<docsSize; i++) {
+            JSONObject jsonHit = new JSONObject();
+            org.bbaw.wsp.cms.document.Document doc = docs.get(i);
+            if (luceneScores != null) {
+              float luceneScore = luceneScores.get(i);
+              jsonHit.put("luceneScore", luceneScore);
             }
-          }
-          Fieldable languageField = doc.getFieldable("language");
-          String lang = "";
-          if (languageField != null) {
-            lang = languageField.stringValue();
-          }
-          Fieldable docIdField = doc.getFieldable("docId");
-          String docId = null;
-          if(docIdField != null) {
-            docId = docIdField.stringValue();
-            jsonHit.put("docId", docId);
-          }
-          Fieldable docUriField = doc.getFieldable("uri");
-          if (docUriField != null) {
-            String docUri = docUriField.stringValue();
-            String encoded = URIUtil.encodeQuery(docUri);
-            jsonHit.put("uri", encoded);
-          }
-          // project link
-          boolean docIsXml = false; 
-          String mimeType = getMimeType(docId);
-          if (mimeType != null && mimeType.contains("xml"))
-            docIsXml = true;
-          String firstHitPageNumber = null;
-          if (docIsXml)
-            firstHitPageNumber = doc.getFirstHitPageNumber();
-          Fieldable webUriField = doc.getFieldable("webUri");
-          String webUri = null;
-          if (webUriField != null)
-            webUri = webUriField.stringValue();
-          String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-          if (projectLink != null) {
-            if (! projectLink.contains("%"))
-              projectLink = URIUtil.encodeQuery(projectLink);
-            projectLink = projectLink.replaceAll("%23", "#");
-            jsonHit.put("webUri", projectLink);
-          }
-          if (docCollectionName != null) {
-            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-            if (coll != null) {
-              String webBaseUrl = coll.getWebBaseUrl();
-              if (webBaseUrl != null) {
-                String encoded = URIUtil.encodeQuery(webBaseUrl);
-                jsonHit.put("webBaseUri", encoded);
-              }
-              String projectRdfId = coll.getRdfId();
-              if (projectRdfId != null) {
-                String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
-                jsonHit.put("projectDetailsUri", projectDetailsUrl);
-                jsonHit.put("rdfUri", URIUtil.encodeQuery(projectRdfId));
+            Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+            String docCollectionName = null;
+            if (docCollectionNamesField != null) {
+              docCollectionName = docCollectionNamesField.stringValue();
+              jsonHit.put("collectionName", docCollectionName);
+            }
+            if (docCollectionName != null) {
+              JSONObject jsonProject = new JSONObject();
+              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+              jsonProject.put("id", docCollectionName);
+              if (coll != null) {
+                String projectName = coll.getName();
+                if (projectName != null) {
+                  jsonProject.put("name", projectName);
+                }
+                String projectUrl = coll.getWebBaseUrl();
+                if (projectUrl != null) {
+                  String encoded = URIUtil.encodeQuery(projectUrl);
+                  jsonProject.put("url", encoded);
+                }
+                jsonHit.put("project", jsonProject);
               }
             }
-          }
-          Fieldable docAuthorField = doc.getFieldable("author");
-          if (docAuthorField != null) {
-            JSONArray jsonDocAuthorDetails = new JSONArray();
-            Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
-            if (docAuthorDetailsField != null) {
-              String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-              jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);
-            } else {
-              String docAuthor = docAuthorField.stringValue();
-              docAuthor = StringUtils.resolveXmlEntities(docAuthor);
-              JSONObject jsonDocAuthor = new JSONObject();
-              jsonDocAuthor.put("role", "author");
-              jsonDocAuthor.put("name", docAuthor);
-              String aboutPersonLink = baseUrl + "/query/About?query=" + docAuthor + "&type=person";
-              if (lang != null && ! lang.isEmpty())
-                aboutPersonLink = aboutPersonLink + "&language=" + lang;
-              String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
-              jsonDocAuthor.put("referenceAbout", aboutLinkEnc);
-              jsonDocAuthorDetails.add(jsonDocAuthor);
+            Fieldable languageField = doc.getFieldable("language");
+            String lang = "";
+            if (languageField != null) {
+              lang = languageField.stringValue();
             }
-            jsonHit.put("author", jsonDocAuthorDetails);
-          }
-          Fieldable docTitleField = doc.getFieldable("title");
-          if (docTitleField != null) {
-            String docTitle = docTitleField.stringValue();
-            docTitle = StringUtils.resolveXmlEntities(docTitle);
-            jsonHit.put("title", docTitle);
-          }
-          if (languageField != null) {
-            jsonHit.put("language", lang);
-          }
-          Fieldable descriptionField = doc.getFieldable("description");
-          if (descriptionField != null) {
-            String description = descriptionField.stringValue();
-            description = StringUtils.resolveXmlEntities(description);
-            jsonHit.put("description", description);
-          }
-          Fieldable docDateField = doc.getFieldable("date");
-          if (docDateField != null) {
-            jsonHit.put("date", docDateField.stringValue());
-          }
-          Fieldable lastModifiedField = doc.getFieldable("lastModified");
-          if (lastModifiedField != null) {
-            jsonHit.put("lastModified", lastModifiedField.stringValue());
-          }
-          Fieldable typeField = doc.getFieldable("type");
-          if (typeField != null) {
-            String type = typeField.stringValue();
-            jsonHit.put("type", type);
-          }
-          Fieldable docPageCountField = doc.getFieldable("pageCount");
-          if (docPageCountField != null) {
-            jsonHit.put("pageCount", docPageCountField.stringValue());
-          }
-          ArrayList<String> hitFragments = doc.getHitFragments();
-          JSONArray jasonFragments = new JSONArray();
-          if (hitFragments != null) {
-            for (int j = 0; j < hitFragments.size(); j++) {
-              String hitFragment = hitFragments.get(j);
-              jasonFragments.add(hitFragment);
+            Fieldable docIdField = doc.getFieldable("docId");
+            String docId = null;
+            if(docIdField != null) {
+              docId = docIdField.stringValue();
+              jsonHit.put("docId", docId);
             }
-          }
-          jsonHit.put("fragments", jasonFragments);
-          
-          Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
-          if (entitiesDetailsField != null) {
-            String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
-            JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
-            jsonHit.put("entities", jsonDocEntitiesDetails);
-          }
-
-          Fieldable personsField = doc.getFieldable("persons");
-          if (personsField != null) {
-            JSONArray jsonDocPersonsDetails = new JSONArray();
-            Fieldable personsDetailsField = doc.getFieldable("personsDetails");
-            if (personsDetailsField != null) {
-              String personsDetailsXmlStr = personsDetailsField.stringValue();
-              jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
-            } else {
-              String personsStr = personsField.stringValue();
-              String[] persons = personsStr.split("###");  // separator of persons
-              for (int j=0; j<persons.length; j++) {
-                String personName = persons[j];
-                personName = StringUtils.resolveXmlEntities(personName);
-                JSONObject jsonDocPerson = new JSONObject();
-                jsonDocPerson.put("role", "mentioned");
-                jsonDocPerson.put("name", personName);
-                String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+            Fieldable docUriField = doc.getFieldable("uri");
+            if (docUriField != null) {
+              String docUri = docUriField.stringValue();
+              String encoded = URIUtil.encodeQuery(docUri);
+              jsonHit.put("uri", encoded);
+            }
+            // project link
+            boolean docIsXml = false; 
+            String mimeType = getMimeType(docId);
+            if (mimeType != null && mimeType.contains("xml"))
+              docIsXml = true;
+            String firstHitPageNumber = null;
+            if (docIsXml)
+              firstHitPageNumber = doc.getFirstHitPageNumber();
+            Fieldable webUriField = doc.getFieldable("webUri");
+            String webUri = null;
+            if (webUriField != null)
+              webUri = webUriField.stringValue();
+            String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
+            if (projectLink != null) {
+              if (! projectLink.contains("%"))
+                projectLink = URIUtil.encodeQuery(projectLink);
+              projectLink = projectLink.replaceAll("%23", "#");
+              jsonHit.put("webUri", projectLink);
+            }
+            if (docCollectionName != null) {
+              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
+              if (coll != null) {
+                String webBaseUrl = coll.getWebBaseUrl();
+                if (webBaseUrl != null) {
+                  String encoded = URIUtil.encodeQuery(webBaseUrl);
+                  jsonHit.put("webBaseUri", encoded);
+                }
+                String projectRdfId = coll.getRdfId();
+                if (projectRdfId != null) {
+                  String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
+                  jsonHit.put("projectDetailsUri", projectDetailsUrl);
+                  jsonHit.put("rdfUri", URIUtil.encodeQuery(projectRdfId));
+                }
+              }
+            }
+            Fieldable docAuthorField = doc.getFieldable("author");
+            if (docAuthorField != null) {
+              JSONArray jsonDocAuthorDetails = new JSONArray();
+              Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+              if (docAuthorDetailsField != null) {
+                String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
+                jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);
+              } else {
+                String docAuthor = docAuthorField.stringValue();
+                docAuthor = StringUtils.resolveXmlEntities(docAuthor);
+                JSONObject jsonDocAuthor = new JSONObject();
+                jsonDocAuthor.put("role", "author");
+                jsonDocAuthor.put("name", docAuthor);
+                String aboutPersonLink = baseUrl + "/query/About?query=" + docAuthor + "&type=person";
                 if (lang != null && ! lang.isEmpty())
                   aboutPersonLink = aboutPersonLink + "&language=" + lang;
                 String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
-                jsonDocPerson.put("referenceAbout", aboutLinkEnc);
-                jsonDocPersonsDetails.add(jsonDocPerson);
+                jsonDocAuthor.put("referenceAbout", aboutLinkEnc);
+                jsonDocAuthorDetails.add(jsonDocAuthor);
+              }
+              jsonHit.put("author", jsonDocAuthorDetails);
+            }
+            Fieldable docTitleField = doc.getFieldable("title");
+            if (docTitleField != null) {
+              String docTitle = docTitleField.stringValue();
+              docTitle = StringUtils.resolveXmlEntities(docTitle);
+              jsonHit.put("title", docTitle);
+            }
+            if (languageField != null) {
+              jsonHit.put("language", lang);
+            }
+            Fieldable descriptionField = doc.getFieldable("description");
+            if (descriptionField != null) {
+              String description = descriptionField.stringValue();
+              description = StringUtils.resolveXmlEntities(description);
+              jsonHit.put("description", description);
+            }
+            Fieldable docDateField = doc.getFieldable("date");
+            if (docDateField != null) {
+              jsonHit.put("date", docDateField.stringValue());
+            }
+            Fieldable lastModifiedField = doc.getFieldable("lastModified");
+            if (lastModifiedField != null) {
+              jsonHit.put("lastModified", lastModifiedField.stringValue());
+            }
+            Fieldable typeField = doc.getFieldable("type");
+            if (typeField != null) {
+              String type = typeField.stringValue();
+              jsonHit.put("type", type);
+            }
+            Fieldable docPageCountField = doc.getFieldable("pageCount");
+            if (docPageCountField != null) {
+              jsonHit.put("pageCount", docPageCountField.stringValue());
+            }
+            ArrayList<String> hitFragments = doc.getHitFragments();
+            JSONArray jasonFragments = new JSONArray();
+            if (hitFragments != null) {
+              for (int j = 0; j < hitFragments.size(); j++) {
+                String hitFragment = hitFragments.get(j);
+                jasonFragments.add(hitFragment);
               }
             }
-            jsonHit.put("persons", jsonDocPersonsDetails);
-          }
-          Fieldable placesField = doc.getFieldable("places");
-          if (placesField != null) {
-            JSONArray jsonPlaces = new JSONArray();
-            String placesStr = placesField.stringValue();
-            String[] places = placesStr.split("###");  // separator of places
-            places = cleanNames(places);
-            Arrays.sort(places, ignoreCaseComparator);
-            for (int j=0; j<places.length; j++) {
-              String placeName = places[j];
-              if (! placeName.isEmpty()) {
-                JSONObject placeNameAndLink = new JSONObject();
-                String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
+            jsonHit.put("fragments", jasonFragments);
+            
+            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+            if (entitiesDetailsField != null) {
+              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
+              JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
+              jsonHit.put("entities", jsonDocEntitiesDetails);
+            }
+  
+            Fieldable personsField = doc.getFieldable("persons");
+            if (personsField != null) {
+              JSONArray jsonDocPersonsDetails = new JSONArray();
+              Fieldable personsDetailsField = doc.getFieldable("personsDetails");
+              if (personsDetailsField != null) {
+                String personsDetailsXmlStr = personsDetailsField.stringValue();
+                jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
+              } else {
+                String personsStr = personsField.stringValue();
+                String[] persons = personsStr.split("###");  // separator of persons
+                for (int j=0; j<persons.length; j++) {
+                  String personName = persons[j];
+                  personName = StringUtils.resolveXmlEntities(personName);
+                  JSONObject jsonDocPerson = new JSONObject();
+                  jsonDocPerson.put("role", "mentioned");
+                  jsonDocPerson.put("name", personName);
+                  String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+                  if (lang != null && ! lang.isEmpty())
+                    aboutPersonLink = aboutPersonLink + "&language=" + lang;
+                  String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
+                  jsonDocPerson.put("referenceAbout", aboutLinkEnc);
+                  jsonDocPersonsDetails.add(jsonDocPerson);
+                }
+              }
+              jsonHit.put("persons", jsonDocPersonsDetails);
+            }
+            Fieldable placesField = doc.getFieldable("places");
+            if (placesField != null) {
+              JSONArray jsonPlaces = new JSONArray();
+              String placesStr = placesField.stringValue();
+              String[] places = placesStr.split("###");  // separator of places
+              places = cleanNames(places);
+              Arrays.sort(places, ignoreCaseComparator);
+              for (int j=0; j<places.length; j++) {
+                String placeName = places[j];
+                if (! placeName.isEmpty()) {
+                  JSONObject placeNameAndLink = new JSONObject();
+                  String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
+                  if (lang != null && ! lang.isEmpty())
+                    placeLink = placeLink + "&language=" + lang;
+                  placeNameAndLink.put("name", placeName);
+                  placeNameAndLink.put("link", placeLink);  
+                  jsonPlaces.add(placeNameAndLink);
+                }
+              }
+              jsonHit.put("places", jsonPlaces);
+            }
+            Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+            if (subjectControlledDetailsField != null) {
+              JSONArray jsonSubjects = new JSONArray();
+              String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
+              String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
+              XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
+              XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
+              if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+                while (xmdValueDcTermsIterator.hasNext()) {
+                  XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
+                  String xdmItemDcTermStr = xdmItemDcTerm.toString(); // e.g. <dcterms:subject rdf:type="http://www.w3.org/2004/02/skos/core#Concept" rdf:resource="http://de.dbpedia.org/resource/Kategorie:Karl_Marx"/>
+                  String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
+                  String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
+                  String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
+                  JSONObject subject = new JSONObject();
+                  subject.put("type", subjectRdfType);
+                  subject.put("name", subjectName);
+                  subject.put("link", subjectRdfLink);
+                  jsonSubjects.add(subject);
+                }
+              }
+              jsonHit.put("subjectsControlled", jsonSubjects);
+            }
+            Fieldable subjectField = doc.getFieldable("subject");
+            if (subjectField != null) {
+              JSONArray jsonSubjects = new JSONArray();
+              String subjectStr = subjectField.stringValue();
+              String[] subjects = subjectStr.split("[,]");  // one separator of subjects
+              if (subjectStr.contains("###"))
+                subjects = subjectStr.split("###");  // another separator of subjects
+              subjects = cleanNames(subjects);
+              Arrays.sort(subjects, ignoreCaseComparator);
+              for (int j=0; j<subjects.length; j++) {
+                String subjectName = subjects[j];
+                if (! subjectName.isEmpty()) {
+                  JSONObject subjectNameAndLink = new JSONObject();
+                  subjectNameAndLink.put("name", subjectName);
+                  String subjectLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(subjectName) + "&type=subject";
+                  if (lang != null && ! lang.isEmpty())
+                    subjectLink = subjectLink + "&language=" + lang;
+                  subjectNameAndLink.put("link", subjectLink);
+                  jsonSubjects.add(subjectNameAndLink);
+                }
+              }
+              jsonHit.put("subjects", jsonSubjects);
+            }
+            Fieldable swdField = doc.getFieldable("swd");
+            if (swdField != null) {
+              JSONArray jsonSwd = new JSONArray();
+              String swdStr = swdField.stringValue();
+              String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
+              swdEntries = cleanNames(swdEntries);
+              Arrays.sort(swdEntries, ignoreCaseComparator);
+              for (int j=0; j<swdEntries.length; j++) {
+                String swdName = swdEntries[j];
+                if (! swdName.isEmpty()) {
+                  JSONObject swdNameAndLink = new JSONObject();
+                  swdNameAndLink.put("name", swdName);
+                  String swdLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(swdName) + "&type=swd";
+                  if (lang != null && ! lang.isEmpty())
+                    swdLink = swdLink + "&language=" + lang;
+                  swdNameAndLink.put("link", swdLink);  
+                  jsonSwd.add(swdNameAndLink);
+                }
+              }
+              jsonHit.put("swd", jsonSwd);
+            }
+            Fieldable ddcField = doc.getFieldable("ddc");
+            if (ddcField != null) {
+              JSONArray jsonDdc = new JSONArray();
+              String ddcStr = ddcField.stringValue();
+              if (! ddcStr.isEmpty()) {
+                JSONObject ddcNameAndLink = new JSONObject();
+                ddcNameAndLink.put("name", ddcStr);
+                String ddcLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(ddcStr) + "&type=ddc";
                 if (lang != null && ! lang.isEmpty())
-                  placeLink = placeLink + "&language=" + lang;
-                placeNameAndLink.put("name", placeName);
-                placeNameAndLink.put("link", placeLink);  
-                jsonPlaces.add(placeNameAndLink);
+                  ddcLink = ddcLink + "&language=" + lang;
+                ddcNameAndLink.put("link", ddcLink);
+                jsonDdc.add(ddcNameAndLink);
               }
+              jsonHit.put("ddc", jsonDdc);
             }
-            jsonHit.put("places", jsonPlaces);
+  
+            jsonArray.add(jsonHit);
           }
-          Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
-          if (subjectControlledDetailsField != null) {
-            JSONArray jsonSubjects = new JSONArray();
-            String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-            String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
-            XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
-            if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
-              while (xmdValueDcTermsIterator.hasNext()) {
-                XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
-                String xdmItemDcTermStr = xdmItemDcTerm.toString(); // e.g. <dcterms:subject rdf:type="http://www.w3.org/2004/02/skos/core#Concept" rdf:resource="http://de.dbpedia.org/resource/Kategorie:Karl_Marx"/>
-                String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
-                String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
-                String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
-                JSONObject subject = new JSONObject();
-                subject.put("type", subjectRdfType);
-                subject.put("name", subjectName);
-                subject.put("link", subjectRdfLink);
-                jsonSubjects.add(subject);
-              }
-            }
-            jsonHit.put("subjectsControlled", jsonSubjects);
-          }
-          Fieldable subjectField = doc.getFieldable("subject");
-          if (subjectField != null) {
-            JSONArray jsonSubjects = new JSONArray();
-            String subjectStr = subjectField.stringValue();
-            String[] subjects = subjectStr.split("[,]");  // one separator of subjects
-            if (subjectStr.contains("###"))
-              subjects = subjectStr.split("###");  // another separator of subjects
-            subjects = cleanNames(subjects);
-            Arrays.sort(subjects, ignoreCaseComparator);
-            for (int j=0; j<subjects.length; j++) {
-              String subjectName = subjects[j];
-              if (! subjectName.isEmpty()) {
-                JSONObject subjectNameAndLink = new JSONObject();
-                subjectNameAndLink.put("name", subjectName);
-                String subjectLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(subjectName) + "&type=subject";
-                if (lang != null && ! lang.isEmpty())
-                  subjectLink = subjectLink + "&language=" + lang;
-                subjectNameAndLink.put("link", subjectLink);
-                jsonSubjects.add(subjectNameAndLink);
-              }
-            }
-            jsonHit.put("subjects", jsonSubjects);
-          }
-          Fieldable swdField = doc.getFieldable("swd");
-          if (swdField != null) {
-            JSONArray jsonSwd = new JSONArray();
-            String swdStr = swdField.stringValue();
-            String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
-            swdEntries = cleanNames(swdEntries);
-            Arrays.sort(swdEntries, ignoreCaseComparator);
-            for (int j=0; j<swdEntries.length; j++) {
-              String swdName = swdEntries[j];
-              if (! swdName.isEmpty()) {
-                JSONObject swdNameAndLink = new JSONObject();
-                swdNameAndLink.put("name", swdName);
-                String swdLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(swdName) + "&type=swd";
-                if (lang != null && ! lang.isEmpty())
-                  swdLink = swdLink + "&language=" + lang;
-                swdNameAndLink.put("link", swdLink);  
-                jsonSwd.add(swdNameAndLink);
-              }
-            }
-            jsonHit.put("swd", jsonSwd);
-          }
-          Fieldable ddcField = doc.getFieldable("ddc");
-          if (ddcField != null) {
-            JSONArray jsonDdc = new JSONArray();
-            String ddcStr = ddcField.stringValue();
-            if (! ddcStr.isEmpty()) {
-              JSONObject ddcNameAndLink = new JSONObject();
-              ddcNameAndLink.put("name", ddcStr);
-              String ddcLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(ddcStr) + "&type=ddc";
-              if (lang != null && ! lang.isEmpty())
-                ddcLink = ddcLink + "&language=" + lang;
-              ddcNameAndLink.put("link", ddcLink);
-              jsonDdc.add(ddcNameAndLink);
-            }
-            jsonHit.put("ddc", jsonDdc);
-          }
-
-          jsonArray.add(jsonHit);
+          jsonOutput.put("hits", jsonArray);
         }
-        jsonOutput.put("hits", jsonArray);
         out.println(jsonOutput.toJSONString());
       }
     } catch (Exception e) {
