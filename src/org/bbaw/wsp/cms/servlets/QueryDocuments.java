@@ -1031,7 +1031,7 @@ public class QueryDocuments extends HttpServlet {
       retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Persons</b>: ");
       for (int i=0; i<entitiesPerson.size(); i++) {
         DBpediaResource entity = entitiesPerson.get(i);
-        String htmlStrEntity = entity.toHtmlStr();
+        String htmlStrEntity = entity.toHtmlStr(false);
         if (i == entitiesPerson.size() - 1)
           retHtmlStrBuilder.append(htmlStrEntity);
         else 
@@ -1043,7 +1043,7 @@ public class QueryDocuments extends HttpServlet {
       retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Concepts</b>: ");
       for (int i=0; i<entitiesConcept.size(); i++) {
         DBpediaResource entity = entitiesConcept.get(i);
-        String htmlStrEntity = entity.toHtmlStr();
+        String htmlStrEntity = entity.toHtmlStr(false);
         if (i == entitiesConcept.size() - 1)
           retHtmlStrBuilder.append(htmlStrEntity);
         else 
@@ -1055,7 +1055,7 @@ public class QueryDocuments extends HttpServlet {
       retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Places</b>: ");
       for (int i=0; i<entitiesPlace.size(); i++) {
         DBpediaResource entity = entitiesPlace.get(i);
-        String htmlStrEntity = entity.toHtmlStr();
+        String htmlStrEntity = entity.toHtmlStr(false);
         if (i == entitiesPlace.size() - 1)
           retHtmlStrBuilder.append(htmlStrEntity);
         else 
