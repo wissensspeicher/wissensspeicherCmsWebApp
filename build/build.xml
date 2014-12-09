@@ -6,7 +6,6 @@
   <property name="src" location="src"/>
   <property name="lib" location="WebContent/WEB-INF/lib"/>
   <property name="libTomcat" location="/opt/apache-tomcat-7.0.27/lib"/>
-  <property name="webappTomcat" location="/opt/apache-tomcat-7.0.27/webapps"/>
   <property name="build" location="WebContent/WEB-INF/classes"/>
   <property name="dist" location="dist"/>
 
@@ -45,7 +44,6 @@
     <war destfile="dist/wspCmsWebApp.war" webxml="WebContent/WEB-INF/web.xml">
       <fileset dir="WebContent"/>
     </war>
-    <copy file="dist/wspCmsWebApp.war" todir="${webappTomcat}"/>
   </target>
 
   <target name="distRemote" depends="compile" description="generate the distribution">
