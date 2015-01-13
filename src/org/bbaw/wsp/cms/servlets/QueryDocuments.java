@@ -119,6 +119,7 @@ public class QueryDocuments extends HttpServlet {
       boolean withHitHighlights = false;
       if (requestHitFragments == null || requestHitFragments.equals("true"))
         withHitHighlights = true;
+      query = query.replaceAll("%22", "\""); // if double quote is percent encoded
       Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
@@ -189,7 +190,8 @@ public class QueryDocuments extends HttpServlet {
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
           htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
-          htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + query + "\"/>");
+          String queryPercentEncoded = query.replaceAll("\"", "%22"); // valid html: double quote has to be percent encoded
+          htmlStrBuilder.append("<input type=\"hidden\" name=\"query\" value=\"" + queryPercentEncoded + "\"/>");
           if (translate != null)
             htmlStrBuilder.append("<input type=\"hidden\" name=\"translate\" value=\"" + translate + "\"/>");
           if (language != null)
@@ -1013,6 +1015,7 @@ public class QueryDocuments extends HttpServlet {
   private String docEntitiesDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
     ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
     ArrayList<DBpediaResource> entitiesPerson = new ArrayList<DBpediaResource>();
+    ArrayList<DBpediaResource> entitiesOrganisation = new ArrayList<DBpediaResource>();
     ArrayList<DBpediaResource> entitiesConcept = new ArrayList<DBpediaResource>();
     ArrayList<DBpediaResource> entitiesPlace = new ArrayList<DBpediaResource>();
     for (int i=0; i<entities.size(); i++) {
@@ -1021,6 +1024,8 @@ public class QueryDocuments extends HttpServlet {
       String type = entity.getType();
       if (type != null && type.equals("person"))
         entitiesPerson.add(entity);
+      else if (type != null && type.equals("organisation"))
+        entitiesOrganisation.add(entity);
       else if (type != null && type.equals("concept"))
         entitiesConcept.add(entity);
       else if (type != null && type.equals("place"))
@@ -1039,7 +1044,19 @@ public class QueryDocuments extends HttpServlet {
       }
       retHtmlStrBuilder.append("</li>");
     }
-    if (entitiesPerson.size() > 0) {
+    if (entitiesOrganisation.size() > 0) {
+      retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Organisations</b>: ");
+      for (int i=0; i<entitiesOrganisation.size(); i++) {
+        DBpediaResource entity = entitiesOrganisation.get(i);
+        String htmlStrEntity = entity.toHtmlStr(false);
+        if (i == entitiesOrganisation.size() - 1)
+          retHtmlStrBuilder.append(htmlStrEntity);
+        else 
+          retHtmlStrBuilder.append(htmlStrEntity + ", ");
+      }
+      retHtmlStrBuilder.append("</li>");
+    }
+    if (entitiesConcept.size() > 0) {
       retHtmlStrBuilder.append("<li style=\"margin-left: 30px;\"><b>Concepts</b>: ");
       for (int i=0; i<entitiesConcept.size(); i++) {
         DBpediaResource entity = entitiesConcept.get(i);
