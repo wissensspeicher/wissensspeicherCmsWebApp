@@ -124,6 +124,10 @@ public class GetDocInfo extends HttpServlet {
         if ((field == null || (field != null && field.equals("accessRights"))) && accessRights != null)
           out.print("<accessRights>" + accessRights + "</accessRights>");
         String baseUrl = getBaseUrl(request);
+        String entitiesDetailsStr = mdRecord.getEntitiesDetails();
+        if (entitiesDetailsStr != null) {
+          out.print("<entitiesDetails>" + entitiesDetailsStr + "</entitiesDetails>");
+        }
         String personsStr = mdRecord.getPersons();
         if (personsStr != null) {
           out.print("<persons>");
