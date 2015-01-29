@@ -173,7 +173,20 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<head>");
         htmlStrBuilder.append("<title>Query: " + query + "</title>");
         htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
+        // jqueryui and easyui code
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css\"/>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://www.jeasyui.com/easyui/themes/gray/easyui.css\"/>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://www.jeasyui.com/easyui/themes/icon.css\"/>");
+        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jquery-1.10.2.js" + "\"></script>");
+        htmlStrBuilder.append("<script src=\"http://code.jquery.com/ui/1.11.2/jquery-ui.js\"></script>");
+        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jquery.easyui.min.js" + "\"></script>");
+        // htmlStrBuilder.append("<script>");
+        // htmlStrBuilder.append("  $(function() {");
+        // htmlStrBuilder.append("    $( \"#tabs\" ).tabs();");
+        // htmlStrBuilder.append("  });");
+        // htmlStrBuilder.append("</script>");
         htmlStrBuilder.append("</head>");
+        // body  
         htmlStrBuilder.append("<body>");
         htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
         htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
@@ -187,6 +200,14 @@ public class QueryDocuments extends HttpServlet {
         if (sortBy == null)
           sortByStr = "";
         htmlStrBuilder.append("<h4>Lucene query: " + luceneQueryStr + "</h4>");
+        // tabs
+        htmlStrBuilder.append("<div class=\"easyui-tabs\" border=\"false\">");
+        // htmlStrBuilder.append("<div id=\"tabs\" style=\"background: none; border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
+        // htmlStrBuilder.append("<ul style=\"background: none; border: none;\">");
+        // htmlStrBuilder.append("<li><a href=\"#hits\">Hits</a></li>");
+        // htmlStrBuilder.append("<li><a href=\"#facets\">Facets</a></li>");
+        // htmlStrBuilder.append("</ul>");
+        htmlStrBuilder.append("<div title=\"Hits\" id=\"hits\" style=\"background: none; border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
           htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
@@ -611,15 +632,21 @@ public class QueryDocuments extends HttpServlet {
         if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
         }
+        htmlStrBuilder.append("</div>");
+        htmlStrBuilder.append("<div title=\"Facets\" id=\"facets\">");
+        // htmlStrBuilder.append("<div id=\"facets\" class=\"easyui-panel\">");
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
           Facets facets = hits.getFacets();
           if (facets != null && facets.size() > 0) {
             facets.setBaseUrl(baseUrl);
             facets.setOutputOptions(outputOptions);
             String facetsStr = facets.toHtmlString();
-            htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
+            // htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
+            htmlStrBuilder.append(facetsStr);
           }
         }
+        htmlStrBuilder.append("</div>");
+        htmlStrBuilder.append("</div>");
         if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<p/>");
           htmlStrBuilder.append("Word information:");
