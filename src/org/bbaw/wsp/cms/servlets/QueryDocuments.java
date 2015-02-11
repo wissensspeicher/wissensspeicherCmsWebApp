@@ -167,31 +167,16 @@ public class QueryDocuments extends HttpServlet {
         out.print("</result>");
       } else if (outputFormat.equals("html")) {
         StringBuilder htmlStrBuilder = new StringBuilder();
-        String cssUrl = request.getContextPath() + "/css/page.css";
         htmlStrBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
         htmlStrBuilder.append("<html>");
         htmlStrBuilder.append("<head>");
         htmlStrBuilder.append("<title>Query: " + query + "</title>");
-        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + cssUrl + "\"/>");
-        // jqueryui and easyui code
-        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css\"/>");
-        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://www.jeasyui.com/easyui/themes/gray/easyui.css\"/>");
-        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://www.jeasyui.com/easyui/themes/icon.css\"/>");
-        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jquery-1.10.2.js" + "\"></script>");
-        htmlStrBuilder.append("<script src=\"http://code.jquery.com/ui/1.11.2/jquery-ui.js\"></script>");
-        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jquery.easyui.min.js" + "\"></script>");
-        // htmlStrBuilder.append("<script>");
-        // htmlStrBuilder.append("  $(function() {");
-        // htmlStrBuilder.append("    $( \"#tabs\" ).tabs();");
-        // htmlStrBuilder.append("  });");
-        // htmlStrBuilder.append("</script>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + request.getContextPath() + "/css/page.css" + "\"/>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + request.getContextPath() + "/css/bootstrap.min.css\"/>");
+        htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + request.getContextPath() + "/css/style.min.css\"/>"); // jstree
         htmlStrBuilder.append("</head>");
         // body  
         htmlStrBuilder.append("<body>");
-        htmlStrBuilder.append("<table align=\"right\" valign=\"top\">");
-        htmlStrBuilder.append("<td>[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
-        htmlStrBuilder.append("</table>");
-        htmlStrBuilder.append("<p/>");
         String luceneQueryStr = query;
         Query luceneQuery = hits.getQuery();
         if (query != null)
@@ -199,15 +184,25 @@ public class QueryDocuments extends HttpServlet {
         String sortByStr = sortBy;
         if (sortBy == null)
           sortByStr = "";
-        htmlStrBuilder.append("<h4>Lucene query: " + luceneQueryStr + "</h4>");
+        // header
+        htmlStrBuilder.append("<div valign=\"top\" style=\"border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
+        htmlStrBuilder.append("<table valign=\"top\" style=\"margin-left:2px;\">");
+        htmlStrBuilder.append("<colgroup>");
+        htmlStrBuilder.append("<col width=\"80%\"/>");
+        htmlStrBuilder.append("<col width=\"20%\"/>");
+        htmlStrBuilder.append("</colgroup>");
+        htmlStrBuilder.append("<td align=\"left\" valign=\"middle\"><span style=\"font-weight:bold\">Lucene query: </span><span>" + luceneQueryStr + "</span></td>");
+        htmlStrBuilder.append("<td align=\"right\" valign=\"middle\" nowrap=\"true\">[<i>This is a BBAW WSP CMS technology service</i>] <a href=\"/wspCmsWebApp/index.html\"><img src=\"/wspCmsWebApp/images/info.png\" valign=\"bottom\" width=\"15\" height=\"15\" border=\"0\" alt=\"BBAW CMS service\"/></a></td>");
+        htmlStrBuilder.append("</table>");
+        htmlStrBuilder.append("</div>");
         // tabs
-        htmlStrBuilder.append("<div class=\"easyui-tabs\" border=\"false\">");
-        // htmlStrBuilder.append("<div id=\"tabs\" style=\"background: none; border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
-        // htmlStrBuilder.append("<ul style=\"background: none; border: none;\">");
-        // htmlStrBuilder.append("<li><a href=\"#hits\">Hits</a></li>");
-        // htmlStrBuilder.append("<li><a href=\"#facets\">Facets</a></li>");
-        // htmlStrBuilder.append("</ul>");
-        htmlStrBuilder.append("<div title=\"Hits\" id=\"hits\" style=\"background: none; border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
+        htmlStrBuilder.append("<div id=\"tabs\">");
+        htmlStrBuilder.append("<ul class=\"nav nav-tabs\" style=\"border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
+        htmlStrBuilder.append("<li role=\"presentation\" class=\"active\"><a href=\"#hits\" data-toggle=\"tab\">Hits</a></li>");
+        htmlStrBuilder.append("<li role=\"presentation\"><a href=\"#facets\" data-toggle=\"tab\">Facets</a></li>");
+        htmlStrBuilder.append("</ul>");
+        htmlStrBuilder.append("<div id=\"my-tab-content\" class=\"tab-content\">");
+        htmlStrBuilder.append("<div class=\"tab-pane active\" id=\"hits\">");
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<form action=\"QueryDocuments\" method=\"get\">");
           htmlStrBuilder.append("<input type=\"hidden\" name=\"queryLanguage\" value=\"" + queryLanguage + "\"/>");
@@ -224,11 +219,12 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<input type=\"submit\" id=\"submitId\" style=\"position: absolute; left: -9999px\"/>");
           htmlStrBuilder.append("<table>");
           htmlStrBuilder.append("<colgroup>");
-          htmlStrBuilder.append("<col width=\"3%\"/>");
-          htmlStrBuilder.append("<col width=\"7%\"/>");
-          htmlStrBuilder.append("<col width=\"3%\"/>");
-          htmlStrBuilder.append("<col width=\"12%\"/>");
-          htmlStrBuilder.append("<col width=\"70%\"/>");
+          htmlStrBuilder.append("<col width=\"3\"/>");
+          htmlStrBuilder.append("<col width=\"10\"/>");
+          htmlStrBuilder.append("<col width=\"3\"/>");
+          htmlStrBuilder.append("<col width=\"5\"/>");
+          htmlStrBuilder.append("<col width=\"60\"/>");
+          htmlStrBuilder.append("<col width=\"80%\"/>");
           htmlStrBuilder.append("</colgroup>");
           htmlStrBuilder.append("<tr>");
           int countPages = hitsSize / pageSize + 1;
@@ -240,15 +236,16 @@ public class QueryDocuments extends HttpServlet {
           int pageRight = page + 1; 
           if (page == countPages)
             pageRight = countPages;
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageLeft + "\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
-          htmlStrBuilder.append("<td align=\"middle\" valign=\"top\" nowrap=\"true\">" + page + " / " + countPages + "</td>");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\"><button onclick=\"document.getElementById('pageId').value=" + pageRight + "\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
-          htmlStrBuilder.append("<td align=\"left\" valign=\"top\" nowrap=\"true\">Page: <input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"middle\" style=\"padding-right:4px\"><button type=\"button\" onclick=\"document.getElementById('pageId').value=" + pageLeft + "; document.getElementById('submitId').click();\" style=\"background:none;border:none;\"><img src=\"../images/left.gif\"/></button></td>");
+          htmlStrBuilder.append("<td align=\"middle\" valign=\"middle\" nowrap=\"true\" style=\"padding-right:4px\">" + page + " / " + countPages + "</td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"middle\" style=\"padding-right:4px\"><button type=\"button\" onclick=\"document.getElementById('pageId').value=" + pageRight + "; document.getElementById('submitId').click();\" style=\"background:none;border:none;\"><img src=\"../images/right.gif\"/></button></td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"middle\" nowrap=\"true\" style=\"padding-right:4px\"> Page: </td>");
+          htmlStrBuilder.append("<td align=\"left\" valign=\"middle\" nowrap=\"true\"><input type=\"text\" size=\"3\" value=\"" + page + "\" id=\"pageTextId\" onkeydown=\"if (event.keyCode == 13) {document.getElementById('pageId').value=document.getElementById('pageTextId').value; document.getElementById('submitId').click();}\"/></td>");
           int fromDisplay = from + 1;
           int toDisplay = to + 1;
           if (hitsSize < toDisplay)
             toDisplay = hitsSize;
-          htmlStrBuilder.append("<td align=\"right\" valign=\"top\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
+          htmlStrBuilder.append("<td align=\"right\" valign=\"middle\">" + fromDisplay + " - " + toDisplay + " of " + hitsSize + " hits (out of " + sizeTotalDocuments + " resources)" + "</td>");
           htmlStrBuilder.append("</tr>");
           htmlStrBuilder.append("</table>");
           htmlStrBuilder.append("<p/>");
@@ -627,35 +624,49 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("</table>");
         }
         htmlStrBuilder.append("</form>");
-        htmlStrBuilder.append("<p/>");
-        htmlStrBuilder.append("Elapsed time: " + elapsedTime + " ms");
-        if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
-          htmlStrBuilder.append("<p/>" + "Number of different terms in all documents: " + sizeTotalTerms);
-        }
         htmlStrBuilder.append("</div>");
-        htmlStrBuilder.append("<div title=\"Facets\" id=\"facets\">");
-        // htmlStrBuilder.append("<div id=\"facets\" class=\"easyui-panel\">");
+        htmlStrBuilder.append("<div class=\"tab-pane\" id=\"facets\">");
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
           Facets facets = hits.getFacets();
           if (facets != null && facets.size() > 0) {
             facets.setBaseUrl(baseUrl);
             facets.setOutputOptions(outputOptions);
             String facetsStr = facets.toHtmlString();
-            // htmlStrBuilder.append("<p/>" + "<b>Facets</b>: " + facetsStr);
             htmlStrBuilder.append(facetsStr);
           }
         }
         htmlStrBuilder.append("</div>");
         htmlStrBuilder.append("</div>");
+        htmlStrBuilder.append("</div>");
+        htmlStrBuilder.append("<div id=\"bottomInfo\" style=\"clear:both;margin-bottom:0;margin-left:85%;\">");
+        htmlStrBuilder.append("<ul><li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>[Technical info]");
+        htmlStrBuilder.append("<ul>");
+        htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Elapsed time: " + elapsedTime + " ms</li>");
+        if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
+          htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Number of different terms in all documents: " + sizeTotalTerms + "</li>");
+        }
         if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
-          htmlStrBuilder.append("<p/>");
-          htmlStrBuilder.append("Word information:");
-          htmlStrBuilder.append("<ul>");
           String dictionaryUrl = WBP_LINK + query;
           dictionaryUrl = URIUtil.encodeQuery(dictionaryUrl); 
-          htmlStrBuilder.append("<li>Dictionary information for: <a href=\"" + dictionaryUrl + "\">" + query + "</a></li>");
-          htmlStrBuilder.append("</ul>");
+          htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-arrow-right\"}'><a href=\"" + dictionaryUrl + "\">Dictionary information for: " + query + "</a></li>");
         }
+        htmlStrBuilder.append("</ul>");
+        htmlStrBuilder.append("</li>");
+        htmlStrBuilder.append("</ul>");
+        htmlStrBuilder.append("</div>");
+        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jquery-1.11.2.min.js" + "\"></script>");
+        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/bootstrap.min.js" + "\"></script>");
+        htmlStrBuilder.append("<script src=\"" + request.getContextPath() + "/js/jstree.min.js" + "\"></script>");
+        htmlStrBuilder.append("<script>");
+        htmlStrBuilder.append("$(function () {");
+        htmlStrBuilder.append("  $('#facets').jstree().bind(\"select_node.jstree\", function(e, data) {");
+        htmlStrBuilder.append("    window.location.href = data.node.a_attr.href;");  // so that hrefs are not disabled
+        htmlStrBuilder.append("  });");
+        htmlStrBuilder.append("  $('#bottomInfo').jstree().bind(\"select_node.jstree\", function(e, data) {");
+        htmlStrBuilder.append("    window.location.href = data.node.a_attr.href;");  // so that hrefs are not disabled
+        htmlStrBuilder.append("  });");
+        htmlStrBuilder.append("});");
+        htmlStrBuilder.append("</script>");
         htmlStrBuilder.append("</body>");
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
