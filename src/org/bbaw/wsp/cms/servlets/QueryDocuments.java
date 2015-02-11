@@ -176,7 +176,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + request.getContextPath() + "/css/style.min.css\"/>"); // jstree
         htmlStrBuilder.append("</head>");
         // body  
-        htmlStrBuilder.append("<body>");
+        htmlStrBuilder.append("<body style=\"margin-left:2px;margin-right:2px;\">");
         String luceneQueryStr = query;
         Query luceneQuery = hits.getQuery();
         if (query != null)
@@ -185,7 +185,7 @@ public class QueryDocuments extends HttpServlet {
         if (sortBy == null)
           sortByStr = "";
         // header
-        htmlStrBuilder.append("<div valign=\"top\" style=\"border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
+        htmlStrBuilder.append("<div style=\"border: none; font-family: Helvetica,Arial,sans-serif; font-size: 1.0em;\">");
         htmlStrBuilder.append("<table valign=\"top\" style=\"margin-left:2px;\">");
         htmlStrBuilder.append("<colgroup>");
         htmlStrBuilder.append("<col width=\"80%\"/>");
@@ -249,7 +249,7 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("</tr>");
           htmlStrBuilder.append("</table>");
           htmlStrBuilder.append("<p/>");
-          htmlStrBuilder.append("<table width=\"100%\" align=\"right\" border=\"2\" rules=\"groups\">");
+          htmlStrBuilder.append("<table width=\"100%\" align=\"right\" border=\"1px solid #ddd\" rules=\"groups\">");
           htmlStrBuilder.append("<colgroup>");
           htmlStrBuilder.append("<col width=\"3%\"/>");
           htmlStrBuilder.append("<col width=\"15%\"/>");
@@ -625,7 +625,7 @@ public class QueryDocuments extends HttpServlet {
         }
         htmlStrBuilder.append("</form>");
         htmlStrBuilder.append("</div>");
-        htmlStrBuilder.append("<div class=\"tab-pane\" id=\"facets\">");
+        htmlStrBuilder.append("<div class=\"tab-pane\" id=\"facets\" style=\"border-top: 1px solid #ddd;border-left: 1px solid #ddd;border-right: 1px solid #ddd;border-bottom: 1px solid #ddd;border-radius: 0px 0px 5px 5px;padding: 10px;\">");
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
           Facets facets = hits.getFacets();
           if (facets != null && facets.size() > 0) {
@@ -638,7 +638,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</div>");
         htmlStrBuilder.append("</div>");
         htmlStrBuilder.append("</div>");
-        htmlStrBuilder.append("<div id=\"bottomInfo\" style=\"clear:both;margin-bottom:0;margin-left:85%;\">");
+        htmlStrBuilder.append("<div id=\"bottomInfo\" style=\"clear:both;margin-bottom:0;\">");
         htmlStrBuilder.append("<ul><li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>[Technical info]");
         htmlStrBuilder.append("<ul>");
         htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Elapsed time: " + elapsedTime + " ms</li>");
