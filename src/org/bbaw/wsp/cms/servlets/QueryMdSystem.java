@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.jena.larq.HitLARQ;
 import org.apache.log4j.Logger;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemResultType;
@@ -44,14 +43,11 @@ import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.openjena.atlas.json.JsonObject;
 
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
@@ -142,6 +138,8 @@ public class QueryMdSystem extends HttpServlet {
    * key/name for/of the parameter subject.
    */
   private static final String PARAM_SUBJECT = "isSubject";
+  
+  private static final String RELATED_PROJECTS = "relatedProjects";
   /**
    * key for the JSON attribute for the result priority.
    */
@@ -150,6 +148,15 @@ public class QueryMdSystem extends HttpServlet {
    * key/name for/of the parameter projectId.
    */
   private static final String IS_PROJECT_ID = "isProjectId";
+  /**
+   * key/name for/of the parameter projectId.
+   */
+  private static final String PROJECTS_TAB = "projectsTab";
+
+  /**
+   * key/name for/of the parameter projectId.
+   */
+  private static final String PROJECTS_TAB_PERSONS = "projectsTabPersons";
   
   /**
    * results from preloading project information by sparql 
@@ -169,7 +176,6 @@ public class QueryMdSystem extends HttpServlet {
     super.init(config);
     ServletContext context = getServletContext();
     final Logger logger = Logger.getLogger(QueryMdSystem.class);
-    logger.info("preload normdata Metadata");
     preloadNormdata = (HitGraphContainer) context.getAttribute("preloadNormdata");
   }
 
@@ -181,7 +187,6 @@ public class QueryMdSystem extends HttpServlet {
   protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
     // HTTP response print writer
     final PrintWriter out = response.getWriter();
-    // bla
 
     final Logger logger = Logger.getLogger(QueryMdSystem.class);
     request.setCharacterEncoding("utf-8");
@@ -227,12 +232,11 @@ public class QueryMdSystem extends HttpServlet {
       throw new ServletException(e);
     }
   }
-
+  
   private void handleDetailedSearch(final Logger logger, final Date begin, final String outputFormat, final String query, final HttpServletRequest request, final HttpServletResponse response, final PrintWriter out) {
-    
+
     MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
     ISparqlAdapter adapter = mdqh.getSparqlAdapter();
-//    logger.info("all md : " + preloadNormdata.toString());
     // @formatter:off
     /*
      * 
@@ -244,7 +248,17 @@ public class QueryMdSystem extends HttpServlet {
     HitGraphContainer resultContainer = null;
     HashMap<String, List<String>> normdataHit = null;
     HashMap<String, Object> mainEles = new HashMap<String, Object>();
-   
+    String jsonForTabs = "";
+    
+    //parameter for the projects-tab request
+    if(request.getParameter(PROJECTS_TAB) != null && request.getParameter(PROJECTS_TAB).equals("true")){
+      String json = jsonForTabs.concat(adapter.buildTextMatchSparqlQuery("?s ?name ?homepage ?nickname", query, "foaf:Project. \n ?s foaf:name ?name. \n ?s foaf:nick ?nickname. \n ?s foaf:homepage ?homepage"));
+      out.println(json);
+    }else
+      //parameter for the persons-tab request
+      if(request.getParameter(PROJECTS_TAB_PERSONS) != null && request.getParameter(PROJECTS_TAB_PERSONS).equals("true")){
+        out.println(jsonForTabs.concat(adapter.buildTextMatchSparqlQuery("?s ?familyName ?givenName ?gndIdentifier", query, "foaf:Person. \n ?s foaf:familyName ?familyName. \n ?s foaf:givenName ?givenName. \n ?s gnd:gndIdentifier ?gndIdentifier")));
+      }else
     if (request.getParameter(PARAM_GRAPH_ID) != null && request.getParameter(PARAM_GRAPH_ID).equals("true")) {
       // query contains the graph uri
       // call sparql adapter with the given graph uri
@@ -253,7 +267,6 @@ public class QueryMdSystem extends HttpServlet {
         graphUri = new URL(URIUtil.decode(query));
         resultContainer = adapter.buildSparqlQuery(graphUri);
       } catch (URIException | MalformedURLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } else if (request.getParameter(PARAM_SUBJECT) != null && request.getParameter(PARAM_SUBJECT).equals("true")) {
@@ -265,10 +278,13 @@ public class QueryMdSystem extends HttpServlet {
         final Resource resource = new ResourceImpl("<" + resourceUri + ">");
         resultContainer = adapter.buildSparqlQuery(resource);
       } catch (final URIException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    } else
+    } else 
+      //query list of projects for the projects tab
+      if(request.getParameter(RELATED_PROJECTS) != null && request.getParameter(RELATED_PROJECTS).equals("true")) {
+          resultContainer = adapter.buildSparqlQuery(query);
+    }else
     // query all project information and resolve uri
     if (request.getParameter(IS_PROJECT_ID) != null && request.getParameter(IS_PROJECT_ID).equals("true")) {
       HitGraph normdatacomplete = null;
@@ -515,6 +531,28 @@ public class QueryMdSystem extends HttpServlet {
         mainEles.put("identifier", hasllist);
       }
       /////
+      if (normdataHit.get("identifier") != null && normdataHit.get("identifier").size() != 0) {
+        hasllist = new ArrayList<HashMap<String, Object>>();
+        List<String> identifiers = normdataHit.get("identifier");
+        for (String string : identifiers) {
+          HashMap<String, Object> resolvedValues = new HashMap<String, Object>();
+          HashMap<String, List<String>> resolved = normdatacomplete.getStatementBySubject(string);
+          if (resolved != null && resolved.entrySet() != null) {
+            for (Entry<String, List<String>> entrie : resolved.entrySet()) {
+              if (entrie.getValue().size() == 1) {
+                resolvedValues.put(entrie.getKey(), entrie.getValue().get(0));
+              } else {
+                resolvedValues.put(entrie.getKey(), entrie.getValue());
+              }
+            }
+          } else {
+            resolvedValues.put("identifier", string);
+          }
+          hasllist.add(resolvedValues);
+        }
+        mainEles.put("identifier", hasllist);
+      }
+      
       HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
       wrapper.put(query, mainEles);
       out.println(JSONValue.toJSONString(wrapper));
@@ -544,11 +582,9 @@ public class QueryMdSystem extends HttpServlet {
    
     else 
       if(request.getParameter(PARAM_GRAPH_ID) == null && request.getParameter(GET_ALL_PROJECTS) == null && request.getParameter(PARAM_SUBJECT) == null){
-       
         // neither graphId or subject was set
       // query contains the subject URI
-      // call sparql adapter and query for the given subject within THE
-      // NORMDATA.RDF
+      // call sparql adapter and query for the given subject within THE NORMDATA.RDF
       final URL defaultGraphName;
       try {
         final URL url = new URL(query); // is query URI? -> so it's a subject
@@ -564,12 +600,12 @@ public class QueryMdSystem extends HttpServlet {
         resultContainer = adapter.buildSparqlQuery(query);
       }
     }
-
     /*
      * statistics
      */
     final Date end = new Date();
     final long elapsedTime = end.getTime() - begin.getTime();
+
     /*
      * ..:: html ::..
      */
@@ -674,6 +710,7 @@ public class QueryMdSystem extends HttpServlet {
      * ..:: json ::..
      */
     else if (resultContainer != null && outputFormat.equals("json") && request.getParameter(IS_PROJECT_ID) == null && GET_ALL_PROJECTS == null) {
+
       response.setContentType("application/json"); // indicates that this
                                                    // content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
@@ -759,9 +796,8 @@ public class QueryMdSystem extends HttpServlet {
       jsonEncoder.putJsonObj(JSON_FIELD_MD_HITS, jhitGraphes);
       final String jsonString = JSONValue.toJSONString(jsonEncoder.getJsonObject());
       out.println(jsonString); // response
-
-    }
-    else if (resultContainer != null && outputFormat.equals("json") &&request.getParameter(IS_PROJECT_ID).equals("true")) {
+    }else
+      if (resultContainer != null && outputFormat.equals("json") && request.getParameter(IS_PROJECT_ID).equals("true")) {
       response.setContentType("application/json"); // indicates that this content is pure json
       final WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
       jsonEncoder.putStrings(JSON_FIELD_SEARCH_TERM, query);
@@ -775,6 +811,27 @@ public class QueryMdSystem extends HttpServlet {
 //    HashMap<String, HashMap<String, Object>> wrapper = new HashMap<String, HashMap<String, Object>>();
 //    wrapper.put(query, mainEles);
 //    out.println(JSONValue.toJSONString(wrapper));
+  }
+
+  private void prepareJsonForGui(final Logger logger, String json) {
+    logger.info(json);
+    String jsonElements;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < json.length(); i++){
+      char c = json.charAt(i);
+      sb.append(c);
+      logger.info("c : "+c);
+      if(String.valueOf(c).equals(" ")){
+        logger.info("c : "+c);
+        sb = new StringBuilder(); 
+      }
+      if(sb.toString().equals("results")){
+        logger.info("found: 'results' ");
+      }
+      if(sb.toString().equals("bindings")){
+        logger.info("found: 'bindings' ");
+      }
+    }
   }
 
   /**
