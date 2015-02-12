@@ -824,6 +824,11 @@ public class QueryDocuments extends HttpServlet {
               String type = typeField.stringValue();
               jsonHit.put("type", type);
             }
+            Fieldable systemTypeField = doc.getFieldable("systemType");
+            if (systemTypeField != null) {
+              String systemType = systemTypeField.stringValue();
+              jsonHit.put("systemType", systemType);
+            }
             Fieldable docPageCountField = doc.getFieldable("pageCount");
             if (docPageCountField != null) {
               jsonHit.put("pageCount", docPageCountField.stringValue());
