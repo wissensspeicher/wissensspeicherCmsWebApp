@@ -180,6 +180,9 @@ public class GetDocInfo extends HttpServlet {
         String type = mdRecord.getType();
         if ((field == null || (field != null && field.equals("type"))) && type != null)
           out.print("<type>" + type + "</type>");
+        String systemType = mdRecord.getSystem();
+        if ((field == null || (field != null && field.equals("systemType"))) && systemType != null)
+          out.print("<systemType>" + systemType + "</systemType>");
         String encoding = mdRecord.getEncoding();
         if ((field == null || (field != null && field.equals("encoding"))) && encoding != null)
           out.print("<encoding>" + encoding + "</encoding>");
