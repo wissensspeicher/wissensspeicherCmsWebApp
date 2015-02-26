@@ -567,7 +567,7 @@ public class QueryDocuments extends HttpServlet {
           if (facets != null && facets.size() > 0) {
             facets.setBaseUrl(baseUrl);
             facets.setOutputOptions(outputOptions);
-            String facetsStr = facets.toHtmlString();
+            String facetsStr = facets.toHtmlString(true);
             htmlStrBuilder.append(facetsStr);
           }
         }
@@ -1057,7 +1057,7 @@ public class QueryDocuments extends HttpServlet {
           if (facets != null && facets.size() > 0) {
             facets.setBaseUrl(baseUrl);
             facets.setOutputOptions(outputOptions);
-            String facetsStr = facets.toHtmlString();
+            String facetsStr = facets.toHtmlString(false);
             htmlStrBuilder.append(facetsStr);
           }
         }
