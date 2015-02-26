@@ -1,14 +1,453 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Berlin-Brandenburg Academy of Sciences and Humanities - Digital Knowledge Store</title>
+    <meta charset="utf-8">
+    <title>BBAW Digital Knowledge Store: Query Resources</title>
+    <link rel="stylesheet" href="../css/query.css">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/style.min.css">
   </head>
-<body>
-<h2>Berlin-Brandenburg Academy of Sciences and Humanities - Digital Knowledge Store</h2>
-
-<ul>
-  <li><a href="index.html">new link: see here</a></li>
-</ul>
-
-</body></html>
+  <body>
+    <div id="header">
+      <div class="row vertical-align">
+        <div class="col-sm-10">
+          <span class="header">Query BBAW resources</span>
+        </div>
+        <div class="col-sm-2">
+          <span class="pull-right media-middle">Release 0.9, March, 2015 <a href="info.html"><span class="glyphicon glyphicon-info-sign"></span></a></span>
+        </div>
+      </div>
+    </div>
+    <div id="queryTab" class="query">
+      <ul class="nav nav-tabs">
+        <li id="liContentQuery" role="presentation" class="active">
+          <a href="#tabContentQuery" data-toggle="tab">Content query</a>
+        </li>
+        <li id="liFieldQuery" role="presentation">
+          <a href="#tabFieldQuery" data-toggle="tab">Field query</a>
+        </li>
+      </ul>
+      <div id="query-tab-content" class="tab-content">
+        <div id="tabContentQuery" class="tab-pane active">
+          <form id="fulltextQueryForm" name="fulltextQueryForm" action="query.html" method="get" accept-charset="utf-8">
+            <div class="row" style="margin-top:10px;">
+              <div class="col-sm-12">
+                Resource content contains <input type="text" size="40" id="query" name="query" onkeypress="return checkCR(event, this)"/>
+                <select id="queryLanguage" name="queryLanguage">
+                  <option value ="gl" selected>Google like</option>
+                  <option value ="lucene">Lucene</option>
+                </select>
+                <button id="queryButton" type="submit">Query</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col-md-1"></div>
+              <div class="col-md-6">
+                morphological <input type="checkbox" id="morph" name="morph"/>
+                translate <input type="checkbox" id="translate" name="translate"/>
+                language: 
+                <select id="language" name="language">
+                  <option value ="none" selected>None</option>
+                  <option value ="ara">Arabic</option>
+                  <option value ="zho">Chinese</option>
+                  <option value ="nld">Dutch</option>
+                  <option value ="eng">English</option>
+                  <option value ="fra">French</option>
+                  <option value ="deu">German</option>
+                  <option value ="grc">Greek</option>
+                  <option value ="ita">Italian</option>
+                  <option value ="lat">Latin</option>
+                </select>
+              </div>
+            </div>
+            <input id="pageFulltextQuery" type="hidden" name="page"/>
+            <input id="sortByFulltextQuery" type="hidden" name="sortBy"/>
+          </form>
+        </div>
+        <div id="tabFieldQuery" class="tab-pane">
+          <form id="attributeQueryForm" name="attributeQueryForm" action="query.html" method="get" accept-charset="utf-8">
+            <div class="row" style="margin-top:10px;">
+              <div class="col-sm-12">
+                <select name="field1" id="field1">
+                  <option value ="collectionNames">Project</option>
+                  <option value ="author" selected>Author</option>
+                  <option value ="title">Title</option>
+                  <option value ="publisher">Publisher</option>
+                  <option value ="date">Publication date</option>
+                  <option value ="language">Language</option>
+                  <option value ="description">Description</option>
+                  <option value ="subject">Subject (free)</option>
+                  <option value ="subjectControlled">Subject (controlled)</option>
+                  <option value ="swd">SWD</option>
+                  <option value ="ddc">DDC</option>
+                  <option value ="entities">Entities</option>
+                  <option value ="persons">Persons</option>
+                  <option value ="places">Places</option>
+                  <option value ="tokenOrig">Content (original)</option>
+                  <option value ="tokenMorph">Content (morph. stems)</option>
+                  <option value ="docId">Id</option>
+                  <option value ="type">Mime type</option>
+                  <option value ="schemaName">Schema name</option>
+                </select>
+                <select name="relOp1" id="relOp1">
+                  <option value ="mustContain" selected>must contain</option>
+                  <option value ="mayContain">may contain</option>
+                  <option value ="mustNotContain">does not contain</option>
+                </select>
+                <input type="text" size="40" id="field1Query" name="field1Query" onkeypress="return checkCR(event, this)"/>
+                <button type="submit" onclick="AttributeQuery()">Query</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col-sm-12">
+                <select name="field2" id="field2">
+                  <option value ="collectionNames">Project</option>
+                  <option value ="author">Author</option>
+                  <option value ="title" selected>Title</option>
+                  <option value ="publisher">Publisher</option>
+                  <option value ="date">Publication date</option>
+                  <option value ="language">Language</option>
+                  <option value ="description">Description</option>
+                  <option value ="subject">Subject (free)</option>
+                  <option value ="subjectControlled">Subject (controlled)</option>
+                  <option value ="swd">SWD</option>
+                  <option value ="ddc">DDC</option>
+                  <option value ="entities">Entities</option>
+                  <option value ="persons">Persons</option>
+                  <option value ="places">Places</option>
+                  <option value ="tokenOrig">Content (original)</option>
+                  <option value ="tokenMorph">Content (morph. stems)</option>
+                  <option value ="docId">Id</option>
+                  <option value ="type">Mime type</option>
+                  <option value ="schemaName">Schema name</option>
+                </select>
+                <select name="relOp2" id="relOp2">
+                  <option value ="mustContain" selected>must contain</option>
+                  <option value ="mayContain">may contain</option>
+                  <option value ="mustNotContain">does not contain</option>
+                </select>
+                <input type="text" size="40" id="field2Query" name="field2Query" value="" onkeypress="return checkCR(event, this)"/>
+              </div>
+            </div>
+            <input id="pageAttributeQuery" type="hidden" name="page"/>
+            <input id="sortByAttributeQuery" type="hidden" name="sortBy"/>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="result" class="result">
+    </div>
+    <script type="text/javascript" src="../js/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/jstree.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $("#queryTab a[href='#tabContentQuery']").click(function (e) {
+          $("#result").empty();
+        });
+        $("#queryTab a[href='#tabFieldQuery']").click(function (e) {
+          $("#result").empty();
+        });
+        var params = window.location.search.substring(1);
+        if (params.length > 0) {
+          if (params.contains("field1") || params.contains("field2")) {
+            attributeQuery(params);
+          } else if (params.contains("query")) {
+            fulltextQuery(params);
+          } else {
+            // nothing
+          }
+        }
+      });
+    </script>
+    <script>
+      $(function () {
+        $("#facets").jstree().bind("select_node.jstree", function(e, data) {
+          window.location.href = data.node.a_attr.href;  // so that hrefs are not disabled
+        });
+        $("#bottomInfo").jstree().bind("select_node.jstree", function(e, data) {
+          window.location.href = data.node.a_attr.href;  // so that hrefs are not disabled
+        });
+      });
+     </script>
+     <script type="text/javascript">
+      <!--
+        function fulltextQuery(params) {
+          var vars = params.split("&");
+          var queryLanguage = "gl";
+          var query = "";
+          var sortBy = "";
+          var fieldExpansion = "all";
+          var morph = "false";
+          var translate = "false";
+          var language = "none";
+          var page = "1";
+          var pageSize = "10";
+          for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            var varName = pair[0];
+            var varValue = pair[1];
+            if (varName == "queryLanguage") {
+              queryLanguage = varValue;
+              $("#queryLanguage").val(queryLanguage);
+            } else if (varName == "query") {
+              query = varValue;
+              query = decodeURIComponent(query);
+              if (query == "") {
+                $("#result").empty();
+                return;
+              }
+              $("#query").val(query);
+            } else if (varName == "morph") {
+              morph = varValue;
+              if (morph == "on") {
+                fieldExpansion = "allMorph";
+                $("#morph")[0].checked = true;
+              } else {
+                $("#morph")[0].checked = false;
+              }
+            } else if (varName == "translate") {
+              translate = varValue;
+              if (translate == "on")
+                $("#translate")[0].checked = true;
+              else 
+                $("#translate")[0].checked = false;
+            } else if (varName == "language") {
+              language = varValue;
+              $("#language").val(language);
+            } else if (varName == "page") {
+              if (varValue != "") {
+                page = varValue;
+                $("#pageFulltextQuery").val(page);
+              }
+            } else if (varName == "pageSize") {
+              pageSize = varValue;
+            } else if (varName == "sortBy") {
+              sortBy = varValue;
+            }
+          }
+          $("#queryTab a[href='#tabContentQuery']").tab("show");
+          queryDocuments(queryLanguage, query, sortBy, fieldExpansion, translate, language, page, pageSize);
+        }
+        function attributeQuery(params) {
+          var vars = params.split("&");
+          var queryLanguage = "lucene";
+          var sortBy = "author";
+          var fieldExpansion = "none";
+          var morph = "false";
+          var translate = "false";
+          var language = "none";
+          var field1 = "";
+          var field1Query = "";
+          var relOp1 = "";
+          var field2 = "";
+          var field2Query = "";
+          var relOp2 = "";
+          var page = "1";
+          var pageSize = "10";
+          for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            var varName = pair[0];
+            var varValue = pair[1];
+            if (varName == "field1") {
+              field1 = varValue;
+              $("#field1").val(field1);
+            } else if (varName == "field1Query") {
+              field1Query = varValue;
+              $("#field1Query").val(field1Query);
+            } else if (varName == "relOp1") {
+              relOp1 = varValue;
+              $("#relOp1").val(relOp1);
+            } else if (varName == "field2") {
+              field2 = varValue;
+              $("#field2").val(field2);
+            } else if (varName == "field2Query") {
+              field2Query = varValue;
+              $("#field2Query").val(field2Query);
+            } else if (varName == "relOp2") {
+              relOp2 = varValue;
+              $("#relOp2").val(relOp2);
+            } else if (varName == "page") {
+              if (varValue != "") {
+                page = varValue;
+                $("#pageAttributeQuery").val(page);
+              }
+            } else if (varName == "pageSize") {
+              pageSize = varValue;
+            } else if (varName == "sortBy") {
+              sortBy = varValue;
+            }
+          }
+          if (field1Query == "" && field2Query == "") {
+            $("#result").empty();
+            $("#queryTab a[href='#tabFieldQuery']").tab("show");
+            return;
+          }
+          var query = "";
+          var relOp1Lucene = getLuceneBoolOp(relOp1);
+          var relOp2Lucene = getLuceneBoolOp(relOp2);
+          if (field1Query != "")
+            query = relOp1Lucene + field1 + ":(" + field1Query + ")";
+          if (field2Query != "")
+            query = query + " " + relOp2Lucene + field2 + ":(" + field2Query + ")";
+          if (field1Query == "" && field2Query == "")
+            query = "";
+          $("#queryTab a[href='#tabFieldQuery']").tab("show");
+          queryDocuments(queryLanguage, query, sortBy, fieldExpansion, translate, language, page, pageSize);
+        }
+        function getLuceneBoolOp(relOp) {
+          if (relOp == "mustContain")
+            return "+";
+          else if (relOp == "mustNotContain")
+            return "-";
+          else 
+            return "";
+        }
+        function changeMorph() {
+          if ($("#morph").checked)
+            $("#morph").value = "true";
+          else 
+            $("#morph").value = "false";
+          return;
+        }
+        function checkCR(event, element) {
+          var keyCode = event.keyCode;
+          if (keyCode == 13) {
+            if (element.id == "field1Query" || element.id == "field2Query") {
+              var attributeQueryForm = $("#attributeQueryForm");
+              attributeQueryForm.submit();
+            } else if (element.id == "query") {
+              var fulltextQueryForm = $("#fulltextQueryForm");
+              fulltextQueryForm.submit();
+            }
+            return true;
+          } 
+          return true;
+        }
+        function queryDocuments(queryLanguage, query, sortBy, fieldExpansion, translate, language, page, pageSize) {
+          var resultTab = $("#result");
+          var urlQueryDocs = "http://" + window.location.host + "/wspCmsWebApp/query/QueryDocuments";
+          $.ajax({
+            type: 'GET',
+            url: urlQueryDocs,
+            data: ({'queryLanguage': queryLanguage, 'query': query, 'sortBy': sortBy, 'fieldExpansion': fieldExpansion, 'translate': translate, 'language': language, 'page': page, 'pageSize': pageSize, 'outputFormat': 'htmlSmart'}),
+            dataType: 'html',
+            async: false,
+            global: false,
+            beforeSend: function() {
+              // todo
+            },
+            complete: function() {
+              // todo
+            },
+            success: function(response) {
+              var resultDiv = $(response).find('#my-tab-content');
+              var bottomInfoDiv = $(response).find('#bottomInfo');
+              resultTab.append("<ul class='nav nav-tabs'><li role='presentation' class='active'><a href='#hits' data-toggle='tab'>Hits</a></li><li role='presentation'><a href='#facets' data-toggle='tab'>Facets</a></li></ul>");
+              resultTab.append(resultDiv);
+              resultTab.append(bottomInfoDiv);
+            }
+          });
+          return resultTab;
+        }
+        function pageLeft() {
+          var pageParamValue = getParam("page");
+          var pageLeft = 1;
+          if (pageParamValue != "" && pageParamValue != "1")
+            pageLeft = parseInt(pageParamValue) - 1;
+          if ($("#liContentQuery.active").length > 0) {
+            $("#pageFulltextQuery").val("" + pageLeft);
+            var fulltextQueryForm = $("#fulltextQueryForm");
+            fulltextQueryForm.submit();
+          } else if ($("#liFieldQuery.active").length > 0) {
+            $("#pageAttributeQuery").val("" + pageLeft);
+            var attributeQueryForm = $("#attributeQueryForm");
+            attributeQueryForm.submit();
+          }
+        }
+        function pageRight() {
+          var pageParamValue = getParam("page");
+          var pageRight = 1;
+          if (pageParamValue != "")
+            pageRight = parseInt(pageParamValue) + 1;
+          else
+            pageRight = 2;
+          var countPagesStr = $("#countPages").text();
+          if (countPagesStr != "") {
+            countPages = parseInt(countPagesStr);
+            if (pageRight > countPages)
+              pageRight = countPages;
+          }
+          if ($("#liContentQuery.active").length > 0) {
+            $("#pageFulltextQuery").val("" + pageRight);
+            var fulltextQueryForm = $("#fulltextQueryForm");
+            fulltextQueryForm.submit();
+          } else if ($("#liFieldQuery.active").length > 0) {
+            $("#pageAttributeQuery").val("" + pageRight);
+            var attributeQueryForm = $("#attributeQueryForm");
+            attributeQueryForm.submit();
+          }
+        }
+        function page(event) {
+          var keyCode = event.keyCode;
+          if (keyCode == 13) {
+            var pageStr = $("#page").val();
+            var page = 1;
+            if (pageStr != "")
+              page = parseInt(pageStr);
+            var countPagesStr = $("#countPages").text();
+            if (countPagesStr != "") {
+              countPages = parseInt(countPagesStr);
+              if (page > countPages)
+                page = countPages;
+              if (page < 1)
+                page = 1;
+            }
+            if ($("#liContentQuery.active").length > 0) {
+              $("#pageFulltextQuery").val("" + page);
+              var fulltextQueryForm = $("#fulltextQueryForm");
+              fulltextQueryForm.submit();
+            } else if ($("#liFieldQuery.active").length > 0) {
+              $("#pageAttributeQuery").val("" + page);
+              var attributeQueryForm = $("#attributeQueryForm");
+              attributeQueryForm.submit();
+            }
+          }
+          return true;
+        }
+        function sortBy(sortByParam) {
+          if ($("#liContentQuery.active").length > 0) {
+            $("#sortByFulltextQuery").val(sortByParam);
+            var fulltextQueryForm = $("#fulltextQueryForm");
+            fulltextQueryForm.submit();
+          } else if ($("#liFieldQuery.active").length > 0) {
+            $("#sortByAttributeQuery").val(sortByParam);
+            var attributeQueryForm = $("#attributeQueryForm");
+            attributeQueryForm.submit();
+          }
+        }
+        function getParam(paramName) {
+          var params = window.location.search.substring(1);
+          var vars = params.split("&");
+          for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            var varName = pair[0];
+            var varValue = pair[1];
+            if (varName == paramName) {
+              return varValue;
+            }
+          }
+          return "";
+        }
+        // tmp stuff
+        // $("#fulltextQueryForm").submit(function(e) {
+        //   e.preventDefault(); // don't submit multiple times
+        //   this.submit(); // use the native submit method of the form element
+        // $(document).ajaxComplete(function(e) {
+        // $(document).submit(function() {
+        // $("#queryTab a[href='#tabContentQuery']").on("show.bs.tab", function (e) {
+        // $("#queryTab a[href='#tabContentQuery']").tab("show");
+        -->
+    </script>
+  </body>
+</html>
