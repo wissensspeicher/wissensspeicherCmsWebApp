@@ -1,0 +1,15 @@
+/* bootstrap table    */
+.table-borderless td, .table-borderless th, .table-borderless tr {
+  border-top: none;
+  border-bottom: none;
+  border: 0 !important;
+}
+
+.header {
+  font-size: 30px;
+  font-weight: bold;
+}
+.vertical-align {
+  display: flex;
+  align-items: center;
+}
