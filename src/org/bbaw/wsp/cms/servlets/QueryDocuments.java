@@ -577,6 +577,11 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<ul><li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>[Technical info]");
         htmlStrBuilder.append("<ul>");
         htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Elapsed time: " + elapsedTime + " ms</li>");
+        String luceneQueryStr = query;
+        Query luceneQuery = hits.getQuery();
+        if (query != null)
+          luceneQueryStr = luceneQuery.toString();
+        htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Lucene query: " + luceneQueryStr + "</li>");
         if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-info-sign\"}'>Number of different terms in all documents: " + sizeTotalTerms + "</li>");
         }
