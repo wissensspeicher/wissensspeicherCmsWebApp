@@ -254,6 +254,7 @@
               $("#field1").val(field1);
             } else if (varName == "field1Query") {
               field1Query = varValue;
+              field1Query = decodeURIComponent(field1Query);
               $("#field1Query").val(field1Query);
             } else if (varName == "relOp1") {
               relOp1 = varValue;
@@ -263,6 +264,7 @@
               $("#field2").val(field2);
             } else if (varName == "field2Query") {
               field2Query = varValue;
+              field2Query = decodeURIComponent(field2Query);
               $("#field2Query").val(field2Query);
             } else if (varName == "relOp2") {
               relOp2 = varValue;
