@@ -1196,7 +1196,7 @@ public class QueryDocuments extends HttpServlet {
                 if (projectRdfId != null) {
                   String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
                   jsonHit.put("projectDetailsUri", projectDetailsUrl);
-                  jsonHit.put("rdfUri", URIUtil.encodeQuery(projectRdfId));
+                  jsonHit.put("rdfUri", projectRdfId);
                 }
               }
             }
