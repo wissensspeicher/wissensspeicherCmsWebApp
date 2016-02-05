@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.IndexableField;
 import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.document.Document;
@@ -84,9 +84,9 @@ public class MoreLikeThis extends HttpServlet {
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
           out.print("<doc>");
-          String similarDocId = doc.getFieldable("docId").stringValue();
+          String similarDocId = doc.getField("docId").stringValue();
           out.print("<docId>" + similarDocId + "</docId>");
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          IndexableField docCollectionNamesField = doc.getField("collectionNames");
           if (docCollectionNamesField != null) {
             String docCollectionNames = docCollectionNamesField.stringValue();
             out.print("<collectionName>" + docCollectionNames + "</collectionName>");
@@ -122,7 +122,7 @@ public class MoreLikeThis extends HttpServlet {
         htmlStrBuilder.append("<ul>");
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
-          String similarDocId = doc.getFieldable("docId").stringValue();
+          String similarDocId = doc.getField("docId").stringValue();
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<li>" + num + ". " + similarDocId + "</li>");
         }
@@ -141,22 +141,22 @@ public class MoreLikeThis extends HttpServlet {
         for (int i=0; i<docsSize; i++) {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          IndexableField docCollectionNamesField = doc.getField("collectionNames");
           String docCollectionName = null;
           if (docCollectionNamesField != null) {
             docCollectionName = docCollectionNamesField.stringValue();
             jsonWrapper.put("collectionName", docCollectionNamesField.stringValue());
           }
-          Fieldable docIdField = doc.getFieldable("docId");
+          IndexableField docIdField = doc.getField("docId");
           if(docIdField != null){
             jsonWrapper.put("docId", docIdField.stringValue());
           }
-          Fieldable docUriField = doc.getFieldable("uri");
+          IndexableField docUriField = doc.getField("uri");
           if (docUriField != null) {
             String docUri = docUriField.stringValue();
             jsonWrapper.put("uri", docUri);
           }
-          Fieldable webUriField = doc.getFieldable("webUri");
+          IndexableField webUriField = doc.getField("webUri");
           if (webUriField != null) {
             String webUri = webUriField.stringValue();
             jsonWrapper.put("webUri", webUri);
@@ -167,19 +167,19 @@ public class MoreLikeThis extends HttpServlet {
             if (webBaseUrl != null)
               jsonWrapper.put("webBaseUri", webBaseUrl);
           }
-          Fieldable docAuthorField = doc.getFieldable("author");
+          IndexableField docAuthorField = doc.getField("author");
           if (docAuthorField != null) {
             jsonWrapper.put("author", docAuthorField.stringValue());
           }
-          Fieldable docTitleField = doc.getFieldable("title");
+          IndexableField docTitleField = doc.getField("title");
           if (docTitleField != null) {
             jsonWrapper.put("title", docTitleField.stringValue());
           }
-          Fieldable docDateField = doc.getFieldable("date");
+          IndexableField docDateField = doc.getField("date");
           if (docDateField != null) {
             jsonWrapper.put("date", docDateField.stringValue());
           }
-          Fieldable docPageCountField = doc.getFieldable("pageCount");
+          IndexableField docPageCountField = doc.getField("pageCount");
           if (docPageCountField != null) {
             jsonWrapper.put("pageCount", docPageCountField.stringValue());
           }
@@ -199,7 +199,7 @@ public class MoreLikeThis extends HttpServlet {
               Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
               ArrayList<Document> namesList = persHits.getHits();
               for (Document nameDoc : namesList) {
-                Fieldable docPersNameField = nameDoc.getFieldable("xmlContent");
+                IndexableField docPersNameField = nameDoc.getField("xmlContent");
                 if (docPersNameField != null) {
                   String docPersName = docPersNameField.stringValue();
                   docPersName = docPersName.replaceAll("\\n", "");
@@ -225,7 +225,7 @@ public class MoreLikeThis extends HttpServlet {
               Hits placeHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:placeName", 0, 100);
               ArrayList<Document> placeList = placeHits.getHits();
               for (Document placeDoc : placeList) {
-                Fieldable docPlaceField = placeDoc.getFieldable("xmlContent");
+                IndexableField docPlaceField = placeDoc.getField("xmlContent");
                 if (docPlaceField != null) {
                   String docPlace = docPlaceField.stringValue();
                   docPlace = docPlace.replaceAll("\\n", "");

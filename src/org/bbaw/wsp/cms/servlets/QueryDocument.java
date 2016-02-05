@@ -12,13 +12,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.lucene.document.Fieldable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.sun.org.apache.xerces.internal.parsers.SAXParser;
 
+import org.apache.lucene.index.IndexableField;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.MetadataRecord;
@@ -134,49 +134,49 @@ public class QueryDocument extends HttpServlet {
       xmlStrBuilder.append("<hit>");
       xmlStrBuilder.append("<num>" + num + "</num>");
       String pageNumber = null;
-      Fieldable fPageNumber = doc.getFieldable("pageNumber");
+      IndexableField fPageNumber = doc.getField("pageNumber");
       if (fPageNumber != null) {
         pageNumber = fPageNumber.stringValue();
         xmlStrBuilder.append("<pageNumber>" + pageNumber + "</pageNumber>");
       }
       String elementPagePosition = null;
-      Fieldable fElementPagePosition = doc.getFieldable("elementPagePosition");
+      IndexableField fElementPagePosition = doc.getField("elementPagePosition");
       if (fElementPagePosition != null) {
         elementPagePosition = fElementPagePosition.stringValue();
         xmlStrBuilder.append("<pagePosition>" + elementPagePosition + "</pagePosition>");
       }
       String lineNumber = null;
-      Fieldable fLineNumber = doc.getFieldable("lineNumber");
+      IndexableField fLineNumber = doc.getField("lineNumber");
       if (fLineNumber != null) {
         lineNumber = fLineNumber.stringValue();
         xmlStrBuilder.append("<lineNumber>" + lineNumber + "</lineNumber>");
       }
       String elementPosition = null;
-      Fieldable fElementPosition = doc.getFieldable("elementAbsolutePosition");
+      IndexableField fElementPosition = doc.getField("elementAbsolutePosition");
       if (fElementPosition != null) {
         elementPosition = fElementPosition.stringValue();
         xmlStrBuilder.append("<absolutePosition>" + elementPosition + "</absolutePosition>");
       }
       String xpath = null;
-      Fieldable fXPath = doc.getFieldable("xpath");
+      IndexableField fXPath = doc.getField("xpath");
       if (fXPath != null) {
         xpath = fXPath.stringValue();
         xmlStrBuilder.append("<xpath>" + xpath + "</xpath>");
       }
       String xmlId = null;
-      Fieldable fXmlId = doc.getFieldable("xmlId");
+      IndexableField fXmlId = doc.getField("xmlId");
       if (fXmlId != null) {
         xmlId = fXmlId.stringValue();
         xmlStrBuilder.append("<xmlId>" + xmlId + "</xmlId>");
       }
       String language = null;
-      Fieldable fLanguage = doc.getFieldable("language");
+      IndexableField fLanguage = doc.getField("language");
       if (fLanguage != null) {
         language = fLanguage.stringValue();
         xmlStrBuilder.append("<language>" + language + "</language>");
       }
       String xmlContentTokenized = null;
-      Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
+      IndexableField fXmlContentTokenized = doc.getField("xmlContentTokenized");
       if (fXmlContentTokenized != null) {
         String highlightQueryType = "orig";
         if (withLemmas(outputOptions)) {
@@ -240,20 +240,20 @@ public class QueryDocument extends HttpServlet {
       xmlStrBuilder.append("<td align=\"left\">");
       String posStr = "";
       String pageNumber = "";
-      Fieldable fPageNumber = doc.getFieldable("pageNumber");
+      IndexableField fPageNumber = doc.getField("pageNumber");
       if (fPageNumber != null) {
         pageNumber = fPageNumber.stringValue();
         posStr = posStr + "Page " + pageNumber + ", ";
       }
       String elementName = null;
       String presElementName = "";
-      Fieldable fElementName = doc.getFieldable("elementName");
+      IndexableField fElementName = doc.getField("elementName");
       if (fElementName != null) {
         elementName = fElementName.stringValue();
         presElementName = getPresentationName(elementName);
       }
       String elementPagePosition = "";
-      Fieldable fElementPagePosition = doc.getFieldable("elementPagePosition");
+      IndexableField fElementPagePosition = doc.getField("elementPagePosition");
       if (fElementPagePosition != null) {
         elementPagePosition = fElementPagePosition.stringValue();
         posStr = posStr + presElementName + " " + elementPagePosition + ":";
@@ -277,7 +277,7 @@ public class QueryDocument extends HttpServlet {
       String getPageLink = request.getContextPath() + "/query/GetPage?docId=" + docId + "&page=" + pageNumber + normalizationStr + "&highlightElem=" + elementName + "&highlightElemPos=" + elementPagePosition + highlightQueryTypeStr + "&highlightQuery=" + query;
       xmlStrBuilder.append("<a href=\"" + getPageLink + "\">" + posStr + "</a>");
       String xmlContentTokenized = null;
-      Fieldable fXmlContentTokenized = doc.getFieldable("xmlContentTokenized");
+      IndexableField fXmlContentTokenized = doc.getField("xmlContentTokenized");
       if (fXmlContentTokenized != null) {
         xmlContentTokenized = fXmlContentTokenized.stringValue();
         String highlightedXmlStr = highlight(xmlContentTokenized, highlightQueryType, query, language);  

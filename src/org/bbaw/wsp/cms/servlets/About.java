@@ -225,9 +225,9 @@ public class About extends HttpServlet {
         for (int i=0; i<docs.size(); i++) {
           Document doc = docs.get(i);
           pdrXmlStr = pdrXmlStr + "<person>";
-          String title = doc.getFieldable("title").stringValue();
+          String title = doc.getField("title").stringValue();
           pdrXmlStr = pdrXmlStr + "<name>" + title + "</name>";
-          String webUri = doc.getFieldable("webUri").stringValue();
+          String webUri = doc.getField("webUri").stringValue();
           webUri = StringUtils.deresolveXmlEntities(webUri);
           pdrXmlStr = pdrXmlStr + "<webUri>" + webUri + "</webUri>";
           pdrXmlStr = pdrXmlStr + "</person>";

@@ -22,7 +22,7 @@ import net.sf.saxon.s9api.XdmSequenceIterator;
 import net.sf.saxon.s9api.XdmValue;
 
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 
 import org.bbaw.wsp.cms.collections.Collection;
@@ -153,9 +153,9 @@ public class QueryDocuments extends HttpServlet {
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
           out.print("<doc>");
-          String docId = doc.getFieldable("docId").stringValue();
+          String docId = doc.getField("docId").stringValue();
           out.print("<docId>" + docId + "</docId>");
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          IndexableField docCollectionNamesField = doc.getField("collectionNames");
           if (docCollectionNamesField != null) {
             String docCollectionNames = docCollectionNamesField.stringValue();
             out.print("<collectionName>" + docCollectionNames + "</collectionName>");
@@ -212,22 +212,22 @@ public class QueryDocuments extends HttpServlet {
           float luceneScore = -1;
           if (luceneScores != null)
             luceneScore = luceneScores.get(i);
-          Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+          IndexableField docCollectionNamesField = doc.getField("collectionNames");
           String docCollectionName = null;
           if (docCollectionNamesField != null) {
             docCollectionName = docCollectionNamesField.stringValue();
           }
-          Fieldable languageField = doc.getFieldable("language");
+          IndexableField languageField = doc.getField("language");
           String lang = "";
           if (languageField != null)
             lang = languageField.stringValue();
           htmlStrBuilder.append("<tr>");
           int num = (page - 1) * pageSize + i + 1;
           htmlStrBuilder.append("<td>" + num + ". " + "</td>");
-          Fieldable docAuthorField = doc.getFieldable("author");
+          IndexableField docAuthorField = doc.getField("author");
           String authorHtml = "";
           if (docAuthorField != null) {
-            Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+            IndexableField docAuthorDetailsField = doc.getField("authorDetails");
             if (docAuthorDetailsField != null) {
               String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
               authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);            
@@ -246,30 +246,30 @@ public class QueryDocuments extends HttpServlet {
             }
           }          
           htmlStrBuilder.append("<td>" + authorHtml + "</td>");
-          Fieldable titleField = doc.getFieldable("title");
+          IndexableField titleField = doc.getField("title");
           String title = "";
           if (titleField != null)
             title = titleField.stringValue();
           htmlStrBuilder.append("<td>" + title + "</td>");
-          Fieldable publisherField = doc.getFieldable("publisher");
+          IndexableField publisherField = doc.getField("publisher");
           String publisher = "";
           if (publisherField != null)
             publisher = publisherField.stringValue();
           htmlStrBuilder.append("<td>" + publisher + "</td>");
-          Fieldable yearField = doc.getFieldable("date");
+          IndexableField yearField = doc.getField("date");
           String year = "";
           if (yearField != null)
             year = yearField.stringValue();
           htmlStrBuilder.append("<td>" + year + "</td>");
-          String docId = doc.getFieldable("docId").stringValue();
+          String docId = doc.getField("docId").stringValue();
           htmlStrBuilder.append("<td>" + docId + "</td>");
-          Fieldable lastModifiedField = doc.getFieldable("lastModified");
+          IndexableField lastModifiedField = doc.getField("lastModified");
           String lastModified = "";
           if (lastModifiedField != null)
             lastModified = lastModifiedField.stringValue();
           htmlStrBuilder.append("<td>" + lastModified + "</td>");
           htmlStrBuilder.append("<td>" + lang + "</td>");
-          Fieldable typeField = doc.getFieldable("type");
+          IndexableField typeField = doc.getField("type");
           String type = "";
           if (typeField != null)
             type = typeField.stringValue();
@@ -312,7 +312,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("<td></td>");
               htmlStrBuilder.append("<td colspan=\"8\">");
               htmlStrBuilder.append("<b>Project links</b>: ");
-              Fieldable webUriField = doc.getFieldable("webUri");
+              IndexableField webUriField = doc.getField("webUri");
               String webUri = null;
               if (webUriField != null)
                 webUri = webUriField.stringValue();
@@ -336,7 +336,7 @@ public class QueryDocuments extends HttpServlet {
             }
           }
           // description row
-          Fieldable descriptionField = doc.getFieldable("description");
+          IndexableField descriptionField = doc.getField("description");
           if (descriptionField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
@@ -349,13 +349,13 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable personsField = doc.getFieldable("persons");
+          IndexableField personsField = doc.getField("persons");
           if (personsField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
             htmlStrBuilder.append("<td colspan=\"8\">");  
             htmlStrBuilder.append("<b>Persons</b>: ");
-            Fieldable personsDetailsField = doc.getFieldable("personsDetails");
+            IndexableField personsDetailsField = doc.getField("personsDetails");
             if (personsDetailsField != null) {
               String personsDetailsXmlStr = personsDetailsField.stringValue();
               String personsDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
@@ -381,7 +381,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable placesField = doc.getFieldable("places");
+          IndexableField placesField = doc.getField("places");
           if (placesField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
@@ -405,7 +405,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+          IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
           if (subjectControlledDetailsField != null) {
             String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
             String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
@@ -444,7 +444,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</tr>");
             }
           }
-          Fieldable subjectField = doc.getFieldable("subject");
+          IndexableField subjectField = doc.getField("subject");
           if (subjectField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
@@ -472,7 +472,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable swdField = doc.getFieldable("swd");
+          IndexableField swdField = doc.getField("swd");
           if (swdField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
@@ -498,7 +498,7 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</td>");
             htmlStrBuilder.append("</tr>");
           }
-          Fieldable ddcField = doc.getFieldable("ddc");
+          IndexableField ddcField = doc.getField("ddc");
           if (ddcField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
@@ -517,13 +517,13 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</tr>");
           }
           // Knowledge rows
-          Fieldable entitiesField = doc.getFieldable("entities");
+          IndexableField entitiesField = doc.getField("entities");
           if (entitiesField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
             htmlStrBuilder.append("<td colspan=\"8\">");  
             htmlStrBuilder.append("<b>DBpedia spotlight entities:</b>");
-            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+            IndexableField entitiesDetailsField = doc.getField("entitiesDetails");
             if (entitiesDetailsField != null) {
               String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
               String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language, true);
@@ -544,7 +544,7 @@ public class QueryDocuments extends HttpServlet {
             else
               htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "&page=" + firstHitPageNumber + "&highlightQuery=" + query + "\">WSP-View</a>, ");
           }
-          Fieldable content = doc.getFieldable("content");
+          IndexableField content = doc.getField("content");
           if (content != null) {
             String contentStr = content.stringValue();
             if (contentStr != null && ! contentStr.isEmpty()) {
@@ -706,22 +706,22 @@ public class QueryDocuments extends HttpServlet {
             float luceneScore = -1;
             if (luceneScores != null)
               luceneScore = luceneScores.get(i);
-            Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+            IndexableField docCollectionNamesField = doc.getField("collectionNames");
             String docCollectionName = null;
             if (docCollectionNamesField != null) {
               docCollectionName = docCollectionNamesField.stringValue();
             }
-            Fieldable languageField = doc.getFieldable("language");
+            IndexableField languageField = doc.getField("language");
             String lang = "";
             if (languageField != null)
               lang = languageField.stringValue();
             htmlStrBuilder.append("<tr valign=\"top\">");
             int num = (page - 1) * pageSize + i + 1;
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + num + ". " + "</td>");
-            Fieldable docAuthorField = doc.getFieldable("author");
+            IndexableField docAuthorField = doc.getField("author");
             String authorHtml = "";
             if (docAuthorField != null) {
-              Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+              IndexableField docAuthorDetailsField = doc.getField("authorDetails");
               if (docAuthorDetailsField != null) {
                 String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
                 authorHtml = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);            
@@ -740,30 +740,30 @@ public class QueryDocuments extends HttpServlet {
               }
             }          
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + authorHtml + "</td>");
-            Fieldable titleField = doc.getFieldable("title");
+            IndexableField titleField = doc.getField("title");
             String title = "";
             if (titleField != null)
               title = titleField.stringValue();
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + title + "</td>");
-            Fieldable publisherField = doc.getFieldable("publisher");
+            IndexableField publisherField = doc.getField("publisher");
             String publisher = "";
             if (publisherField != null)
               publisher = publisherField.stringValue();
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + publisher + "</td>");
-            Fieldable yearField = doc.getFieldable("date");
+            IndexableField yearField = doc.getField("date");
             String year = "";
             if (yearField != null)
               year = yearField.stringValue();
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + year + "</td>");
-            String docId = doc.getFieldable("docId").stringValue();
+            String docId = doc.getField("docId").stringValue();
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + docId + "</td>");
-            Fieldable lastModifiedField = doc.getFieldable("lastModified");
+            IndexableField lastModifiedField = doc.getField("lastModified");
             String lastModified = "";
             if (lastModifiedField != null)
               lastModified = lastModifiedField.stringValue();
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\">" + lastModified + "</td>");
             htmlStrBuilder.append("<td align=\"left\" valign=\"top\" style=\"padding-left:5px\">" + lang + "</td>");
-            Fieldable typeField = doc.getFieldable("type");
+            IndexableField typeField = doc.getField("type");
             String type = "";
             if (typeField != null)
               type = typeField.stringValue();
@@ -803,7 +803,7 @@ public class QueryDocuments extends HttpServlet {
                 htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
                 htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
                 htmlStrBuilder.append("<b>Project links</b>: ");
-                Fieldable webUriField = doc.getFieldable("webUri");
+                IndexableField webUriField = doc.getField("webUri");
                 String webUri = null;
                 if (webUriField != null)
                   webUri = webUriField.stringValue();
@@ -827,7 +827,7 @@ public class QueryDocuments extends HttpServlet {
               }
             }
             // description row
-            Fieldable descriptionField = doc.getFieldable("description");
+            IndexableField descriptionField = doc.getField("description");
             if (descriptionField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -840,13 +840,13 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-            Fieldable personsField = doc.getFieldable("persons");
+            IndexableField personsField = doc.getField("persons");
             if (personsField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
               htmlStrBuilder.append("<b>Persons</b>: ");
-              Fieldable personsDetailsField = doc.getFieldable("personsDetails");
+              IndexableField personsDetailsField = doc.getField("personsDetails");
               if (personsDetailsField != null) {
                 String personsDetailsXmlStr = personsDetailsField.stringValue();
                 String personsDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
@@ -872,7 +872,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-            Fieldable placesField = doc.getFieldable("places");
+            IndexableField placesField = doc.getField("places");
             if (placesField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -896,7 +896,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-            Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+            IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
             if (subjectControlledDetailsField != null) {
               String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
               String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
@@ -935,7 +935,7 @@ public class QueryDocuments extends HttpServlet {
                 htmlStrBuilder.append("</tr>");
               }
             }
-            Fieldable subjectField = doc.getFieldable("subject");
+            IndexableField subjectField = doc.getField("subject");
             if (subjectField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -963,7 +963,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-            Fieldable swdField = doc.getFieldable("swd");
+            IndexableField swdField = doc.getField("swd");
             if (swdField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -989,7 +989,7 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
-            Fieldable ddcField = doc.getFieldable("ddc");
+            IndexableField ddcField = doc.getField("ddc");
             if (ddcField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
@@ -1008,13 +1008,13 @@ public class QueryDocuments extends HttpServlet {
               htmlStrBuilder.append("</tr>");
             }
             // Knowledge rows
-            Fieldable entitiesField = doc.getFieldable("entities");
+            IndexableField entitiesField = doc.getField("entities");
             if (entitiesField != null) {
               htmlStrBuilder.append("<tr valign=\"top\">");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
               htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");  
               htmlStrBuilder.append("<b>DBpedia spotlight entities:</b>");
-              Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+              IndexableField entitiesDetailsField = doc.getField("entitiesDetails");
               if (entitiesDetailsField != null) {
                 String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
                 String entitiesDetailsHtmlStr = docEntitiesDetailsXmlStrToHtml(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, language, false);
@@ -1035,7 +1035,7 @@ public class QueryDocuments extends HttpServlet {
               else
                 htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/book.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"/wspCmsWebApp/query/GetPage?docId=" + docIdPercentEscaped + "&page=" + firstHitPageNumber + "&highlightQuery=" + query + "\">WSP-View</a>, ");
             }
-            Fieldable content = doc.getFieldable("content");
+            IndexableField content = doc.getField("content");
             if (content != null) {
               String contentStr = content.stringValue();
               if (contentStr != null && ! contentStr.isEmpty()) {
@@ -1125,7 +1125,7 @@ public class QueryDocuments extends HttpServlet {
               float luceneScore = luceneScores.get(i);
               jsonHit.put("luceneScore", luceneScore);
             }
-            Fieldable docCollectionNamesField = doc.getFieldable("collectionNames");
+            IndexableField docCollectionNamesField = doc.getField("collectionNames");
             String docCollectionName = null;
             if (docCollectionNamesField != null) {
               docCollectionName = docCollectionNamesField.stringValue();
@@ -1148,18 +1148,18 @@ public class QueryDocuments extends HttpServlet {
                 jsonHit.put("project", jsonProject);
               }
             }
-            Fieldable languageField = doc.getFieldable("language");
+            IndexableField languageField = doc.getField("language");
             String lang = "";
             if (languageField != null) {
               lang = languageField.stringValue();
             }
-            Fieldable docIdField = doc.getFieldable("docId");
+            IndexableField docIdField = doc.getField("docId");
             String docId = null;
             if(docIdField != null) {
               docId = docIdField.stringValue();
               jsonHit.put("docId", docId);
             }
-            Fieldable docUriField = doc.getFieldable("uri");
+            IndexableField docUriField = doc.getField("uri");
             if (docUriField != null) {
               String docUri = docUriField.stringValue();
               String encoded = URIUtil.encodeQuery(docUri);
@@ -1173,7 +1173,7 @@ public class QueryDocuments extends HttpServlet {
             String firstHitPageNumber = null;
             if (docIsXml)
               firstHitPageNumber = doc.getFirstHitPageNumber();
-            Fieldable webUriField = doc.getFieldable("webUri");
+            IndexableField webUriField = doc.getField("webUri");
             String webUri = null;
             if (webUriField != null)
               webUri = webUriField.stringValue();
@@ -1200,10 +1200,10 @@ public class QueryDocuments extends HttpServlet {
                 }
               }
             }
-            Fieldable docAuthorField = doc.getFieldable("author");
+            IndexableField docAuthorField = doc.getField("author");
             if (docAuthorField != null) {
               JSONArray jsonDocAuthorDetails = new JSONArray();
-              Fieldable docAuthorDetailsField = doc.getFieldable("authorDetails");
+              IndexableField docAuthorDetailsField = doc.getField("authorDetails");
               if (docAuthorDetailsField != null) {
                 String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
                 jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);
@@ -1222,7 +1222,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("author", jsonDocAuthorDetails);
             }
-            Fieldable docTitleField = doc.getFieldable("title");
+            IndexableField docTitleField = doc.getField("title");
             if (docTitleField != null) {
               String docTitle = docTitleField.stringValue();
               docTitle = StringUtils.resolveXmlEntities(docTitle);
@@ -1231,31 +1231,31 @@ public class QueryDocuments extends HttpServlet {
             if (languageField != null) {
               jsonHit.put("language", lang);
             }
-            Fieldable descriptionField = doc.getFieldable("description");
+            IndexableField descriptionField = doc.getField("description");
             if (descriptionField != null) {
               String description = descriptionField.stringValue();
               description = StringUtils.resolveXmlEntities(description);
               jsonHit.put("description", description);
             }
-            Fieldable docDateField = doc.getFieldable("date");
+            IndexableField docDateField = doc.getField("date");
             if (docDateField != null) {
               jsonHit.put("date", docDateField.stringValue());
             }
-            Fieldable lastModifiedField = doc.getFieldable("lastModified");
+            IndexableField lastModifiedField = doc.getField("lastModified");
             if (lastModifiedField != null) {
               jsonHit.put("lastModified", lastModifiedField.stringValue());
             }
-            Fieldable typeField = doc.getFieldable("type");
+            IndexableField typeField = doc.getField("type");
             if (typeField != null) {
               String type = typeField.stringValue();
               jsonHit.put("type", type);
             }
-            Fieldable systemTypeField = doc.getFieldable("systemType");
+            IndexableField systemTypeField = doc.getField("systemType");
             if (systemTypeField != null) {
               String systemType = systemTypeField.stringValue();
               jsonHit.put("systemType", systemType);
             }
-            Fieldable docPageCountField = doc.getFieldable("pageCount");
+            IndexableField docPageCountField = doc.getField("pageCount");
             if (docPageCountField != null) {
               jsonHit.put("pageCount", docPageCountField.stringValue());
             }
@@ -1269,17 +1269,17 @@ public class QueryDocuments extends HttpServlet {
             }
             jsonHit.put("fragments", jasonFragments);
             
-            Fieldable entitiesDetailsField = doc.getFieldable("entitiesDetails");
+            IndexableField entitiesDetailsField = doc.getField("entitiesDetails");
             if (entitiesDetailsField != null) {
               String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
               JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
               jsonHit.put("entities", jsonDocEntitiesDetails);
             }
   
-            Fieldable personsField = doc.getFieldable("persons");
+            IndexableField personsField = doc.getField("persons");
             if (personsField != null) {
               JSONArray jsonDocPersonsDetails = new JSONArray();
-              Fieldable personsDetailsField = doc.getFieldable("personsDetails");
+              IndexableField personsDetailsField = doc.getField("personsDetails");
               if (personsDetailsField != null) {
                 String personsDetailsXmlStr = personsDetailsField.stringValue();
                 jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
@@ -1302,7 +1302,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("persons", jsonDocPersonsDetails);
             }
-            Fieldable placesField = doc.getFieldable("places");
+            IndexableField placesField = doc.getField("places");
             if (placesField != null) {
               JSONArray jsonPlaces = new JSONArray();
               String placesStr = placesField.stringValue();
@@ -1323,7 +1323,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("places", jsonPlaces);
             }
-            Fieldable subjectControlledDetailsField = doc.getFieldable("subjectControlledDetails");
+            IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
             if (subjectControlledDetailsField != null) {
               JSONArray jsonSubjects = new JSONArray();
               String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
@@ -1346,7 +1346,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("subjectsControlled", jsonSubjects);
             }
-            Fieldable subjectField = doc.getFieldable("subject");
+            IndexableField subjectField = doc.getField("subject");
             if (subjectField != null) {
               JSONArray jsonSubjects = new JSONArray();
               String subjectStr = subjectField.stringValue();
@@ -1369,7 +1369,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("subjects", jsonSubjects);
             }
-            Fieldable swdField = doc.getFieldable("swd");
+            IndexableField swdField = doc.getField("swd");
             if (swdField != null) {
               JSONArray jsonSwd = new JSONArray();
               String swdStr = swdField.stringValue();
@@ -1390,7 +1390,7 @@ public class QueryDocuments extends HttpServlet {
               }
               jsonHit.put("swd", jsonSwd);
             }
-            Fieldable ddcField = doc.getFieldable("ddc");
+            IndexableField ddcField = doc.getField("ddc");
             if (ddcField != null) {
               JSONArray jsonDdc = new JSONArray();
               String ddcStr = ddcField.stringValue();
