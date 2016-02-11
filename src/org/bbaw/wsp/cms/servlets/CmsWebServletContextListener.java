@@ -18,7 +18,6 @@ import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraphContainer;
-import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.ISparqlAdapter;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 import org.bbaw.wsp.cms.transform.PageTransformer;
@@ -59,16 +58,14 @@ public class CmsWebServletContextListener implements ServletContextListener {
       xQueryEvaluator = new XQueryEvaluator();
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
-      
-
-      final Date begin = new Date();
+      Date begin = new Date();
       MdSystemQueryHandler mdqh = MdSystemQueryHandler.getInstance();
       LOGGER.info(CmsWebServletContextListener.class.getName() + ":starting to preload all Rdf Metadata by sparql");
       sparqlNormdataResults = mdqh.preloadAllProjectInf();
       context.setAttribute("preloadNormdata", sparqlNormdataResults);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ":Rdf Metadata loaded");
-      final Date end = new Date();
-      final long elapsedTime = end.getTime() - begin.getTime();
+      Date end = new Date();
+      long elapsedTime = end.getTime() - begin.getTime();
       LOGGER.info("elapsedTime for preloading rdf metadata: " + elapsedTime);
     } catch (Exception e) {
       LOGGER.error(e);
