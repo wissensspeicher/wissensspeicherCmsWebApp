@@ -37,13 +37,13 @@ public class CmsWebServletContextListener implements ServletContextListener {
       String webInfDir = context.getRealPath("/WEB-INF"); 
       de.mpg.mpiwg.berlin.mpdl.lt.general.Constants.getInstance(webInfDir);  // needed to initialize also the lt Constants
       Constants constants = Constants.getInstance(webInfDir);
-      String documentsDirectory = constants.getDocumentsDir();
+      String harvestDirectory = constants.getHarvestDir();
       String luceneDocumentsDirectory = constants.getLuceneDocumentsDir();
       String luceneNodesDirectory = constants.getLuceneNodesDir();
-      context.setAttribute("documentDirectory", documentsDirectory);
+      context.setAttribute("harvestDirectory", harvestDirectory);
       context.setAttribute("luceneDocumentsDirectory", luceneDocumentsDirectory);
       context.setAttribute("luceneNodesDirectory", luceneNodesDirectory);
-      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (documentsDirectory= \"" + documentsDirectory + "\", set in constants.properties)");
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (harvestDirectory= \"" + harvestDirectory + "\", set in constants.properties)");
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneDocumentsDirectory= \"" + luceneDocumentsDirectory + "\", set in constants.properties)");
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (luceneNodesDirectory= \"" + luceneNodesDirectory + "\", set in constants.properties)");
       fragmentTransformer = new FragmentTransformer();
