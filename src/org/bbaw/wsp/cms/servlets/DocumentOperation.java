@@ -32,7 +32,6 @@ public class DocumentOperation extends HttpServlet {
     String srcUrlStr = request.getParameter("srcUrl");
     String docId = request.getParameter("docId");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     String mainLanguage = request.getParameter("mainLanguage");  // main language for that document
-    String elementNames = request.getParameter("elementNames");  // id in file system or version management system: e.g. /tei/en/Test_1789.xml
     String outputFormat = request.getParameter("outputFormat");
     if (outputFormat == null)
       outputFormat = "xml";
