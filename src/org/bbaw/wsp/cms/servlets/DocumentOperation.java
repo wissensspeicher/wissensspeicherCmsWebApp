@@ -47,10 +47,6 @@ public class DocumentOperation extends HttpServlet {
       docOperation.setMainLanguage(mainLanguage);
     if (collectionId != null)
       docOperation.setCollectionId(collectionId);
-    String[] elementNamesArray = null;
-    if (elementNames != null)
-      elementNamesArray = elementNames.split(" ");
-    docOperation.setElementNames(elementNamesArray);
     try {
       if (operation.equals("create") || operation.equals("delete") || operation.equals("updateCollection")) {
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
