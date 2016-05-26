@@ -2,10 +2,10 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</title>
+    <title>Berlin Brandenburgische Akademie der Wissenschaften - Digital Knowledge Store: CMS services</title>
   </head>
 <body>
-<h2>Berlin Brandenburgische Akademie der Wissenschaften - Digitaler Wissensspeicher: CMS services</h2>
+<h2>Berlin Brandenburgische Akademie der Wissenschaften - Digital Knowledge Store: CMS services</h2>
 
 <ul>
   <li><b>Url: /wspCmsWebApp/query/QueryDocuments</b>
@@ -309,43 +309,6 @@
     </ul>
   </li>
 
-  <li><b>Url: /wspCmsWebApp/query/RequestStatisticAnalyser</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>query (required)
-            <ul>
-              <li>query word</li>
-            </ul>
-          </li>
-          <li>type (optional)
-            <ul>
-              <li>queries</li>
-              <li>resources</li>
-              <li>insert</li>
-              <li>default: queries</li>
-            </ul>
-          </li>
-          <li>url (optional)
-            <ul>
-              <li>URL of a resource which is relevant to the query. This parameter is only used when parameter "type" = "insert".</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>if type = "queries": queries ordered by overall usage frequency of the query word in all queries</li>
-          <li>if type = "resources":  resources ordered by frequency of relevance feedback given by users</li>
-          <li>if type = "insert": no hits (relevant document for the query is inserted)</li>
-          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=queries">user queries which contain "marx"</a></li>
-          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=resources">relevant resources of queries which contain "marx"</a></li>
-          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=insert&url=http://www.bbaw.de/mega/doc1.pdf">insert of a user relevance feedback: for query "marx" the resource "http://www.bbaw.de/mega/doc1.pdf" is notified as relevant</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
   <li><b>Url: /wspCmsWebApp/doc/GetDocument</b>
     <ul>
       <li>Request parameters
@@ -365,6 +328,128 @@
     </ul>
   </li>
   
+  <li><b>Url: /wspCmsWebApp/query/MoreLikeThis</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>docId (required)
+            <ul>
+              <li>resource identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+            </ul>
+          </li>
+          <li>page (optional)
+            <ul>
+              <li>hits page number</li>
+              <li>default: 1</li>
+            </ul>
+          </li>
+          <li>pageSize (optional)
+            <ul>
+              <li>hits page size</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>xml</li>
+              <li>html</li>
+              <li>json</li>
+              <li>default: html</li>
+            </ul>
+          </li>
+          <li>addInf (optional)
+            <ul>
+              <li>hits with additional information such as person names etc.</li>
+              <li>true</li>
+              <li>false</li>
+              <li>default: false</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Similar resources of resources with that id</li>
+          <li>Example: <a href="query/MoreLikeThis?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml">similar resources of this MEGA ressource</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><b>Url: /wspCmsWebApp/query/GetDocInfo</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>docId (required)
+            <ul>
+              <li>resource identifier</li>
+            </ul>
+          </li>
+          <li>field (optional)
+            <ul>
+              <li>see below: all supported fields in /wspCmsWebApp/query/QueryDocuments</li>
+              <li>toc (table of contents)</li>
+              <li>figures</li>
+              <li>pages</li>
+              <li>default: null (all fields except automatic generated lists such as toc, figures, etc.)</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>xml</li>
+              <li>default: xml</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Meta info of resource</li>
+          <li>Example: <a href="query/GetDocInfo?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><b>Url: /wspCmsWebApp/update/ProjectManager (in preparation)</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>operation (required)
+            <ul>
+              <li>update (update project(s) incl. harvest, annotate, index)</li>
+              <li>harvest (harvest project(s))</li>
+              <li>annotate (annotate project(s))</li>
+              <li>index (index project(s))</li>
+              <li>status (show status information of project(s))</li>
+            </ul>
+          </li>
+          <li>projectId (required)
+            <ul>
+              <li>project id (e.g. aaewtla); this parameter could be used multiple times when multiple projects should be applied</li>
+            </ul>
+          </li>
+          <li>projectId2 (optional)
+            <ul>
+              <li>second project id if an alphabetical interval of projects should be applied (e.g. parameter projectId=aaew and projectId2=aaewtla)</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>Example: <a href="update/ProjectManager?operation=update&project=aaewtla">Update project "aaewtla"</a></li>
+          <li>Example: <a href="update/ProjectManager?operation=harvest&project=aaew&projectId2=aaewtla">Harvest all projects alphabetically between "aaew" and "aaewtla"</a></li>
+          <li>Example: <a href="update/ProjectManager?operation=status&projectId=aaewtla">Show status information of project "aaewtla"</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>   
+
+<h2>Old unsupported CMS services</h2>
+
+<ul>   
   <li><b>Url: /wspCmsWebApp/doc/DocumentOperation</b>
     <ul>
       <li>Request parameters
@@ -624,84 +709,38 @@
     </ul>
   </li>
 
-  <li><b>Url: /wspCmsWebApp/query/MoreLikeThis</b>
+  <li><b>Url: /wspCmsWebApp/query/RequestStatisticAnalyser</b>
     <ul>
       <li>Request parameters
         <ul>
-          <li>docId (required)
+          <li>query (required)
             <ul>
-              <li>resource identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+              <li>query word</li>
             </ul>
           </li>
-          <li>page (optional)
+          <li>type (optional)
             <ul>
-              <li>hits page number</li>
-              <li>default: 1</li>
+              <li>queries</li>
+              <li>resources</li>
+              <li>insert</li>
+              <li>default: queries</li>
             </ul>
           </li>
-          <li>pageSize (optional)
+          <li>url (optional)
             <ul>
-              <li>hits page size</li>
-              <li>default: 10</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>xml</li>
-              <li>html</li>
-              <li>json</li>
-              <li>default: html</li>
-            </ul>
-          </li>
-          <li>addInf (optional)
-            <ul>
-              <li>hits with additional information such as person names etc.</li>
-              <li>true</li>
-              <li>false</li>
-              <li>default: false</li>
+              <li>URL of a resource which is relevant to the query. This parameter is only used when parameter "type" = "insert".</li>
             </ul>
           </li>
         </ul>
       </li>
       <li>Response output
         <ul>
-          <li>Similar resources of resources with that id</li>
-          <li>Example: <a href="query/MoreLikeThis?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml">similar resources of this MEGA ressource</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Url: /wspCmsWebApp/query/GetDocInfo</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>docId (required)
-            <ul>
-              <li>resource identifier</li>
-            </ul>
-          </li>
-          <li>field (optional)
-            <ul>
-              <li>see below: all supported fields in /wspCmsWebApp/query/QueryDocuments</li>
-              <li>toc (table of contents)</li>
-              <li>figures</li>
-              <li>pages</li>
-              <li>default: null (all fields except automatic generated lists such as toc, figures, etc.)</li>
-            </ul>
-          </li>
-          <li>outputFormat (optional)
-            <ul>
-              <li>xml</li>
-              <li>default: xml</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>Meta info of resource</li>
-          <li>Example: <a href="query/GetDocInfo?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
+          <li>if type = "queries": queries ordered by overall usage frequency of the query word in all queries</li>
+          <li>if type = "resources":  resources ordered by frequency of relevance feedback given by users</li>
+          <li>if type = "insert": no hits (relevant document for the query is inserted)</li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=queries">user queries which contain "marx"</a></li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=resources">relevant resources of queries which contain "marx"</a></li>
+          <li>Example: <a href="query/RequestStatisticAnalyser?query=marx&type=insert&url=http://www.bbaw.de/mega/doc1.pdf">insert of a user relevance feedback: for query "marx" the resource "http://www.bbaw.de/mega/doc1.pdf" is notified as relevant</a></li>
         </ul>
       </li>
     </ul>
@@ -764,7 +803,6 @@
       </li>
     </ul>
   </li>
-
 </ul>   
  
 </body></html>
