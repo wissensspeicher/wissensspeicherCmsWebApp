@@ -2,12 +2,17 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.bbaw.wsp.cms.collections.Collection;
+import org.bbaw.wsp.cms.collections.CollectionReader;
 
 public class ProjectManager extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -23,25 +28,22 @@ public class ProjectManager extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
+    String uid = request.getParameter("uid");  
+    String pw = request.getParameter("pw");  
     String operation = request.getParameter("operation");  
-    String projectId = request.getParameter("projectId"); 
+    String[] projectIds = request.getParameterValues("projectId"); 
     String projectId2 = request.getParameter("projectId2");
-    String outputFormat = request.getParameter("outputFormat");
-    if (outputFormat == null)
-      outputFormat = "xml";
-    if (outputFormat.equals("xml")) {
-      response.setContentType("text/xml");
-    } else { 
-      response.setContentType("text/html");
-    }
+    response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
     try {
-      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("status")) {
-        org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
-        String outputXmlStr = "";
-        if (operation.equals("status")) {
-          outputXmlStr = pm.getStatusProjectXmlStr(projectId);
-        } else if (operation.equals("update")) {
+      String outputXmlStr = "";
+      org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
+      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index")) {
+        if (uid == null || pw == null || (! uid.equals("wsp4711") && ! pw.equals("blabla4711"))) {
+          out.write("<error>" + "incorrect userId or password" + "</error>");
+          return;
+        }
+        if (operation.equals("update")) {
           outputXmlStr = "ToDo"; // TODO
         } else if (operation.equals("harvest")) {
           outputXmlStr = "ToDo"; // TODO
@@ -50,35 +52,33 @@ public class ProjectManager extends HttpServlet {
         } else if (operation.equals("index")) {
           outputXmlStr = "ToDo"; // TODO
         }
-        if (outputFormat.equals("xml")) {
-          out.write("<result>\n");
-          out.write("<operation>" + operation + "</operation>\n");
-          out.write("<projectId>" + projectId + "</projectId>\n");
-          if (projectId2 != null)
-            out.write("<projectId2>" + projectId2 + "</projectId2>\n");
-          out.write("<operationResult>");
-          out.write(outputXmlStr);
-          out.write("</operationResult>");
-          out.write("</result>\n");
-        } else {
-          String statusUrlStr = "update/ProjectManager?operation=status&projectId=" + projectId;
-          if (projectId2 != null)
-            statusUrlStr = "update/ProjectManager?operation=status&projectId=" + projectId + "&projectId2=" + projectId2;
-          out.write("<html>");
-          out.write("<h2>" + "Result" + "</h2>");
-          out.write("See status of your operation: " + operation + " <a href=\"" + statusUrlStr + "\">" + "here" + "</a>");
-          out.write("<html>");
+      } else if (operation.equals("status")) {
+        ArrayList<Collection> projects = null;
+        if (projectIds != null && projectId2 == null) {
+          projects = CollectionReader.getInstance().getCollections(projectIds);
+        } else if (projectIds != null && projectIds.length == 1 && projectId2 != null) {
+          projects = CollectionReader.getInstance().getCollections(projectIds[0], projectId2);
+        } 
+        String[] projectIdsTmp = new String[projects.size()];
+        for (int i=0; i<projects.size(); i++) {
+          projectIdsTmp[i] = projects.get(i).getId();
         }
+        outputXmlStr = pm.getStatusProjectXmlStr(projectIdsTmp);
       } else {
         String errorStr = "Error: Operation: " + operation + " is not supported";
-        if (outputFormat.equals("xml")) {
-          out.write("<error>" + errorStr + "</error>");
-        } else { 
-          out.write("<html>");
-          out.write("<h2>" + "Error" + "</h2>");
-          out.write(errorStr);
-        }
+        out.write("<error>" + errorStr + "</error>");
+        return;
       }
+      out.write("<result>\n");
+      out.write("<operation>" + operation + "</operation>\n");
+      String projectIdsStr = StringUtils.join(projectIds, ",");
+      out.write("<projectId>" + projectIdsStr + "</projectId>\n");
+      if (projectId2 != null)
+        out.write("<projectId2>" + projectId2 + "</projectId2>\n");
+      out.write("<operationResult>");
+      out.write(outputXmlStr);
+      out.write("</operationResult>");
+      out.write("</result>\n");
     } catch (Exception e) {
       throw new ServletException(e);
     }
