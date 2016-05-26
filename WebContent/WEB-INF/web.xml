@@ -5,36 +5,6 @@
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
   <servlet>
-    <description>GetDocument</description>
-    <display-name>GetDocument</display-name>
-    <servlet-name>GetDocument</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.GetDocument</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetDocument</servlet-name>
-    <url-pattern>/doc/GetDocument</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description>DocumentOperation</description>
-    <display-name>DocumentOperation</display-name>
-    <servlet-name>DocumentOperation</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.DocumentOperation</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>DocumentOperation</servlet-name>
-    <url-pattern>/doc/DocumentOperation</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description>GetPage</description>
-    <display-name>GetPage</display-name>
-    <servlet-name>GetPage</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.GetPage</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetPage</servlet-name>
-    <url-pattern>/query/GetPage</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <description>QueryDocuments</description>
     <display-name>QueryDocuments</display-name>
     <servlet-name>QueryDocuments</servlet-name>
@@ -45,24 +15,24 @@
     <url-pattern>/query/QueryDocuments</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>QueryDocument</description>
-    <display-name>QueryDocument</display-name>
-    <servlet-name>QueryDocument</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.QueryDocument</servlet-class>
+    <description>QueryMdSystem</description>
+    <display-name>QueryMdSystem</display-name>
+    <servlet-name>QueryMdSystem</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.QueryMdSystem</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>QueryDocument</servlet-name>
-    <url-pattern>/query/QueryDocument</url-pattern>
+    <servlet-name>QueryMdSystem</servlet-name>
+    <url-pattern>/query/QueryMdSystem</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>XQueryDocument</description>
-    <display-name>XQueryDocument</display-name>
-    <servlet-name>XQueryDocument</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.XQueryDocument</servlet-class>
+    <description>GetDocument</description>
+    <display-name>GetDocument</display-name>
+    <servlet-name>GetDocument</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.GetDocument</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>XQueryDocument</servlet-name>
-    <url-pattern>/query/XQueryDocument</url-pattern>
+    <servlet-name>GetDocument</servlet-name>
+    <url-pattern>/doc/GetDocument</url-pattern>
   </servlet-mapping>
   <servlet>
     <description>GetToken</description>
@@ -94,6 +64,39 @@
     <servlet-name>About</servlet-name>
     <url-pattern>/query/About</url-pattern>
   </servlet-mapping>
+  <listener>
+    <listener-class>org.bbaw.wsp.cms.servlets.CmsWebServletContextListener</listener-class>
+  </listener>
+  <servlet>
+    <description>Suggest</description>
+    <display-name>Suggest</display-name>
+    <servlet-name>Suggest</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.Suggest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Suggest</servlet-name>
+    <url-pattern>/query/Suggest</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>MoreLikeThis</display-name>
+    <servlet-name>MoreLikeThis</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.MoreLikeThis</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MoreLikeThis</servlet-name>
+    <url-pattern>/query/MoreLikeThis</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>ProjectManager</description>
+    <display-name>ProjectManager</display-name>
+    <servlet-name>ProjectManager</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.ProjectManager</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProjectManager</servlet-name>
+    <url-pattern>/update/ProjectManager</url-pattern>
+  </servlet-mapping>
   <servlet>
     <description>GetPerson</description>
     <display-name>GetPerson</display-name>
@@ -114,29 +117,6 @@
     <servlet-name>GetDocumentJobs</servlet-name>
     <url-pattern>/doc/GetDocumentJobs</url-pattern>
   </servlet-mapping>
-  <listener>
-    <listener-class>org.bbaw.wsp.cms.servlets.CmsWebServletContextListener</listener-class>
-  </listener>
-  <servlet>
-    <description></description>
-    <display-name>MoreLikeThis</display-name>
-    <servlet-name>MoreLikeThis</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.MoreLikeThis</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>MoreLikeThis</servlet-name>
-    <url-pattern>/query/MoreLikeThis</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description>QueryMdSystem</description>
-    <display-name>QueryMdSystem</display-name>
-    <servlet-name>QueryMdSystem</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.QueryMdSystem</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>QueryMdSystem</servlet-name>
-    <url-pattern>/query/QueryMdSystem</url-pattern>
-  </servlet-mapping>
   <servlet>
     <description>RequestStatisticAnalyser</description>
     <display-name>RequestStatisticAnalyser</display-name>
@@ -148,14 +128,44 @@
     <url-pattern>/query/RequestStatisticAnalyser</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>Suggest</description>
-    <display-name>Suggest</display-name>
-    <servlet-name>Suggest</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.Suggest</servlet-class>
+    <description>QueryDocument</description>
+    <display-name>QueryDocument</display-name>
+    <servlet-name>QueryDocument</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.QueryDocument</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>Suggest</servlet-name>
-    <url-pattern>/query/Suggest</url-pattern>
+    <servlet-name>QueryDocument</servlet-name>
+    <url-pattern>/query/QueryDocument</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>XQueryDocument</description>
+    <display-name>XQueryDocument</display-name>
+    <servlet-name>XQueryDocument</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.XQueryDocument</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>XQueryDocument</servlet-name>
+    <url-pattern>/query/XQueryDocument</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>DocumentOperation</description>
+    <display-name>DocumentOperation</display-name>
+    <servlet-name>DocumentOperation</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.DocumentOperation</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DocumentOperation</servlet-name>
+    <url-pattern>/doc/DocumentOperation</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>GetPage</description>
+    <display-name>GetPage</display-name>
+    <servlet-name>GetPage</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.GetPage</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetPage</servlet-name>
+    <url-pattern>/query/GetPage</url-pattern>
   </servlet-mapping>
 
 
