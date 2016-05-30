@@ -95,7 +95,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ProjectManager</servlet-name>
-    <url-pattern>/update/ProjectManager</url-pattern>
+    <url-pattern>/data/ProjectManager</url-pattern>
   </servlet-mapping>
   <servlet>
     <description>GetPerson</description>

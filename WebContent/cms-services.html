@@ -422,25 +422,24 @@
               <li>annotate (annotate project(s))</li>
               <li>index (index project(s))</li>
               <li>status (show status information of project(s))</li>
+              <li>delete (delete project(s): project data + project configuration files)</li>
             </ul>
           </li>
-          <li>projectId (required)
+          <li>projects (required)
             <ul>
-              <li>project id (e.g. aaewtla); this parameter could be used multiple times when multiple projects should be applied</li>
-            </ul>
-          </li>
-          <li>projectId2 (optional)
-            <ul>
-              <li>second project id if an alphabetical interval of projects should be applied (e.g. parameter projectId=aaew and projectId2=aaewtla)</li>
+              <li>one project id (e.g. ""aaew")</li>
+              <li>several project ids separated by comma (e.g. "aaew,aaewerbkam,aaewpreussen")</li>
+              <li>projects alphabetically between two project ids (e.g. "aaew-aaewtla")</li>
             </ul>
           </li>
         </ul>
       </li>
       <li>Response output
         <ul>
-          <li>Example: <a href="update/ProjectManager?operation=update&project=aaewtla">Update project "aaewtla"</a></li>
-          <li>Example: <a href="update/ProjectManager?operation=harvest&project=aaew&projectId2=aaewtla">Harvest all projects alphabetically between "aaew" and "aaewtla"</a></li>
-          <li>Example: <a href="update/ProjectManager?operation=status&projectId=aaewtla">Show status information of project "aaewtla"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=update&projects=aaew">Update project "aaew"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=update&projects=aaew,aaewerbkam">Update projects "aaew" and "aaewerbkam"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=harvest&projects=aaew-aaewtla">Harvest all projects alphabetically between "aaew" and "aaewtla"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=status&projects=aaew,aaewtla">Show status information of projects "aaew" and "aaewtla"</a></li>
         </ul>
       </li>
     </ul>
