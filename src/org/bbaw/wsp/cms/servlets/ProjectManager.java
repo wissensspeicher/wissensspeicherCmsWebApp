@@ -62,13 +62,13 @@ public class ProjectManager extends HttpServlet {
           return;
         }
         if (operation.equals("update")) {
-          // TODO
+          // TODO Operation ans Job-System übergeben
           if (projectIds != null) { 
             pm.update(projectIds);  
           } else if (projectFrom != null && projectTo != null) {
             pm.update(projectFrom, projectTo);
           }
-          outputXmlStr = "<message>operation is sent to operation queue and needs some time</message>\n"; // TODO
+          outputXmlStr = "<message>operation is sent to operation queue</message>\n"; // TODO
         } else if (operation.equals("harvest")) {
           outputXmlStr = "ToDo"; // TODO
         } else if (operation.equals("annotate")) {
