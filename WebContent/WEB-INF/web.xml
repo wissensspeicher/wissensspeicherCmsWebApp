@@ -98,6 +98,16 @@
     <url-pattern>/data/ProjectManager</url-pattern>
   </servlet-mapping>
   <servlet>
+    <description>GetCmsJobs</description>
+    <display-name>GetCmsJobs</display-name>
+    <servlet-name>GetCmsJobs</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.GetCmsJobs</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetCmsJobs</servlet-name>
+    <url-pattern>/update/GetCmsJobs</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>GetPerson</description>
     <display-name>GetPerson</display-name>
     <servlet-name>GetPerson</servlet-name>
@@ -106,16 +116,6 @@
   <servlet-mapping>
     <servlet-name>GetPerson</servlet-name>
     <url-pattern>/query/GetPerson</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description>GetDocumentJobs</description>
-    <display-name>GetDocumentJobs</display-name>
-    <servlet-name>GetDocumentJobs</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.GetDocumentJobs</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetDocumentJobs</servlet-name>
-    <url-pattern>/doc/GetDocumentJobs</url-pattern>
   </servlet-mapping>
   <servlet>
     <description>RequestStatisticAnalyser</description>
@@ -148,16 +148,6 @@
     <url-pattern>/query/XQueryDocument</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>DocumentOperation</description>
-    <display-name>DocumentOperation</display-name>
-    <servlet-name>DocumentOperation</servlet-name>
-    <servlet-class>org.bbaw.wsp.cms.servlets.DocumentOperation</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>DocumentOperation</servlet-name>
-    <url-pattern>/doc/DocumentOperation</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <description>GetPage</description>
     <display-name>GetPage</display-name>
     <servlet-name>GetPage</servlet-name>
@@ -167,6 +157,5 @@
     <servlet-name>GetPage</servlet-name>
     <url-pattern>/query/GetPage</url-pattern>
   </servlet-mapping>
-
 
 </web-app>

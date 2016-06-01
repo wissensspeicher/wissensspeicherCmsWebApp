@@ -2,6 +2,7 @@ package org.bbaw.wsp.cms.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -9,8 +10,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
+import org.bbaw.wsp.cms.scheduler.CmsOperation;
+import org.bbaw.wsp.cms.servlets.util.ServletUtil;
+
 public class ProjectManager extends HttpServlet {
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 4711L;
 
   public ProjectManager() {
     super();
@@ -39,63 +44,48 @@ public class ProjectManager extends HttpServlet {
       out.write("<error>" + errorStr + "</error>");
       return;
     }
-    String[] projectIds = null;
-    String projectFrom = null;
-    String projectTo = null;
-    if (projects != null) {
-      if (projects.contains("-")) {
-        projectFrom = projects.substring(0, projects.indexOf("-"));
-        projectTo = projects.substring(projects.indexOf("-") + 1, projects.length());
-      } else if (projects.contains(",")) {
-        projectIds = projects.split(",");
-      } else {
-        projectIds = new String[1];
-        projectIds[0] = projects;
-      }
-    }
     try {
       String outputXmlStr = "";
-      org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
       if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete")) {
         if (uid == null || pw == null || (! uid.equals("wsp4711") && ! pw.equals("blabla4711"))) {
           out.write("<error>" + "incorrect uid or pw" + "</error>");
           return;
         }
-        if (operation.equals("update")) {
-          // TODO Operation ans Job-System übergeben
-          if (projectIds != null) { 
-            pm.update(projectIds);  
-          } else if (projectFrom != null && projectTo != null) {
-            pm.update(projectFrom, projectTo);
-          }
-          outputXmlStr = "<message>operation is sent to operation queue</message>\n"; // TODO
-        } else if (operation.equals("harvest")) {
-          outputXmlStr = "ToDo"; // TODO
-        } else if (operation.equals("annotate")) {
-          outputXmlStr = "ToDo"; // TODO
-        } else if (operation.equals("index")) {
-          outputXmlStr = "ToDo"; // TODO
-        } else if (operation.equals("delete")) {
-          outputXmlStr = "ToDo"; // TODO
-        }
+        ArrayList<String> parameters = new ArrayList<String>();
+        parameters.add(projects);
+        CmsOperation cmsOperation = new CmsOperation("ProjectManager", operation, parameters); 
+        CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
+        cmsOperation = scheduler.doOperation(cmsOperation);
+        String jobId = "" + cmsOperation.getOrderId();
+        String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
+        String docJobUrlStr = baseUrl + "/update/GetCmsJobs?id=" + jobId;
+        out.write("<result>\n");
+        out.write("<operation>" + operation + "</operation>\n");
+        out.write("<projects>" + projects + "</projects>\n");
+        out.write("<operationResult>\n");
+        out.write("<docJob>\n");
+        out.write("<id>" + jobId + "</id>\n");
+        out.write("<url>" + docJobUrlStr + "</url>\n");
+        out.write("</docJob>\n");
+        out.write("</operationResult>\n");
+        out.write("</result>\n");
       } else if (operation.equals("status")) {
-        if (projectIds != null) {
-          outputXmlStr = pm.getStatusProjectXmlStr(projectIds);
-        } else if (projectFrom != null && projectTo != null) {
-          outputXmlStr = pm.getStatusProjectXmlStr(projectFrom, projectTo);
+        org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
+        if (projects != null) {
+          outputXmlStr = pm.getStatusProjectXmlStr(projects);
+          out.write("<result>\n");
+          out.write("<operation>" + operation + "</operation>\n");
+          out.write("<projects>" + projects + "</projects>\n");
+          out.write("<operationResult>\n");
+          out.write(outputXmlStr);
+          out.write("</operationResult>\n");
+          out.write("</result>\n");
         }
       } else {
         String errorStr = "Error: Operation: " + operation + " is not supported";
         out.write("<error>" + errorStr + "</error>");
         return;
       }
-      out.write("<result>\n");
-      out.write("<operation>" + operation + "</operation>\n");
-      out.write("<projects>" + projects + "</projects>\n");
-      out.write("<operationResult>");
-      out.write(outputXmlStr);
-      out.write("</operationResult>");
-      out.write("</result>\n");
     } catch (Exception e) {
       throw new ServletException(e);
     }
