@@ -105,7 +105,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>GetCmsJobs</servlet-name>
-    <url-pattern>/update/GetCmsJobs</url-pattern>
+    <url-pattern>/query/GetCmsJobs</url-pattern>
   </servlet-mapping>
   <servlet>
     <description>GetPerson</description>
