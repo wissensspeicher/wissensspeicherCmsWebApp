@@ -10,9 +10,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bbaw.wsp.cms.collections.Collection;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.scheduler.CmsOperation;
 import org.bbaw.wsp.cms.servlets.util.ServletUtil;
+
+import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class ProjectManager extends HttpServlet {
   private static final long serialVersionUID = 4711L;
@@ -56,19 +59,27 @@ public class ProjectManager extends HttpServlet {
           parameters = new ArrayList<String>();
           parameters.add(projects);
         }
+        String updateCycleProjects = null;
+        if (operation.equals("updateCycle")) {
+          updateCycleProjects = getUpdateCycleProjectsIdsStr();
+        }
         CmsOperation cmsOperation = new CmsOperation("ProjectManager", operation, parameters); 
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         cmsOperation = scheduler.doOperation(cmsOperation);
         String jobId = "" + cmsOperation.getOrderId();
         String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
-        String docJobUrlStr = baseUrl + "/update/GetCmsJobs?id=" + jobId;
+        String docJobUrlStr = baseUrl + "/query/GetCmsJobs?id=" + jobId;
         out.write("<result>\n");
         out.write("<operation>" + operation + "</operation>\n");
-        out.write("<projects>" + projects + "</projects>\n");
+        if (projects != null)
+          out.write("<projects>" + projects + "</projects>\n");
         out.write("<operationResult>\n");
         out.write("<docJob>\n");
         out.write("<id>" + jobId + "</id>\n");
         out.write("<url>" + docJobUrlStr + "</url>\n");
+        if (operation.equals("updateCycle") && updateCycleProjects != null) {
+          out.write("<updateCycleProjects>" + updateCycleProjects + "</updateCycleProjects>\n");
+        }
         out.write("</docJob>\n");
         out.write("</operationResult>\n");
         out.write("</result>\n");
@@ -94,6 +105,20 @@ public class ProjectManager extends HttpServlet {
     }
   }
 
+  private String getUpdateCycleProjectsIdsStr() throws ApplicationException {
+    String retStr = null;
+    org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
+    ArrayList<Collection> projects = pm.getUpdateCycleProjects();
+    if (projects != null) {
+      ArrayList<String> cycleProjectIds = new ArrayList<String>();
+      for (int i=0; i<projects.size(); i++) {
+        cycleProjectIds.add(projects.get(i).getId());
+      }
+      retStr = cycleProjectIds.toString();
+    }
+    return retStr; 
+  }
+  
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
   }
