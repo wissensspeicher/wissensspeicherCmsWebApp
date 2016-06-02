@@ -39,20 +39,23 @@ public class ProjectManager extends HttpServlet {
       out.write("<error>" + errorStr + "</error>");
       return;
     }
-    if (projects == null) {
+    if (! operation.equals("updateCycle") && projects == null) {
       String errorStr = "Error: required parameter \"projects\" has no value";
       out.write("<error>" + errorStr + "</error>");
       return;
     }
     try {
       String outputXmlStr = "";
-      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete")) {
+      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete") || operation.equals("updateCycle")) {
         if (uid == null || pw == null || (! uid.equals("wsp4711") && ! pw.equals("blabla4711"))) {
           out.write("<error>" + "incorrect uid or pw" + "</error>");
           return;
         }
-        ArrayList<String> parameters = new ArrayList<String>();
-        parameters.add(projects);
+        ArrayList<String> parameters = null;
+        if (projects != null) {
+          parameters = new ArrayList<String>();
+          parameters.add(projects);
+        }
         CmsOperation cmsOperation = new CmsOperation("ProjectManager", operation, parameters); 
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         cmsOperation = scheduler.doOperation(cmsOperation);
