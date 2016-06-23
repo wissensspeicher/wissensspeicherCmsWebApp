@@ -91,7 +91,7 @@ public class ProjectManager extends HttpServlet {
           out.write("<operation>" + operation + "</operation>\n");
           out.write("<projects>" + projects + "</projects>\n");
           out.write("<operationResult>\n");
-          out.write(outputXmlStr);
+          out.write(outputXmlStr + "\n");
           out.write("</operationResult>\n");
           out.write("</result>\n");
         }
