@@ -43,13 +43,17 @@ public class ProjectManager extends HttpServlet {
       out.write("<error>" + errorStr + "</error>");
       return;
     }
-    if (! operation.equals("updateCycle") && projects == null) {
+    if ((operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || 
+        operation.equals("delete")) && projects == null) {
       String errorStr = "Error: required parameter \"projects\" has no value";
       out.write("<error>" + errorStr + "</error>");
       return;
     }
     try {
-      String outputXmlStr = "";
+      String updateCycleProjects = null;
+      if (operation.equals("updateCycle") || operation.equals("status")) {
+        updateCycleProjects = getUpdateCycleProjectsIdsStr();
+      }
       if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete") || operation.equals("updateCycle")) {
         if (uid == null || pw == null || (! uid.equals("wsp4711") && ! pw.equals("blabla4711"))) {
           out.write("<error>" + "incorrect uid or pw" + "</error>");
@@ -59,10 +63,6 @@ public class ProjectManager extends HttpServlet {
         if (projects != null) {
           parameters = new ArrayList<String>();
           parameters.add(projects);
-        }
-        String updateCycleProjects = null;
-        if (operation.equals("updateCycle")) {
-          updateCycleProjects = getUpdateCycleProjectsIdsStr();
         }
         CmsOperation cmsOperation = new CmsOperation("ProjectManager", operation, parameters); 
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
@@ -86,16 +86,20 @@ public class ProjectManager extends HttpServlet {
         out.write("</result>\n");
       } else if (operation.equals("status")) {
         org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
-        if (projects != null) {
-          outputXmlStr = pm.getStatusProjectXmlStr(projects);
-          out.write("<result>\n");
-          out.write("<operation>" + operation + "</operation>\n");
-          out.write("<projects>" + projects + "</projects>\n");
-          out.write("<operationResult>\n");
-          out.write(outputXmlStr + "\n");
-          out.write("</operationResult>\n");
-          out.write("</result>\n");
-        }
+        String projectStatusXmlStr = null;
+        if (projects == null)
+          projectStatusXmlStr = pm.getStatusProjectXmlStr();
+        else          
+          projectStatusXmlStr = pm.getStatusProjectXmlStr(projects);
+        out.write("<result>\n");
+        out.write("<operation>" + operation + "</operation>\n");
+        out.write("<queryProjects>" + projects + "</queryProjects>\n");
+        out.write("<status>\n");
+        out.write(projectStatusXmlStr + "\n");
+        out.write("</status>\n");
+        if (updateCycleProjects != null)
+          out.write("<updateCycleProjects>" + updateCycleProjects + "</updateCycleProjects>\n");
+        out.write("</result>\n");
       } else {
         String errorStr = "Error: Operation: " + operation + " is not supported";
         out.write("<error>" + errorStr + "</error>");
