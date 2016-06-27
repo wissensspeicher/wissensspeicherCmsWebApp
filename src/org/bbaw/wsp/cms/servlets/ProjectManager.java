@@ -93,7 +93,8 @@ public class ProjectManager extends HttpServlet {
           projectStatusXmlStr = pm.getStatusProjectXmlStr(projects);
         out.write("<result>\n");
         out.write("<operation>" + operation + "</operation>\n");
-        out.write("<queryProjects>" + projects + "</queryProjects>\n");
+        if (projects != null)
+          out.write("<queryProjects>" + projects + "</queryProjects>\n");
         out.write("<status>\n");
         out.write(projectStatusXmlStr + "\n");
         out.write("</status>\n");
