@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.bbaw.wsp.cms.collections.Collection;
+import org.bbaw.wsp.cms.collections.CollectionReader;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.scheduler.CmsOperation;
 import org.bbaw.wsp.cms.servlets.util.ServletUtil;
@@ -107,8 +108,8 @@ public class ProjectManager extends HttpServlet {
 
   private String getUpdateCycleProjectsIdsStr() throws ApplicationException {
     String retStr = null;
-    org.bbaw.wsp.cms.collections.ProjectManager pm = org.bbaw.wsp.cms.collections.ProjectManager.getInstance();
-    ArrayList<Collection> projects = pm.getUpdateCycleProjects();
+    CollectionReader collReader = CollectionReader.getInstance();
+    ArrayList<Collection> projects = collReader.getUpdateCycleProjects();
     if (projects != null) {
       ArrayList<String> cycleProjectIds = new ArrayList<String>();
       for (int i=0; i<projects.size(); i++) {
