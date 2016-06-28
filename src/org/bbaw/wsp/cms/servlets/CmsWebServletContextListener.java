@@ -35,7 +35,8 @@ public class CmsWebServletContextListener implements ServletContextListener {
     try {
       this.context = event.getServletContext();
       long maxMemory = Runtime.getRuntime().maxMemory();
-      LOGGER.info("Max memory in WspCmsWebApp (-Xmx value): " + maxMemory);
+      long totalMemory = Runtime.getRuntime().totalMemory();
+      LOGGER.info("Tomcat/WspCmsWebApp memory: max: " + maxMemory + ", total: " + totalMemory);
       String webInfDir = context.getRealPath("/WEB-INF"); 
       de.mpg.mpiwg.berlin.mpdl.lt.general.Constants.getInstance(webInfDir);  // needed to initialize also the lt Constants
       Constants constants = Constants.getInstance(webInfDir);
