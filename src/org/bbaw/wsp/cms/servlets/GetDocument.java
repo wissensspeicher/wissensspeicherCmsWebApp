@@ -13,7 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bbaw.wsp.cms.dochandler.DocumentHandler;
+import org.bbaw.wsp.cms.collections.Harvester;
+
+import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
 public class GetDocument extends HttpServlet {
   private static final long serialVersionUID = 1L;
@@ -30,14 +32,18 @@ public class GetDocument extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
-    String id = request.getParameter("id");  
-    DocumentHandler docHandler = new DocumentHandler();
-    String fullFileName = docHandler.getDocFullFileName(id);
-    File file = new File(fullFileName);
-    if (file.exists()) {
-      write(response, file);
-    } else {
-      write(response, "Document: " + id + " does not exist");
+    String docId = request.getParameter("id");  
+    try {
+      Harvester harvester = Harvester.getInstance();
+      String fullFileName = harvester.getDocFullFileName(docId);
+      File file = new File(fullFileName);
+      if (file.exists()) {
+        write(response, file);
+      } else {
+        write(response, "Document: " + docId + " does not exist");
+      }
+    } catch (ApplicationException e) {
+      throw new ServletException(e);
     }
   }
 
