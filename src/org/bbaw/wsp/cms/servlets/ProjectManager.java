@@ -36,6 +36,7 @@ public class ProjectManager extends HttpServlet {
     String pw = request.getParameter("pw");  
     String operation = request.getParameter("operation");  
     String projects = request.getParameter("projects"); 
+    String jobId = request.getParameter("jobId"); 
     response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
     if (operation == null) {
@@ -67,16 +68,16 @@ public class ProjectManager extends HttpServlet {
         CmsOperation cmsOperation = new CmsOperation("ProjectManager", operation, parameters); 
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         cmsOperation = scheduler.doOperation(cmsOperation);
-        String jobId = "" + cmsOperation.getOrderId();
+        String jobbbbId = "" + cmsOperation.getOrderId();
         String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
-        String docJobUrlStr = baseUrl + "/query/GetCmsJobs?id=" + jobId;
+        String docJobUrlStr = baseUrl + "/query/GetCmsJobs?id=" + jobbbbId;
         out.write("<result>\n");
         out.write("<operation>" + operation + "</operation>\n");
         if (projects != null)
           out.write("<projects>" + projects + "</projects>\n");
         out.write("<operationResult>\n");
         out.write("<docJob>\n");
-        out.write("<id>" + jobId + "</id>\n");
+        out.write("<id>" + jobbbbId + "</id>\n");
         out.write("<url>" + docJobUrlStr + "</url>\n");
         if (operation.equals("updateCycle") && updateCycleProjects != null) {
           out.write("<updateCycleProjects>" + updateCycleProjects + "</updateCycleProjects>\n");
@@ -100,6 +101,23 @@ public class ProjectManager extends HttpServlet {
         out.write("</status>\n");
         if (updateCycleProjects != null)
           out.write("<updateCycleProjects>" + updateCycleProjects + "</updateCycleProjects>\n");
+        out.write("</result>\n");
+      } else if (operation.equals("killJob")) {
+        CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
+        Integer jobIdInt = Integer.parseInt(jobId);
+        boolean success = scheduler.killOperation(jobIdInt);
+        String status = "job killed";
+        if (! success)
+          status = "job could not be killed";
+        String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
+        String docJobUrlStr = baseUrl + "/query/GetCmsJobs";
+        out.write("<result>\n");
+        out.write("<operation>" + operation + "</operation>\n");
+        out.write("<jobId>" + jobId + "</jobId>\n");
+        out.write("<operationResult>\n");
+        out.write("<status>" + status + "</status>\n");
+        out.write("<remainingJobsUrl>" + docJobUrlStr + "</remainingJobsUrl>\n");
+        out.write("</operationResult>\n");
         out.write("</result>\n");
       } else {
         String errorStr = "Error: Operation: " + operation + " is not supported";
