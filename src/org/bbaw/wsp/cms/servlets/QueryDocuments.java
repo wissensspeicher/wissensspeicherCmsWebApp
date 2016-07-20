@@ -350,17 +350,17 @@ public class QueryDocuments extends HttpServlet {
             htmlStrBuilder.append("</tr>");
           }
           IndexableField personsField = doc.getField("persons");
-          if (personsField != null) {
+          IndexableField personsDetailsField = doc.getField("personsDetails");
+          if (personsField != null || personsDetailsField != null) {
             htmlStrBuilder.append("<tr>");
             htmlStrBuilder.append("<td></td>");
             htmlStrBuilder.append("<td colspan=\"8\">");  
             htmlStrBuilder.append("<b>Persons</b>: ");
-            IndexableField personsDetailsField = doc.getField("personsDetails");
             if (personsDetailsField != null) {
               String personsDetailsXmlStr = personsDetailsField.stringValue();
               String personsDetailsHtmlStr = docPersonsDetailsXmlStrToHtml(xQueryEvaluator, personsDetailsXmlStr, baseUrl, language);
               htmlStrBuilder.append(personsDetailsHtmlStr);
-            } else {
+            } else if (personsField != null) {
               String personsStr = personsField.stringValue();
               String[] persons = personsStr.split("###");  // separator of persons
               for (int j=0; j<persons.length; j++) {
@@ -1275,33 +1275,33 @@ public class QueryDocuments extends HttpServlet {
               JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
               jsonHit.put("entities", jsonDocEntitiesDetails);
             }
-  
+            
             IndexableField personsField = doc.getField("persons");
-            if (personsField != null) {
-              JSONArray jsonDocPersonsDetails = new JSONArray();
-              IndexableField personsDetailsField = doc.getField("personsDetails");
-              if (personsDetailsField != null) {
-                String personsDetailsXmlStr = personsDetailsField.stringValue();
-                jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
-              } else {
-                String personsStr = personsField.stringValue();
-                String[] persons = personsStr.split("###");  // separator of persons
-                for (int j=0; j<persons.length; j++) {
-                  String personName = persons[j];
-                  personName = StringUtils.resolveXmlEntities(personName);
-                  JSONObject jsonDocPerson = new JSONObject();
-                  jsonDocPerson.put("role", "mentioned");
-                  jsonDocPerson.put("name", personName);
-                  String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
-                  if (lang != null && ! lang.isEmpty())
-                    aboutPersonLink = aboutPersonLink + "&language=" + lang;
-                  String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
-                  jsonDocPerson.put("referenceAbout", aboutLinkEnc);
-                  jsonDocPersonsDetails.add(jsonDocPerson);
-                }
+            IndexableField personsDetailsField = doc.getField("personsDetails");
+            JSONArray jsonDocPersonsDetails = new JSONArray();
+            if (personsDetailsField != null) {
+              String personsDetailsXmlStr = personsDetailsField.stringValue();
+              jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
+            } else if (personsField != null) {
+              String personsStr = personsField.stringValue();
+              String[] persons = personsStr.split("###");  // separator of persons
+              for (int j=0; j<persons.length; j++) {
+                String personName = persons[j];
+                personName = StringUtils.resolveXmlEntities(personName);
+                JSONObject jsonDocPerson = new JSONObject();
+                jsonDocPerson.put("role", "mentioned");
+                jsonDocPerson.put("name", personName);
+                String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
+                if (lang != null && ! lang.isEmpty())
+                  aboutPersonLink = aboutPersonLink + "&language=" + lang;
+                String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
+                jsonDocPerson.put("referenceAbout", aboutLinkEnc);
+                jsonDocPersonsDetails.add(jsonDocPerson);
               }
-              jsonHit.put("persons", jsonDocPersonsDetails);
             }
+            if (! jsonDocPersonsDetails.isEmpty())
+              jsonHit.put("persons", jsonDocPersonsDetails);
+
             IndexableField placesField = doc.getField("places");
             if (placesField != null) {
               JSONArray jsonPlaces = new JSONArray();
