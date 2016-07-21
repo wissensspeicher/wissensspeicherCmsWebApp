@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bbaw.wsp.cms.dochandler.DocumentHandler;
+import org.bbaw.wsp.cms.collections.Harvester;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.transform.PageTransformer;
@@ -61,8 +61,8 @@ public class XQueryDocument extends HttpServlet {
     if (outputFormat == null)
       outputFormat = "xml";
     try {
-      DocumentHandler docHandler = new DocumentHandler();
-      String docFileName = docHandler.getDocFullFileName(docId);
+      Harvester harvester = Harvester.getInstance();
+      String docFileName = harvester.getDocFullFileName(docId);
       URL docFileUrl = new URL("file:" + docFileName);
       Hits hits = null;
       String errorStr = null;
