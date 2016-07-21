@@ -12,15 +12,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.saxon.s9api.QName;
-import net.sf.saxon.s9api.XdmAtomicValue;
-import net.sf.saxon.s9api.XdmValue;
-
-import org.bbaw.wsp.cms.dochandler.DocumentHandler;
 import org.bbaw.wsp.cms.document.MetadataRecord;
 import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
-import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
@@ -59,6 +53,9 @@ public class GetDocInfo extends HttpServlet {
       PrintWriter out = response.getWriter();
       if (mdRecord != null && outputFormat.equals("xml")) {
         out.print("<doc>");
+        String collectionNames = mdRecord.getCollectionNames();
+        if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
+          out.print("<project>" + collectionNames + "</project>");
         out.print("<id>" + docId + "</id>");
         String uri = mdRecord.getUri();
         if ((field == null || (field != null && field.equals("uri"))) && uri != null) {
@@ -70,9 +67,6 @@ public class GetDocInfo extends HttpServlet {
           webUri = StringUtils.deresolveXmlEntities(webUri);
           out.print("<webUri>" + webUri + "</webUri>");
         }
-        String collectionNames = mdRecord.getCollectionNames();
-        if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
-          out.print("<collectionNames>" + collectionNames + "</collectionNames>");
         String author = mdRecord.getCreator();
         if ((field == null || (field != null && field.equals("author"))) && author != null) {
           author = StringUtils.deresolveXmlEntities(author);
@@ -172,11 +166,13 @@ public class GetDocInfo extends HttpServlet {
           }
           out.print("</places>");
         }
-        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("handwritten") && ! field.equals("pages")))
-          out.print("<system>");
+        out.print("<system>");
         int id = mdRecord.getId();
         if ((field == null || (field != null && field.equals("id"))) && id != -1)
           out.print("<id>" + id + "</id>");
+        String databaseName = mdRecord.getDatabaseName();
+        if ((field == null || (field != null && field.equals("databaseName"))) && databaseName != null)
+          out.print("<database>" + databaseName + "</database>");
         String type = mdRecord.getType();
         if ((field == null || (field != null && field.equals("type"))) && type != null)
           out.print("<type>" + type + "</type>");
@@ -197,19 +193,7 @@ public class GetDocInfo extends HttpServlet {
         String schemaName = mdRecord.getSchemaName();
         if ((field == null || (field != null && field.equals("schema"))) && schemaName != null)
           out.print("<schema>" + schemaName + "</schema>");
-        if (field == null || (field != null && ! field.equals("toc") && ! field.equals("figures") && ! field.equals("pages")))
-          out.print("</system>");
-        if (field != null && (field.equals("toc") || field.equals("figures") || field.equals("pages"))) { 
-          XslResourceTransformer tocTransformer = new XslResourceTransformer("tocOut.xsl");
-          DocumentHandler docHandler = new DocumentHandler();
-          String docDir = docHandler.getDocDir(docId);
-          String tocFileName = docDir + "/toc.xml";
-          QName typeQName = new QName("type");
-          XdmValue typeXdmValue = new XdmAtomicValue(field);
-          tocTransformer.setParameter(typeQName, typeXdmValue);
-          String tocXmlStr = tocTransformer.transform(tocFileName);
-          out.print(tocXmlStr);
-        }
+        out.print("</system>");
         out.print("</doc>");
       } else if (mdRecord != null && outputFormat.equals("json")) {
         // TODO
