@@ -322,23 +322,29 @@ public class QueryDocuments extends HttpServlet {
                 webUri = webUri.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
                 htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project view</a> ");
               }
-              htmlStrBuilder.append("(" + projectTitle + ": ");
               if (projectUrl != null) {
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
+                htmlStrBuilder.append("(");
+                htmlStrBuilder.append("Project: <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">" + projectTitle + "</a>");
+              }
+              if (projectRdfId != null) {
+                String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
+                htmlStrBuilder.append(" (<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Project details</a>)");
               }
               IndexableField collectionRdfIdField = doc.getField("collectionRdfId");
               if (collectionRdfIdField != null) {
                 String collectionRdfId = collectionRdfIdField.stringValue();
                 if (collectionRdfId != null && ! collectionRdfId.isEmpty()) {
                   ProjectCollection coll = project.getCollection(collectionRdfId);
+                  String collectionTitle = coll.getTitle();
+                  if (collectionTitle == null)
+                    collectionTitle = "Collection homepage";
                   String collectionHomepageUrl = coll.getHomepageUrl();
-                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">Collection homepage</a>, ");
+                  if (collectionHomepageUrl != null)
+                    htmlStrBuilder.append(", Collection: <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
                 }
               }
-              if (projectRdfId != null) {
-                String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/search.gif\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectDetailsUrl + "\">Project details</a>)");
-              }
+              if (projectUrl != null)
+                htmlStrBuilder.append(")");
               htmlStrBuilder.append("</td>");
               htmlStrBuilder.append("</tr>");
             }
@@ -1138,9 +1144,10 @@ public class QueryDocuments extends HttpServlet {
               projectId = docProjectIdField.stringValue();
               jsonHit.put("projectId", projectId);
             }
+            Project project = null;
             if (projectId != null) {
               JSONObject jsonProject = new JSONObject();
-              Project project = ProjectReader.getInstance().getProject(projectId);
+              project = ProjectReader.getInstance().getProject(projectId);
               jsonProject.put("id", projectId);
               if (project != null) {
                 String projectTitle = project.getTitle();
@@ -1153,6 +1160,22 @@ public class QueryDocuments extends HttpServlet {
                   jsonProject.put("url", encoded);
                 }
                 jsonHit.put("project", jsonProject);
+              }
+            }
+            IndexableField collectionRdfIdField = doc.getField("collectionRdfId");
+            if (collectionRdfIdField != null) {
+              String collectionRdfId = collectionRdfIdField.stringValue();
+              if (collectionRdfId != null && ! collectionRdfId.isEmpty() && project != null) {
+                JSONObject jsonCollection = new JSONObject();
+                jsonCollection.put("rdfId", collectionRdfId);
+                ProjectCollection coll = project.getCollection(collectionRdfId);
+                String collectionTitle = coll.getTitle();
+                if (collectionTitle != null)
+                  jsonCollection.put("title", collectionTitle);
+                String collectionHomepageUrl = coll.getHomepageUrl();
+                if (collectionHomepageUrl != null)
+                  jsonCollection.put("url", collectionHomepageUrl);
+                jsonHit.put("collection", jsonCollection);
               }
             }
             IndexableField languageField = doc.getField("language");
@@ -1183,20 +1206,17 @@ public class QueryDocuments extends HttpServlet {
               webUri = webUri.replaceAll("%23", "#");
               jsonHit.put("webUri", webUri);
             }
-            if (projectId != null) {
-              Project project = ProjectReader.getInstance().getProject(projectId);
-              if (project != null) {
-                String homepageUrl = project.getHomepageUrl();
-                if (homepageUrl != null) {
-                  String encoded = URIUtil.encodeQuery(homepageUrl);
-                  jsonHit.put("webBaseUri", encoded);
-                }
-                String projectRdfId = project.getRdfId();
-                if (projectRdfId != null) {
-                  String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
-                  jsonHit.put("projectDetailsUri", projectDetailsUrl);
-                  jsonHit.put("rdfUri", projectRdfId);
-                }
+            if (project != null) {
+              String homepageUrl = project.getHomepageUrl();
+              if (homepageUrl != null) {
+                String encoded = URIUtil.encodeQuery(homepageUrl);
+                jsonHit.put("webBaseUri", encoded);
+              }
+              String projectRdfId = project.getRdfId();
+              if (projectRdfId != null) {
+                String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
+                jsonHit.put("projectDetailsUri", projectDetailsUrl);
+                jsonHit.put("rdfUri", projectRdfId);
               }
             }
             IndexableField docAuthorField = doc.getField("author");
