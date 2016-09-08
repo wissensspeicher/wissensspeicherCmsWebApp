@@ -53,9 +53,9 @@ public class GetDocInfo extends HttpServlet {
       PrintWriter out = response.getWriter();
       if (mdRecord != null && outputFormat.equals("xml")) {
         out.print("<doc>");
-        String collectionNames = mdRecord.getCollectionNames();
-        if ((field == null || (field != null && field.equals("collectionNames"))) && collectionNames != null)
-          out.print("<project>" + collectionNames + "</project>");
+        String projectId = mdRecord.getProjectId();
+        if ((field == null || (field != null && field.equals("projectId"))) && projectId != null)
+          out.print("<project>" + projectId + "</project>");
         out.print("<id>" + docId + "</id>");
         String uri = mdRecord.getUri();
         if ((field == null || (field != null && field.equals("uri"))) && uri != null) {
@@ -170,9 +170,9 @@ public class GetDocInfo extends HttpServlet {
         int id = mdRecord.getId();
         if ((field == null || (field != null && field.equals("id"))) && id != -1)
           out.print("<id>" + id + "</id>");
-        String databaseName = mdRecord.getDatabaseName();
-        if ((field == null || (field != null && field.equals("databaseName"))) && databaseName != null)
-          out.print("<database>" + databaseName + "</database>");
+        String databaseRdfId = mdRecord.getDatabaseRdfId();
+        if ((field == null || (field != null && field.equals("databaseRdfId"))) && databaseRdfId != null)
+          out.print("<database>" + databaseRdfId + "</database>");
         String type = mdRecord.getType();
         if ((field == null || (field != null && field.equals("type"))) && type != null)
           out.print("<type>" + type + "</type>");

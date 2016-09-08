@@ -25,9 +25,9 @@ import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 
-import org.bbaw.wsp.cms.collections.Collection;
-import org.bbaw.wsp.cms.collections.CollectionReader;
-import org.bbaw.wsp.cms.collections.Service;
+import org.bbaw.wsp.cms.collections.Project;
+import org.bbaw.wsp.cms.collections.ProjectCollection;
+import org.bbaw.wsp.cms.collections.ProjectReader;
 import org.bbaw.wsp.cms.document.DBpediaResource;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
@@ -155,10 +155,10 @@ public class QueryDocuments extends HttpServlet {
           out.print("<doc>");
           String docId = doc.getField("docId").stringValue();
           out.print("<docId>" + docId + "</docId>");
-          IndexableField docCollectionNamesField = doc.getField("collectionNames");
-          if (docCollectionNamesField != null) {
-            String docCollectionNames = docCollectionNamesField.stringValue();
-            out.print("<collectionName>" + docCollectionNames + "</collectionName>");
+          IndexableField docProjectIdField = doc.getField("projectId");
+          if (docProjectIdField != null) {
+            String projectId = docProjectIdField.stringValue();
+            out.print("<projectId>" + projectId + "</projectId>");
           }
           out.print("</doc>");
         }
@@ -212,10 +212,10 @@ public class QueryDocuments extends HttpServlet {
           float luceneScore = -1;
           if (luceneScores != null)
             luceneScore = luceneScores.get(i);
-          IndexableField docCollectionNamesField = doc.getField("collectionNames");
-          String docCollectionName = null;
-          if (docCollectionNamesField != null) {
-            docCollectionName = docCollectionNamesField.stringValue();
+          IndexableField docProjectIdField = doc.getField("projectId");
+          String projectId = null;
+          if (docProjectIdField != null) {
+            projectId = docProjectIdField.stringValue();
           }
           IndexableField languageField = doc.getField("language");
           String lang = "";
@@ -302,12 +302,12 @@ public class QueryDocuments extends HttpServlet {
             docIsXml = true;
           if (docIsXml)
             firstHitPageNumber = doc.getFirstHitPageNumber();
-          if (docCollectionName != null) {
-            Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-            if (projectColl != null) {
-              projectUrl = projectColl.getWebBaseUrl();
-              String projectRdfId = projectColl.getRdfId();
-              String projectName = projectColl.getName();
+          if (projectId != null) {
+            Project project = ProjectReader.getInstance().getProject(projectId);
+            if (project != null) {
+              projectUrl = project.getHomepageUrl();
+              String projectRdfId = project.getRdfId();
+              String projectTitle = project.getTitle();
               htmlStrBuilder.append("<tr>");
               htmlStrBuilder.append("<td></td>");
               htmlStrBuilder.append("<td colspan=\"8\">");
@@ -316,16 +316,24 @@ public class QueryDocuments extends HttpServlet {
               String webUri = null;
               if (webUriField != null)
                 webUri = webUriField.stringValue();
-              String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-              if (projectLink != null) {
-                if (! projectLink.contains("%"))
-                  projectLink = URIUtil.encodeQuery(projectLink);  
-                projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
-                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project view</a> ");
+              if (webUri != null) {
+                if (! webUri.contains("%"))
+                  webUri = URIUtil.encodeQuery(webUri);  
+                webUri = webUri.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
+                htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project view</a> ");
               }
-              htmlStrBuilder.append("(" + projectName + " (" + docCollectionName + "): ");
+              htmlStrBuilder.append("(" + projectTitle + ": ");
               if (projectUrl != null) {
                 htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
+              }
+              IndexableField collectionRdfIdField = doc.getField("collectionRdfId");
+              if (collectionRdfIdField != null) {
+                String collectionRdfId = collectionRdfIdField.stringValue();
+                if (collectionRdfId != null && ! collectionRdfId.isEmpty()) {
+                  ProjectCollection coll = project.getCollection(collectionRdfId);
+                  String collectionHomepageUrl = coll.getHomepageUrl();
+                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">Collection homepage</a>, ");
+                }
               }
               if (projectRdfId != null) {
                 String projectDetailsUrl = "/wspCmsWebApp/query/QueryMdSystem?query=" + projectRdfId + "&detailedSearch=true";
@@ -706,10 +714,10 @@ public class QueryDocuments extends HttpServlet {
             float luceneScore = -1;
             if (luceneScores != null)
               luceneScore = luceneScores.get(i);
-            IndexableField docCollectionNamesField = doc.getField("collectionNames");
-            String docCollectionName = null;
-            if (docCollectionNamesField != null) {
-              docCollectionName = docCollectionNamesField.stringValue();
+            IndexableField docProjectIdField = doc.getField("projectId");
+            String projectId = null;
+            if (docProjectIdField != null) {
+              projectId = docProjectIdField.stringValue();
             }
             IndexableField languageField = doc.getField("language");
             String lang = "";
@@ -793,12 +801,12 @@ public class QueryDocuments extends HttpServlet {
               docIsXml = true;
             if (docIsXml)
               firstHitPageNumber = doc.getFirstHitPageNumber();
-            if (docCollectionName != null) {
-              Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-              if (projectColl != null) {
-                projectUrl = projectColl.getWebBaseUrl();
-                String projectRdfId = projectColl.getRdfId();
-                String projectName = projectColl.getName();
+            if (projectId != null) {
+              Project project = ProjectReader.getInstance().getProject(projectId);
+              if (project != null) {
+                projectUrl = project.getHomepageUrl();
+                String projectRdfId = project.getRdfId();
+                String projectTitle = project.getTitle();
                 htmlStrBuilder.append("<tr valign=\"top\">");
                 htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
                 htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
@@ -807,14 +815,13 @@ public class QueryDocuments extends HttpServlet {
                 String webUri = null;
                 if (webUriField != null)
                   webUri = webUriField.stringValue();
-                String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-                if (projectLink != null) {
-                  if (! projectLink.contains("%"))
-                    projectLink = URIUtil.encodeQuery(projectLink);  
-                  projectLink = projectLink.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
-                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectLink + "\">Project view</a> ");
+                if (webUri != null) {
+                  if (! webUri.contains("%"))
+                    webUri = URIUtil.encodeQuery(webUri);  
+                  webUri = webUri.replaceAll("%23", "#"); // for e.g.: http://telota.bbaw.de/mega/%23?doc=MEGA_A2_B005-00_ETX.xml
+                  htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + webUri + "\">Project view</a> ");
                 }
-                htmlStrBuilder.append("(" + projectName + " (" + docCollectionName + "): ");
+                htmlStrBuilder.append("(" + projectTitle + " (" + projectId + "): ");
                 if (projectUrl != null) {
                   htmlStrBuilder.append("<img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + projectUrl + "\">Project homepage</a>, ");
                 }
@@ -1125,22 +1132,22 @@ public class QueryDocuments extends HttpServlet {
               float luceneScore = luceneScores.get(i);
               jsonHit.put("luceneScore", luceneScore);
             }
-            IndexableField docCollectionNamesField = doc.getField("collectionNames");
-            String docCollectionName = null;
-            if (docCollectionNamesField != null) {
-              docCollectionName = docCollectionNamesField.stringValue();
-              jsonHit.put("collectionName", docCollectionName);
+            IndexableField docProjectIdField = doc.getField("projectId");
+            String projectId = null;
+            if (docProjectIdField != null) {
+              projectId = docProjectIdField.stringValue();
+              jsonHit.put("projectId", projectId);
             }
-            if (docCollectionName != null) {
+            if (projectId != null) {
               JSONObject jsonProject = new JSONObject();
-              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-              jsonProject.put("id", docCollectionName);
-              if (coll != null) {
-                String projectName = coll.getName();
-                if (projectName != null) {
-                  jsonProject.put("name", projectName);
+              Project project = ProjectReader.getInstance().getProject(projectId);
+              jsonProject.put("id", projectId);
+              if (project != null) {
+                String projectTitle = project.getTitle();
+                if (projectTitle != null) {
+                  jsonProject.put("title", projectTitle);
                 }
-                String projectUrl = coll.getWebBaseUrl();
+                String projectUrl = project.getHomepageUrl();
                 if (projectUrl != null) {
                   String encoded = URIUtil.encodeQuery(projectUrl);
                   jsonProject.put("url", encoded);
@@ -1166,33 +1173,25 @@ public class QueryDocuments extends HttpServlet {
               jsonHit.put("uri", encoded);
             }
             // project link
-            boolean docIsXml = false; 
-            String mimeType = getMimeType(docId);
-            if (mimeType != null && mimeType.contains("xml"))
-              docIsXml = true;
-            String firstHitPageNumber = null;
-            if (docIsXml)
-              firstHitPageNumber = doc.getFirstHitPageNumber();
             IndexableField webUriField = doc.getField("webUri");
             String webUri = null;
             if (webUriField != null)
               webUri = webUriField.stringValue();
-            String projectLink = buildProjectLink(docCollectionName, firstHitPageNumber, webUri, query, fieldExpansion);
-            if (projectLink != null) {
-              if (! projectLink.contains("%"))
-                projectLink = URIUtil.encodeQuery(projectLink);
-              projectLink = projectLink.replaceAll("%23", "#");
-              jsonHit.put("webUri", projectLink);
+            if (webUri != null) {
+              if (! webUri.contains("%"))
+                webUri = URIUtil.encodeQuery(webUri);
+              webUri = webUri.replaceAll("%23", "#");
+              jsonHit.put("webUri", webUri);
             }
-            if (docCollectionName != null) {
-              Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-              if (coll != null) {
-                String webBaseUrl = coll.getWebBaseUrl();
-                if (webBaseUrl != null) {
-                  String encoded = URIUtil.encodeQuery(webBaseUrl);
+            if (projectId != null) {
+              Project project = ProjectReader.getInstance().getProject(projectId);
+              if (project != null) {
+                String homepageUrl = project.getHomepageUrl();
+                if (homepageUrl != null) {
+                  String encoded = URIUtil.encodeQuery(homepageUrl);
                   jsonHit.put("webBaseUri", encoded);
                 }
-                String projectRdfId = coll.getRdfId();
+                String projectRdfId = project.getRdfId();
                 if (projectRdfId != null) {
                   String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
                   jsonHit.put("projectDetailsUri", projectDetailsUrl);
@@ -1417,58 +1416,6 @@ public class QueryDocuments extends HttpServlet {
     }
   }
 
-  private String buildProjectLink(String docCollectionName, String firstHitPageNumber, String webUri, String query, String fieldExpansion) throws ApplicationException {
-    // project link
-    String projectLink = null;
-    Collection projectColl = CollectionReader.getInstance().getCollection(docCollectionName);
-    if (projectColl == null)
-      return null;
-    Service queryResourceService = projectColl.getService("queryResource");
-    Service pageViewService = projectColl.getService("pageView");
-    boolean isFulltextQuery = false;
-    if (fieldExpansion.equals("all") || fieldExpansion.equals("allMorph") || query.contains("tokenOrig:") || query.contains("tokenNorm:") || query.contains("tokenMorph:"))
-      isFulltextQuery = true;
-    if (webUri == null) {
-      if (queryResourceService != null && isFulltextQuery) {
-        String resourceWebId = "bla";  // TODO index it and get it from doc
-        String queryParam = queryResourceService.getParamValue("query");
-        String resourceParam = queryResourceService.getParamValue("resource");
-        projectLink = queryResourceService.toUrlStr();
-        String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
-        String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
-        if (queryParam != null)
-          projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
-        if (resourceParam != null)
-          projectLink = projectLink + "&" + resourceParam + "=" + resourceWebId;
-      }
-    } else {
-      projectLink = webUri;
-      if (queryResourceService != null && isFulltextQuery) {
-        int index = webUri.lastIndexOf("/");  // TODO hack
-        String resourceWebId = webUri.substring(index + 1);  // hack TODO index it and get it from doc
-        if (index == -1)
-          resourceWebId = "bla";
-        String queryParam = queryResourceService.getParamValue("query");
-        String resourceParam = queryResourceService.getParamValue("resource");
-        projectLink = queryResourceService.toUrlStr();
-        String projectQueryLanguage = queryResourceService.getPropertyValue("queryLanguage");
-        String projectQueryStr = translateLuceneToQueryLanguage(query, projectQueryLanguage);
-        if (queryParam != null)
-          projectLink = projectLink + "?" + queryParam + "=" + projectQueryStr;
-        if (resourceParam != null)
-          projectLink = projectLink + "&" + resourceParam + "=" + resourceWebId;
-      } else if (pageViewService != null) {
-        if (firstHitPageNumber != null) {
-          String pageParam = pageViewService.getParamValue("page");
-          projectLink = webUri;
-          if (pageParam != null)
-            projectLink = projectLink + "&" + pageParam + "=" + firstHitPageNumber;
-        }
-      } 
-    }
-    return projectLink;
-  }
-
   private JSONArray docEntitiesDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
     ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
     JSONArray retArray = new JSONArray();
@@ -1601,7 +1548,7 @@ public class QueryDocuments extends HttpServlet {
       // TODO translate lucene query properly to ddc
       outputQuery = inputQuery.trim(); 
       outputQuery = outputQuery.replaceAll("tokenOrig:|tokenMorph:|tokenNorm:", "");
-      if (outputQuery.matches(".+:.+ *.*")) {  // contains fields, e.g.: +author:("Marx, Karl") +"Das Kapital" +collectionNames:("dta")
+      if (outputQuery.matches(".+:.+ *.*")) {  // contains fields, e.g.: +author:("Marx, Karl") +"Das Kapital" +projectId:("dta")
         outputQuery = outputQuery.replaceAll("[\\+\\-].+:[\\(].+?[\\)] | [\\+\\-].+:[\\(].+?[\\)]", ""); // remove fields
       }
       outputQuery = outputQuery.replaceAll("\\(|\\)|\\+", "");

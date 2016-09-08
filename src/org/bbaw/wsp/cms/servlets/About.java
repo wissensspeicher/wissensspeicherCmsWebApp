@@ -213,9 +213,9 @@ public class About extends HttpServlet {
   private String getPdrPublishedPersonsXmlStr(String surName, String foreName) throws ApplicationException {
     String pdrXmlStr = null;
     IndexHandler indexHandler = IndexHandler.getInstance();
-    String queryStr = "+collectionNames:pdr +title:(+" + surName + " +" + foreName + ")";
+    String queryStr = "+projectId:pdr +title:(+" + surName + " +" + foreName + ")";
     if (foreName == null)
-      queryStr = "+collectionNames:pdr +title:" + surName;
+      queryStr = "+projectId:pdr +title:" + surName;
     Hits hits = indexHandler.queryDocuments("lucene", queryStr, null, "none", null, 0, 9, false, false);
     if (hits != null) {
       int hitsSize = hits.getSize();

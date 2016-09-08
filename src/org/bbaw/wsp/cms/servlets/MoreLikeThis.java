@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
-import org.bbaw.wsp.cms.collections.Collection;
-import org.bbaw.wsp.cms.collections.CollectionReader;
+import org.bbaw.wsp.cms.collections.Project;
+import org.bbaw.wsp.cms.collections.ProjectReader;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -86,10 +86,10 @@ public class MoreLikeThis extends HttpServlet {
           out.print("<doc>");
           String similarDocId = doc.getField("docId").stringValue();
           out.print("<docId>" + similarDocId + "</docId>");
-          IndexableField docCollectionNamesField = doc.getField("collectionNames");
-          if (docCollectionNamesField != null) {
-            String docCollectionNames = docCollectionNamesField.stringValue();
-            out.print("<collectionName>" + docCollectionNames + "</collectionName>");
+          IndexableField docProjectIdField = doc.getField("projectId");
+          if (docProjectIdField != null) {
+            String docProjectId = docProjectIdField.stringValue();
+            out.print("<projectId>" + docProjectId + "</projectId>");
           }
           ArrayList<String> hitFragments = doc.getHitFragments();
           if (hitFragments != null) {
@@ -141,11 +141,11 @@ public class MoreLikeThis extends HttpServlet {
         for (int i=0; i<docsSize; i++) {
           JSONObject jsonWrapper = new JSONObject();
           org.bbaw.wsp.cms.document.Document doc = docs.get(i);
-          IndexableField docCollectionNamesField = doc.getField("collectionNames");
-          String docCollectionName = null;
-          if (docCollectionNamesField != null) {
-            docCollectionName = docCollectionNamesField.stringValue();
-            jsonWrapper.put("collectionName", docCollectionNamesField.stringValue());
+          IndexableField docProjectIdField = doc.getField("projectId");
+          String projectId = null;
+          if (docProjectIdField != null) {
+            projectId = docProjectIdField.stringValue();
+            jsonWrapper.put("projectId", projectId);
           }
           IndexableField docIdField = doc.getField("docId");
           if(docIdField != null){
@@ -161,11 +161,11 @@ public class MoreLikeThis extends HttpServlet {
             String webUri = webUriField.stringValue();
             jsonWrapper.put("webUri", webUri);
           }
-          if (docCollectionName != null) {
-            Collection coll = CollectionReader.getInstance().getCollection(docCollectionName);
-            String webBaseUrl = coll.getWebBaseUrl();
-            if (webBaseUrl != null)
-              jsonWrapper.put("webBaseUri", webBaseUrl);
+          if (projectId != null) {
+            Project project = ProjectReader.getInstance().getProject(projectId);
+            String homepageUrl = project.getHomepageUrl();
+            if (homepageUrl != null)
+              jsonWrapper.put("webBaseUri", homepageUrl);
           }
           IndexableField docAuthorField = doc.getField("author");
           if (docAuthorField != null) {
