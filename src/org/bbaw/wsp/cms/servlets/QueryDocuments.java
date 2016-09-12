@@ -24,7 +24,6 @@ import net.sf.saxon.s9api.XdmValue;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
-
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.ProjectReader;
@@ -341,6 +340,13 @@ public class QueryDocuments extends HttpServlet {
                   String collectionHomepageUrl = coll.getHomepageUrl();
                   if (collectionHomepageUrl != null)
                     htmlStrBuilder.append(", Collection: <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
+                }
+              }
+              IndexableField databaseRdfIdField = doc.getField("databaseRdfId");
+              if (databaseRdfIdField != null) {
+                String databaseRdfId = databaseRdfIdField.stringValue();
+                if (databaseRdfId != null && ! databaseRdfId.isEmpty()) {
+                    htmlStrBuilder.append(", Database: <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + databaseRdfId + "\">" + databaseRdfId + "</a>");
                 }
               }
               if (projectUrl != null)
@@ -1176,6 +1182,15 @@ public class QueryDocuments extends HttpServlet {
                 if (collectionHomepageUrl != null)
                   jsonCollection.put("url", collectionHomepageUrl);
                 jsonHit.put("collection", jsonCollection);
+              }
+            }
+            IndexableField databaseRdfIdField = doc.getField("databaseRdfId");
+            if (databaseRdfIdField != null) {
+              String databaseRdfId = databaseRdfIdField.stringValue();
+              if (databaseRdfId != null && ! databaseRdfId.isEmpty()) {
+                JSONObject jsonDatabase = new JSONObject();
+                jsonDatabase.put("rdfId", databaseRdfId);
+                jsonHit.put("database", jsonDatabase);
               }
             }
             IndexableField languageField = doc.getField("language");
