@@ -27,6 +27,7 @@ import org.apache.lucene.search.Query;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.ProjectReader;
+import org.bbaw.wsp.cms.collections.Subject;
 import org.bbaw.wsp.cms.document.DBpediaResource;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
@@ -35,6 +36,9 @@ import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
@@ -428,36 +432,31 @@ public class QueryDocuments extends HttpServlet {
           IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
           if (subjectControlledDetailsField != null) {
             String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-            String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-            XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
-            XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
-            if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
+            org.jsoup.nodes.Document subjectControlledDetailsDoc = Jsoup.parse(subjectControlledDetailsStr);
+            Elements dctermsSubjects = subjectControlledDetailsDoc.select("subjects > dcterms|subject");
+            if (dctermsSubjects != null && dctermsSubjects.size() > 0) {
               htmlStrBuilder.append("<tr>");
               htmlStrBuilder.append("<td></td>");
               htmlStrBuilder.append("<td colspan=\"8\">");
               htmlStrBuilder.append("<b>Subjects (controlled)</b>: ");
-              while (xmdValueDcTermsIterator.hasNext()) {
-                XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
-                /* e.g.:
-                 * <dcterms:subject>
-                     <rdf:Description rdf:about="http://de.dbpedia.org/resource/Kategorie:Karl_Marx">
-                       <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
-                       <rdfs:label>Karl Marx</rdfs:label>
-                     </rdf:description>
-                   </dcterms:subject>
-                 */
-                String xdmItemDcTermStr = xdmItemDcTerm.toString();
-                String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/rdf:type/@rdf:resource)");
-                String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/@rdf:about)");
-                String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/rdf:Description/rdfs:label/text()");
-                String subjectSearchUrl = "/wspCmsWebApp/query/query.html?queryLanguage=lucene&query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
-                String ontologyName = getOntologyName(subjectRdfType);
-                String ontologyNameStr = ontologyName + ": ";
-                if (ontologyName == null)
-                  ontologyNameStr = "";
-                String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
-                if (xmdValueDcTermsIterator.hasNext())
+              for (int j=0; j<dctermsSubjects.size(); j++) {
+                Element dctermsSubject = dctermsSubjects.get(j);
+                // e.g.: <dcterms:subject rdf:resource="http://d-nb.info/gnd/4037764-7"/>
+                String rdfIdSubject = dctermsSubject.attr("rdf:resource");
+                Subject subject = ProjectReader.getInstance().getSubject(rdfIdSubject);
+                if (subject != null) {
+                  String subjectRdfType = subject.getType();
+                  String subjectRdfLink = subject.getRdfId();
+                  String subjectName = subject.getName();
+                  String subjectSearchUrl = "/wspCmsWebApp/query/query.html?queryLanguage=lucene&query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
+                  String ontologyName = getOntologyName(subjectRdfType);
+                  String ontologyNameStr = ontologyName + ": ";
+                  if (ontologyName == null)
+                    ontologyNameStr = "";
+                  String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                  htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
+                }
+                if (j < dctermsSubjects.size() - 1)
                   htmlStrBuilder.append(", ");
               }
               htmlStrBuilder.append("</td>");
@@ -918,36 +917,31 @@ public class QueryDocuments extends HttpServlet {
             IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
             if (subjectControlledDetailsField != null) {
               String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-              String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-              XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
-              XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
-              if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
-                htmlStrBuilder.append("<tr valign=\"top\">");
-                htmlStrBuilder.append("<td align=\"left\" valign=\"top\"></td>");
-                htmlStrBuilder.append("<td align=\"left\" valign=\"top\" colspan=\"8\">");
+              org.jsoup.nodes.Document subjectControlledDetailsDoc = Jsoup.parse(subjectControlledDetailsStr);
+              Elements dctermsSubjects = subjectControlledDetailsDoc.select("subjects > dcterms|subject");
+              if (dctermsSubjects != null && dctermsSubjects.size() > 0) {
+                htmlStrBuilder.append("<tr>");
+                htmlStrBuilder.append("<td></td>");
+                htmlStrBuilder.append("<td colspan=\"8\">");
                 htmlStrBuilder.append("<b>Subjects (controlled)</b>: ");
-                while (xmdValueDcTermsIterator.hasNext()) {
-                  XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
-                  /* e.g.:
-                   * <dcterms:subject>
-                       <rdf:Description rdf:about="http://de.dbpedia.org/resource/Kategorie:Karl_Marx">
-                         <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
-                         <rdfs:label>Karl Marx</rdfs:label>
-                       </rdf:description>
-                     </dcterms:subject>
-                   */
-                  String xdmItemDcTermStr = xdmItemDcTerm.toString();
-                  String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/rdf:type/@rdf:resource)");
-                  String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/rdf:Description/@rdf:about)");
-                  String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/rdf:Description/rdfs:label/text()");
-                  String subjectSearchUrl = "/wspCmsWebApp/query/QueryDocuments?query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
-                  String ontologyName = getOntologyName(subjectRdfType);
-                  String ontologyNameStr = ontologyName + ": ";
-                  if (ontologyName == null)
-                    ontologyNameStr = "";
-                  String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
-                  htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
-                  if (xmdValueDcTermsIterator.hasNext())
+                for (int j=0; j<dctermsSubjects.size(); j++) {
+                  Element dctermsSubject = dctermsSubjects.get(j);
+                  // e.g.: <dcterms:subject rdf:resource="http://d-nb.info/gnd/4037764-7"/>
+                  String rdfIdSubject = dctermsSubject.attr("rdf:resource");
+                  Subject subject = ProjectReader.getInstance().getSubject(rdfIdSubject);
+                  if (subject != null) {
+                    String subjectRdfType = subject.getType();
+                    String subjectRdfLink = subject.getRdfId();
+                    String subjectName = subject.getName();
+                    String subjectSearchUrl = "/wspCmsWebApp/query/query.html?queryLanguage=lucene&query=subjectControlled:&quot;" + subjectName + "&quot;&fieldExpansion=none";
+                    String ontologyName = getOntologyName(subjectRdfType);
+                    String ontologyNameStr = ontologyName + ": ";
+                    if (ontologyName == null)
+                      ontologyNameStr = "";
+                    String subjectRdfImgLink = "<a href=\"" + subjectRdfLink + "\">" + "<img src=\"/wspCmsWebApp/images/" + "rdfSmall.gif" + "\" width=\"15\" height=\"15\" border=\"0\"/>" + "</a>";
+                    htmlStrBuilder.append("<a href=\"" + subjectSearchUrl + "\">" + subjectName + "</a> (" + ontologyNameStr + subjectRdfImgLink + ")");
+                  }
+                  if (j < dctermsSubjects.size() - 1)
                     htmlStrBuilder.append(", ");
                 }
                 htmlStrBuilder.append("</td>");
@@ -1370,21 +1364,24 @@ public class QueryDocuments extends HttpServlet {
             if (subjectControlledDetailsField != null) {
               JSONArray jsonSubjects = new JSONArray();
               String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-              String namespaceDeclaration = "declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"; declare namespace dc=\"http://purl.org/dc/elements/1.1/\"; declare namespace dcterms=\"http://purl.org/dc/terms/\"; ";
-              XdmValue xmdValueDcTerms = xQueryEvaluator.evaluate(subjectControlledDetailsStr, namespaceDeclaration + "/subjects/dcterms:subject");
-              XdmSequenceIterator xmdValueDcTermsIterator = xmdValueDcTerms.iterator();
-              if (xmdValueDcTerms != null && xmdValueDcTerms.size() > 0) {
-                while (xmdValueDcTermsIterator.hasNext()) {
-                  XdmItem xdmItemDcTerm = xmdValueDcTermsIterator.next();
-                  String xdmItemDcTermStr = xdmItemDcTerm.toString(); // e.g. <dcterms:subject rdf:type="http://www.w3.org/2004/02/skos/core#Concept" rdf:resource="http://de.dbpedia.org/resource/Kategorie:Karl_Marx"/>
-                  String subjectRdfType = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:type)");
-                  String subjectRdfLink = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "string(/dcterms:subject/@rdf:resource)");
-                  String subjectName = xQueryEvaluator.evaluateAsString(xdmItemDcTermStr, namespaceDeclaration + "/dcterms:subject/text()");
-                  JSONObject subject = new JSONObject();
-                  subject.put("type", subjectRdfType);
-                  subject.put("name", subjectName);
-                  subject.put("link", subjectRdfLink);
-                  jsonSubjects.add(subject);
+              org.jsoup.nodes.Document subjectControlledDetailsDoc = Jsoup.parse(subjectControlledDetailsStr);
+              Elements dctermsSubjects = subjectControlledDetailsDoc.select("subjects > dcterms|subject");
+              if (dctermsSubjects != null && dctermsSubjects.size() > 0) {
+                for (int j=0; j<dctermsSubjects.size(); j++) {
+                  Element dctermsSubject = dctermsSubjects.get(j);
+                  // e.g.: <dcterms:subject rdf:resource="http://d-nb.info/gnd/4037764-7"/>
+                  String rdfIdSubject = dctermsSubject.attr("rdf:resource");
+                  Subject subject = ProjectReader.getInstance().getSubject(rdfIdSubject);
+                  if (subject != null) {
+                    String subjectRdfType = subject.getType();
+                    String subjectRdfLink = subject.getRdfId();
+                    String subjectName = subject.getName();
+                    JSONObject jsonSubject = new JSONObject();
+                    jsonSubject.put("type", subjectRdfType);
+                    jsonSubject.put("name", subjectName);
+                    jsonSubject.put("link", subjectRdfLink);
+                    jsonSubjects.add(jsonSubject);
+                  }
                 }
               }
               jsonHit.put("subjectsControlled", jsonSubjects);
