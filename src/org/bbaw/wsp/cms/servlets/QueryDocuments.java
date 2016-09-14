@@ -1262,6 +1262,11 @@ public class QueryDocuments extends HttpServlet {
               docTitle = StringUtils.resolveXmlEntities(docTitle);
               jsonHit.put("title", docTitle);
             }
+            IndexableField alternativeTitleField = doc.getField("alternativeTitle");
+            if (alternativeTitleField != null) {
+              String alternativeTitle = alternativeTitleField.stringValue();
+              jsonHit.put("alternativeTitle", alternativeTitle);
+            }
             if (languageField != null) {
               jsonHit.put("language", lang);
             }
@@ -1293,15 +1298,19 @@ public class QueryDocuments extends HttpServlet {
             if (docPageCountField != null) {
               jsonHit.put("pageCount", docPageCountField.stringValue());
             }
+            IndexableField extentField = doc.getField("extent");
+            if (extentField != null) {
+              jsonHit.put("extent", extentField.stringValue());
+            }
             ArrayList<String> hitFragments = doc.getHitFragments();
-            JSONArray jasonFragments = new JSONArray();
+            JSONArray jsonFragments = new JSONArray();
             if (hitFragments != null) {
               for (int j = 0; j < hitFragments.size(); j++) {
                 String hitFragment = hitFragments.get(j);
-                jasonFragments.add(hitFragment);
+                jsonFragments.add(hitFragment);
               }
             }
-            jsonHit.put("fragments", jasonFragments);
+            jsonHit.put("fragments", jsonFragments);
             
             IndexableField entitiesDetailsField = doc.getField("entitiesDetails");
             if (entitiesDetailsField != null) {
