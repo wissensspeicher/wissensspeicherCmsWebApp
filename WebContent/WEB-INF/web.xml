@@ -25,6 +25,16 @@
     <url-pattern>/query/QueryMdSystem</url-pattern>
   </servlet-mapping>
   <servlet>
+    <description>ProjectReader</description>
+    <display-name>ProjectReader</display-name>
+    <servlet-name>ProjectReader</servlet-name>
+    <servlet-class>org.bbaw.wsp.cms.servlets.ProjectReader</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProjectReader</servlet-name>
+    <url-pattern>/query/ProjectReader</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>GetDocument</description>
     <display-name>GetDocument</display-name>
     <servlet-name>GetDocument</servlet-name>
