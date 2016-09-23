@@ -181,12 +181,19 @@
           <li>operation (required)
             <ul>
               <li>getProjects (no parameter): all projects</li>
+              <li>getProjectsSorted (parameter "sortBy": "id", "name"): projects sorted by "sortBy")</li>
               <li>getProjectsByProjectType (parameter "projectType"): projects with this projectType)</li>
+              <li>getProjectsByStatus (parameter "status"): projects with this status)</li>
+              <li>getCollections (parameter "projectRdfId"): collections of project with this projectRdfId)</li>
+              <li>getSubjects (no parameter): all subjects of all projects)</li>
+              <li>getSubjects (parameter "projectRdfId"): subjects of project with this projectRdfId)</li>
+              <li>getStaff (no parameter): all staff of all projects)</li>
+              <li>getStaff (parameter "projectRdfId"): staff of project with this projectRdfId)</li>
             </ul>
           </li>
           <li>parameters (optional)
             <ul>
-              <li>parameters depending on operation (e.g. "projectType"")</li>
+              <li>parameters depending on operation (e.g. "projectType")</li>
             </ul>
           </li>
         </ul>
@@ -195,6 +202,7 @@
         <ul>
           <li>Example: <a href="query/ProjectReader?operation=getProjects">Get all projects</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getProjectsByProjectType&projectType=Vorhaben">Get all projects of project type "Vorhaben"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle"</a></li>
         </ul>
       </li>
     </ul>
