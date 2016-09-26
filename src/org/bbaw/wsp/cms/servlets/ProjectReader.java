@@ -107,6 +107,12 @@ public class ProjectReader extends HttpServlet {
           out.println(jsonStr);
           return;
         }
+      } else if (operation.equals("findProjects")) {
+        String query = request.getParameter("query"); 
+        ArrayList<Project> projects = projectReader.findProjects(query);
+        String jsonStr = toJsonStringProjects(projects);
+        out.println(jsonStr);
+        return;
       }
     } catch (Exception e) {
       throw new ServletException(e);
