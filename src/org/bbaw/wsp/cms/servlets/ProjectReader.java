@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bbaw.wsp.cms.collections.Organization;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.Subject;
@@ -113,6 +114,11 @@ public class ProjectReader extends HttpServlet {
         String jsonStr = toJsonStringProjects(projects);
         out.println(jsonStr);
         return;
+      } else if (operation.equals("getOrganizations")) {
+        ArrayList<Organization> organizations = projectReader.getOrganizations();
+        String jsonStr = toJsonStringOrganizations(organizations);
+        out.println(jsonStr);
+        return;
       }
     } catch (Exception e) {
       throw new ServletException(e);
@@ -139,6 +145,16 @@ public class ProjectReader extends HttpServlet {
     return jsonStr;
   }
 
+  private String toJsonStringOrganizations(ArrayList<Organization> organizations) throws ApplicationException {
+    JSONArray jsonOrganizations = new JSONArray();
+    for (int i=0; i<organizations.size(); i++) {
+      Organization organization = organizations.get(i);
+       jsonOrganizations.add(organization.toJsonObject());
+    }
+    String jsonStr = jsonOrganizations.toJSONString();
+    return jsonStr;
+  }
+  
   private String toJsonStringSubjects(ArrayList<Subject> subjects) throws ApplicationException {
     JSONArray jsonSubjects = new JSONArray();
     for (int i=0; i<subjects.size(); i++) {
