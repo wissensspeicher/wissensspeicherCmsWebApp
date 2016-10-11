@@ -186,13 +186,13 @@
               <li>getProjectsSorted (parameter "sortBy": "id", "title"): projects sorted by "sortBy"</li>
               <li>getProjectsByProjectType (parameter "projectType"): projects with this projectType</li>
               <li>getProjectsByStatus (parameter "status"): projects with this status</li>
-              <li>findProjects (parameter "query": google like query): projects which match the query</li>
               <li>getCollections (parameter "projectRdfId"): collections of project with this projectRdfId</li>
               <li>getSubjects (no parameter): all subjects of all projects</li>
               <li>getSubjects (parameter "projectRdfId"): subjects of project with this projectRdfId</li>
               <li>getStaff (no parameter): all staff of all projects</li>
               <li>getStaff (parameter "projectRdfId"): staff of project with this projectRdfId</li>
               <li>getOrganizations (no parameter): all organizations</li>
+              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, subjects, staffNames, collectionLabels, collectionAbstracts), "fieldExpansion", "translate", "page", "pageSize", "language"): projects which match the query</li>
             </ul>
           </li>
           <li>parameters (optional)
@@ -207,8 +207,8 @@
           <li>Example: <a href="query/ProjectReader?operation=getProjects">Get all projects</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getProjectsByProjectType&projectType=Vorhaben">Get all projects of project type "Vorhaben"</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=findProjects&query=title:Humb*dt abstract:Amerikareise">Find all projects which contain "Humb*dt" in field "title" and "Amerikareise in field "abstract"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=findProjects&query=title:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise">Find all projects which contain "Alexander von Humboldt" in field "title" or "Amerikareise in field "abstract"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:Humb*dt abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Humb*dt" in field "title" and "Amerikareise in field "abstract"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Alexander von Humboldt" in field "title" or "Amerikareise in field "abstract"</a></li>
         </ul>
       </li>
     </ul>

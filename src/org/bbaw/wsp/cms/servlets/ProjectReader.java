@@ -10,12 +10,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.bbaw.wsp.cms.collections.Organization;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.Subject;
+import org.bbaw.wsp.cms.document.Document;
+import org.bbaw.wsp.cms.document.Facets;
+import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.Person;
+import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -108,10 +115,73 @@ public class ProjectReader extends HttpServlet {
           out.println(jsonStr);
           return;
         }
-      } else if (operation.equals("findProjects")) {
+      } else if (operation.equals("queryProjects")) {
+        String queryLanguage = request.getParameter("queryLanguage"); 
+        if (queryLanguage == null)
+          queryLanguage = "gl";  // google like
         String query = request.getParameter("query"); 
-        ArrayList<Project> projects = projectReader.findProjects(query);
-        String jsonStr = toJsonStringProjects(projects);
+        String sortBy = request.getParameter("sortBy");
+        String[] sortFields = null;
+        if (sortBy != null && ! sortBy.trim().isEmpty())
+          sortFields = sortBy.split(" ");
+        String fieldExpansion = request.getParameter("fieldExpansion");
+        if (fieldExpansion == null)
+          fieldExpansion = "all";
+        String language = request.getParameter("language");
+        if (language != null && language.equals("none"))
+          language = null;
+        String translate = request.getParameter("translate");
+        Boolean translateBool = false;
+        if (translate != null && translate.equals("true"))
+          translateBool = true;
+        String pageStr = request.getParameter("page");
+        if (pageStr == null)
+          pageStr = "1";
+        int page = Integer.parseInt(pageStr);
+        String pageSizeStr = request.getParameter("pageSize");
+        if (pageSizeStr == null)
+          pageSizeStr = "10";
+        int pageSize = Integer.parseInt(pageSizeStr);
+        int from = (page * pageSize) - pageSize;  // e.g. 0
+        int to = page * pageSize - 1;  // e.g. 9
+        IndexHandler indexHandler = IndexHandler.getInstance();
+        Hits hits = indexHandler.queryProjects(queryLanguage, query, sortFields, fieldExpansion, language, from, to, translateBool);
+        int sizeTotalDocuments = hits.getSizeTotalDocuments();
+        ArrayList<Document> docs = hits.getHits();
+        ArrayList<Float> luceneScores = hits.getScores();
+        String luceneQuery = hits.getQuery().toString();
+        JSONObject jsonOutput = new JSONObject();
+        jsonOutput.put("query", query);
+        jsonOutput.put("luceneQuery", luceneQuery);
+        jsonOutput.put("numberOfHits", String.valueOf(hits.getSize()));
+        Facets facets = hits.getFacets();
+        if (facets != null && facets.size() > 0) {
+          String baseUrl = getBaseUrl(request);
+          facets.setBaseUrl(baseUrl);
+          facets.setOutputOptions("showAllFacets");
+          JSONObject jsonFacets = facets.toJsonObject();
+          jsonOutput.put("facets", jsonFacets);
+        }
+        jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
+        JSONArray jsonArray = new JSONArray();
+        for (int i=0; i<hits.getSize(); i++) {
+          JSONObject jsonHit = new JSONObject();
+          org.bbaw.wsp.cms.document.Document projectDoc = docs.get(i);
+          if (luceneScores != null) {
+            float luceneScore = luceneScores.get(i);
+            jsonHit.put("luceneScore", luceneScore);
+          }
+          IndexableField projectRdfIdField = projectDoc.getField("rdfId");
+          if (projectRdfIdField != null) {
+            String projectRdfId = projectRdfIdField.stringValue();
+            Project project = org.bbaw.wsp.cms.collections.ProjectReader.getInstance().getProjectByRdfId(projectRdfId);
+            if (project != null)
+              jsonHit.put("project", project.toJsonObject());
+          }
+          jsonArray.add(jsonHit);
+        }
+        jsonOutput.put("hits", jsonArray);
+        String jsonStr = jsonOutput.toJSONString();
         out.println(jsonStr);
         return;
       } else if (operation.equals("getOrganizations")) {
@@ -177,6 +247,14 @@ public class ProjectReader extends HttpServlet {
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doGet(request, response);
+  }
+
+  private String getBaseUrl(HttpServletRequest request) {
+    return getServerUrl(request) + request.getContextPath();
+  }
+
+  private String getServerUrl(HttpServletRequest request) {
+    return request.getScheme() + "://" + request.getServerName();
   }
 
 }
