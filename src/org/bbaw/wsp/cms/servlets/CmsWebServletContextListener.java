@@ -19,12 +19,12 @@ import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.MdSystemQueryHandler;
 import org.bbaw.wsp.cms.mdsystem.metadata.mdqueryhandler.detailedsearch.HitGraphContainer;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
-import org.bbaw.wsp.cms.transform.XslResourceTransformer;
 import org.bbaw.wsp.cms.transform.PageTransformer;
 
 public class CmsWebServletContextListener implements ServletContextListener {
   private ServletContext context = null;
   private FragmentTransformer fragmentTransformer = null;
+  private PageTransformer pageTransformer = null;
   private XQueryEvaluator xQueryEvaluator = null;  
   private static Logger LOGGER = Logger.getLogger(CmsWebServletContextListener.class);
   private HitGraphContainer sparqlNormdataResults;
@@ -49,6 +49,9 @@ public class CmsWebServletContextListener implements ServletContextListener {
       fragmentTransformer = new FragmentTransformer();
       context.setAttribute("fragmentTransformer", fragmentTransformer);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (fragmentTransformer)");
+      pageTransformer = new PageTransformer();
+      context.setAttribute("pageTransformer", pageTransformer);
+      LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (pageTransformer)");
       xQueryEvaluator = new XQueryEvaluator();
       context.setAttribute("xQueryEvaluator", xQueryEvaluator);
       LOGGER.info(CmsWebServletContextListener.class.getName() + ": contextInitialized (xQueryEvaluator)");
