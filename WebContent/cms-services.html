@@ -192,7 +192,7 @@
               <li>getStaff (no parameter): all staff of all projects</li>
               <li>getStaff (parameter "projectRdfId"): staff of project with this projectRdfId</li>
               <li>getOrganizations (no parameter): all organizations</li>
-              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, subjects, staffNames, collectionLabels, collectionAbstracts), "fieldExpansion", "translate", "page", "pageSize", "language"): projects which match the query</li>
+              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, subjects, staffNames, collectionLabels, collectionAbstracts), "fieldExpansion" (optional), "translate" (optional), "page" (optional), "pageSize" (optional), "language" (optional)): projects which match the query</li>
             </ul>
           </li>
           <li>parameters (optional)
@@ -207,8 +207,8 @@
           <li>Example: <a href="query/ProjectReader?operation=getProjects">Get all projects</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getProjectsByProjectType&projectType=Vorhaben">Get all projects of project type "Vorhaben"</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:Humb*dt abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Humb*dt" in field "title" and "Amerikareise in field "abstract"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Alexander von Humboldt" in field "title" or "Amerikareise in field "abstract"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:Humb*dt abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Humb*dt" in field "label" and "Amerikareise in field "abstract"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Alexander von Humboldt" in field "label" or "Amerikareise in field "abstract"</a></li>
         </ul>
       </li>
     </ul>
