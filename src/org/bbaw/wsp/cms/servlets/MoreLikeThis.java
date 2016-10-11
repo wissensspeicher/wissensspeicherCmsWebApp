@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectReader;
@@ -34,7 +33,6 @@ public class MoreLikeThis extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  request.setCharacterEncoding("utf-8");
 	  response.setCharacterEncoding("utf-8");
-	  String additionalInfo = request.getParameter("addInf");
 	  String outputFormat = request.getParameter("outputFormat");
 	  if (outputFormat == null)
 	    outputFormat = "html";
@@ -192,55 +190,6 @@ public class MoreLikeThis extends HttpServlet {
             }
           }
           jsonWrapper.put("fragments", jasonFragments);
-          
-          if(additionalInfo != null) {
-            if(additionalInfo.equals("true")) {
-              JSONArray jsonNames = new JSONArray();
-              Hits persHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:persName", 0, 100);
-              ArrayList<Document> namesList = persHits.getHits();
-              for (Document nameDoc : namesList) {
-                IndexableField docPersNameField = nameDoc.getField("xmlContent");
-                if (docPersNameField != null) {
-                  String docPersName = docPersNameField.stringValue();
-                  docPersName = docPersName.replaceAll("\\n", "");
-                  String persNameAttribute = docPersName; 
-                  if(persNameAttribute.contains("persName nymRef"))
-                    persNameAttribute = docPersName.replaceAll("<persName nymRef=\"(.+?)\".+?</persName>", "$1");
-                  if(persNameAttribute.contains("persName name="))
-                    persNameAttribute = docPersName.replaceAll("<persName name=\"(.+?)\".+?</persName>", "$1");
-                  if(persNameAttribute.contains("persName key="))
-                    persNameAttribute = docPersName.replaceAll("<persName.*?>(.*?)</persName>", "$1");
-                  persNameAttribute = persNameAttribute.replaceAll("<persName.*?>(.*?)</persName>", "$1");
-                  persNameAttribute = persNameAttribute.replaceAll("&lt;|&gt;|<|>", "");
-                  persNameAttribute = persNameAttribute.trim();
-                  JSONObject nameAndLink = new JSONObject();
-                  //TODO was tun mit dupilaten?
-                  nameAndLink.put("name", persNameAttribute);
-                  nameAndLink.put("link", "http://pdrdev.bbaw.de/concord/1-4/?n="+URIUtil.encodeQuery(persNameAttribute));
-                  jsonNames.add(nameAndLink);
-                }
-              }
-              jsonWrapper.put("persNames", jsonNames);
-              JSONArray jsonPlaces = new JSONArray();
-              Hits placeHits = indexHandler.queryDocument(docIdField.stringValue(), "elementName:placeName", 0, 100);
-              ArrayList<Document> placeList = placeHits.getHits();
-              for (Document placeDoc : placeList) {
-                IndexableField docPlaceField = placeDoc.getField("xmlContent");
-                if (docPlaceField != null) {
-                  String docPlace = docPlaceField.stringValue();
-                  docPlace = docPlace.replaceAll("\\n", "");
-                  String placeAttribute = docPlace.replaceAll("<placeName name=\"(.+?)\".+?</placeName>", "$1");
-                  placeAttribute = placeAttribute.replaceAll("<placeName.*?>(.*?)</placeName>", "$1");
-                  placeAttribute = placeAttribute.trim();
-                  //TODO was tun mit dupilaten?
-                  JSONObject placeObj = new JSONObject(); 
-                  placeObj.put("place", placeAttribute);
-                  jsonPlaces.add(placeObj);
-                }
-              }
-              jsonWrapper.put("placeNames", jsonPlaces);
-            }
-          }
           jsonArray.add(jsonWrapper);
         }
         jsonEncoder.putJsonObj("hits", jsonArray);
