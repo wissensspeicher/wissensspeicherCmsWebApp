@@ -42,7 +42,6 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
-  private static final String WBP_LINK = "http://www.woerterbuch-portal.de/wbp/woebus_alle/Suche/result?SUBMIT=Suche&WDG=1&DRW=1&GRIMM=1&GRIMM2=1&GWB=1&ELEXIKO=1&VIPM=1&DWDS=9&eingabe=";
 
   private XQueryEvaluator xQueryEvaluator = null;
   
@@ -1080,11 +1079,6 @@ public class QueryDocuments extends HttpServlet {
         if (outputOptions.contains("showNumberOfDifferentTerms") || outputOptions.equals("showAll")) {
           htmlStrBuilder.append("<li data-jstree=\"{'icon':'glyphicon glyphicon-info-sign'}\">Number of different terms in all documents: " + sizeTotalTerms + "</li>");
         }
-        if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
-          String dictionaryUrl = WBP_LINK + query;
-          dictionaryUrl = URIUtil.encodeQuery(dictionaryUrl); 
-          htmlStrBuilder.append("<li data-jstree='{\"icon\":\"glyphicon glyphicon-arrow-right\"}'><a href=\"" + dictionaryUrl + "\">Dictionary information for: " + query + "</a></li>");
-        }
         htmlStrBuilder.append("</ul>");
         htmlStrBuilder.append("</li>");
         htmlStrBuilder.append("</ul>");
@@ -1120,11 +1114,6 @@ public class QueryDocuments extends HttpServlet {
         }
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
-        if (outputOptions.contains("showWordInfo") || outputOptions.equals("showAll")) {
-          String dictUrl = WBP_LINK + query;
-          String encodedDictUrl = URIUtil.encodeQuery(dictUrl);
-          jsonOutput.put("dictUrl", encodedDictUrl);
-        }
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
           JSONArray jsonArray = new JSONArray();
           for (int i=0; i<docsSize; i++) {
