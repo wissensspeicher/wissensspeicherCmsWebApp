@@ -48,6 +48,15 @@
             </li>
             </ul>
           </li>
+          <li>groupBy (optional)
+            <ul>
+              <li>fieldName (if fieldName ends with a number x in parantheses (e.g. projectId(5) then for each fieldName value the best x hits are computed)
+                <ul>
+                  <li>supported fields: projectId</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
           <li>fieldExpansion (optional)
             <ul>
               <li>query is expanded automatically by OR on predefined content fields such as: author, title, description, subject, subjectControlled, swd, ddc, persons, places, tokenOrig/tokenMorph</li>

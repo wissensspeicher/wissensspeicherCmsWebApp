@@ -147,7 +147,6 @@ public class ProjectReader extends HttpServlet {
         Hits hits = indexHandler.queryProjects(queryLanguage, query, sortFields, fieldExpansion, language, from, to, translateBool);
         int sizeTotalDocuments = hits.getSizeTotalDocuments();
         ArrayList<Document> docs = hits.getHits();
-        ArrayList<Float> luceneScores = hits.getScores();
         String luceneQuery = hits.getQuery().toString();
         JSONObject jsonOutput = new JSONObject();
         jsonOutput.put("query", query);
@@ -166,9 +165,9 @@ public class ProjectReader extends HttpServlet {
         for (int i=0; i<hits.getSize(); i++) {
           JSONObject jsonHit = new JSONObject();
           org.bbaw.wsp.cms.document.Document projectDoc = docs.get(i);
-          if (luceneScores != null) {
-            float luceneScore = luceneScores.get(i);
-            jsonHit.put("luceneScore", luceneScore);
+          Float score = projectDoc.getScore();
+          if (score != null) {
+            jsonHit.put("luceneScore", score);
           }
           IndexableField projectRdfIdField = projectDoc.getField("rdfId");
           if (projectRdfIdField != null) {

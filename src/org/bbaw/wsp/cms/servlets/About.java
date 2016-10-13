@@ -216,7 +216,7 @@ public class About extends HttpServlet {
     String queryStr = "+projectId:pdr +title:(+" + surName + " +" + foreName + ")";
     if (foreName == null)
       queryStr = "+projectId:pdr +title:" + surName;
-    Hits hits = indexHandler.queryDocuments("lucene", queryStr, null, "none", null, 0, 9, false, false);
+    Hits hits = indexHandler.queryDocuments("lucene", queryStr, null, null, "none", null, 0, 9, false, false);
     if (hits != null) {
       int hitsSize = hits.getSize();
       if (hitsSize > 0) {

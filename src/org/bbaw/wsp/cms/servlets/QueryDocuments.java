@@ -27,6 +27,7 @@ import org.bbaw.wsp.cms.collections.Subject;
 import org.bbaw.wsp.cms.document.DBpediaResource;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
+import org.bbaw.wsp.cms.document.GroupDocuments;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -37,7 +38,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
-import de.mpg.mpiwg.berlin.mpdl.util.StringUtils;
 import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
@@ -66,6 +66,7 @@ public class QueryDocuments extends HttpServlet {
     String[] sortFields = null;
     if (sortBy != null && ! sortBy.trim().isEmpty())
       sortFields = sortBy.split(" ");
+    String groupBy = request.getParameter("groupBy");
     String fieldExpansion = request.getParameter("fieldExpansion");
     if (fieldExpansion == null)
       fieldExpansion = "all";
@@ -118,7 +119,7 @@ public class QueryDocuments extends HttpServlet {
       if (requestHitFragments == null || requestHitFragments.equals("true"))
         withHitHighlights = true;
       query = query.replaceAll("%22", "\""); // if double quote is percent encoded
-      Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
+      Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, groupBy, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
       ArrayList<Document> docs = null;
@@ -130,7 +131,6 @@ public class QueryDocuments extends HttpServlet {
         hitsSize = hits.getSize();
       if (docs != null)
         docsSize = docs.size();
-      ArrayList<Float> luceneScores = hits.getScores();
       Date end = new Date();
       long elapsedTime = end.getTime() - begin.getTime();
       String baseUrl = getBaseUrl(request);
@@ -207,9 +207,7 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("<tbody>");
         for (int i=0; i<docsSize; i++) {
           Document doc = docs.get(i);
-          float luceneScore = -1;
-          if (luceneScores != null)
-            luceneScore = luceneScores.get(i);
+          Float luceneScore = doc.getScore();
           IndexableField docProjectIdField = doc.getField("projectId");
           String projectId = null;
           if (docProjectIdField != null) {
@@ -717,9 +715,7 @@ public class QueryDocuments extends HttpServlet {
           htmlStrBuilder.append("<tbody>");
           for (int i=0; i<docsSize; i++) {
             Document doc = docs.get(i);
-            float luceneScore = -1;
-            if (luceneScores != null)
-              luceneScore = luceneScores.get(i);
+            Float luceneScore = doc.getScore();
             IndexableField docProjectIdField = doc.getField("projectId");
             String projectId = null;
             if (docProjectIdField != null) {
@@ -1115,325 +1111,25 @@ public class QueryDocuments extends HttpServlet {
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
-          JSONArray jsonArray = new JSONArray();
+          JSONArray jsonHits = new JSONArray();
           for (int i=0; i<docsSize; i++) {
-            JSONObject jsonHit = new JSONObject();
             org.bbaw.wsp.cms.document.Document doc = docs.get(i);
-            if (luceneScores != null) {
-              float luceneScore = luceneScores.get(i);
-              jsonHit.put("luceneScore", luceneScore);
-            }
-            IndexableField docProjectIdField = doc.getField("projectId");
-            String projectId = null;
-            if (docProjectIdField != null) {
-              projectId = docProjectIdField.stringValue();
-              jsonHit.put("projectId", projectId);
-            }
-            Project project = null;
-            if (projectId != null) {
-              JSONObject jsonProject = new JSONObject();
-              project = ProjectReader.getInstance().getProject(projectId);
-              jsonProject.put("id", projectId);
-              if (project != null) {
-                String projectTitle = project.getTitle();
-                if (projectTitle != null) {
-                  jsonProject.put("title", projectTitle);
-                }
-                String projectUrl = project.getHomepageUrl();
-                if (projectUrl != null) {
-                  String encoded = URIUtil.encodeQuery(projectUrl);
-                  jsonProject.put("url", encoded);
-                }
-                jsonHit.put("project", jsonProject);
-              }
-            }
-            IndexableField collectionRdfIdField = doc.getField("collectionRdfId");
-            if (collectionRdfIdField != null) {
-              String collectionRdfId = collectionRdfIdField.stringValue();
-              if (collectionRdfId != null && ! collectionRdfId.isEmpty() && project != null) {
-                JSONObject jsonCollection = new JSONObject();
-                jsonCollection.put("rdfId", collectionRdfId);
-                ProjectCollection coll = project.getCollection(collectionRdfId);
-                String collectionTitle = coll.getTitle();
-                if (collectionTitle != null)
-                  jsonCollection.put("title", collectionTitle);
-                String collectionHomepageUrl = coll.getHomepageUrl();
-                if (collectionHomepageUrl != null)
-                  jsonCollection.put("url", collectionHomepageUrl);
-                jsonHit.put("collection", jsonCollection);
-              }
-            }
-            IndexableField databaseRdfIdField = doc.getField("databaseRdfId");
-            if (databaseRdfIdField != null) {
-              String databaseRdfId = databaseRdfIdField.stringValue();
-              if (databaseRdfId != null && ! databaseRdfId.isEmpty()) {
-                JSONObject jsonDatabase = new JSONObject();
-                jsonDatabase.put("rdfId", databaseRdfId);
-                jsonHit.put("database", jsonDatabase);
-              }
-            }
-            IndexableField languageField = doc.getField("language");
-            String lang = "";
-            if (languageField != null) {
-              lang = languageField.stringValue();
-            }
-            IndexableField docIdField = doc.getField("docId");
-            String docId = null;
-            if(docIdField != null) {
-              docId = docIdField.stringValue();
-              jsonHit.put("docId", docId);
-            }
-            IndexableField docUriField = doc.getField("uri");
-            if (docUriField != null) {
-              String docUri = docUriField.stringValue();
-              String encoded = URIUtil.encodeQuery(docUri);
-              jsonHit.put("uri", encoded);
-            }
-            // project link
-            IndexableField webUriField = doc.getField("webUri");
-            String webUri = null;
-            if (webUriField != null)
-              webUri = webUriField.stringValue();
-            if (webUri != null) {
-              if (! webUri.contains("%"))
-                webUri = URIUtil.encodeQuery(webUri);
-              webUri = webUri.replaceAll("%23", "#");
-              jsonHit.put("webUri", webUri);
-            }
-            if (project != null) {
-              String homepageUrl = project.getHomepageUrl();
-              if (homepageUrl != null) {
-                String encoded = URIUtil.encodeQuery(homepageUrl);
-                jsonHit.put("webBaseUri", encoded);
-              }
-              String projectRdfId = project.getRdfId();
-              if (projectRdfId != null) {
-                String projectDetailsUrl = baseUrl + "/query/QueryMdSystem?query=" + URIUtil.encodeQuery(projectRdfId) + "&detailedSearch=true";
-                jsonHit.put("projectDetailsUri", projectDetailsUrl);
-                jsonHit.put("rdfUri", projectRdfId);
-              }
-            }
-            IndexableField docAuthorField = doc.getField("author");
-            if (docAuthorField != null) {
-              JSONArray jsonDocAuthorDetails = new JSONArray();
-              IndexableField docAuthorDetailsField = doc.getField("authorDetails");
-              if (docAuthorDetailsField != null) {
-                String docAuthorDetailsXmlStr = docAuthorDetailsField.stringValue();
-                jsonDocAuthorDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, docAuthorDetailsXmlStr, baseUrl, lang);
-              } else {
-                String docAuthor = docAuthorField.stringValue();
-                docAuthor = StringUtils.resolveXmlEntities(docAuthor);
-                JSONObject jsonDocAuthor = new JSONObject();
-                jsonDocAuthor.put("role", "author");
-                jsonDocAuthor.put("name", docAuthor);
-                String aboutPersonLink = baseUrl + "/query/About?query=" + docAuthor + "&type=person";
-                if (lang != null && ! lang.isEmpty())
-                  aboutPersonLink = aboutPersonLink + "&language=" + lang;
-                String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
-                jsonDocAuthor.put("referenceAbout", aboutLinkEnc);
-                jsonDocAuthorDetails.add(jsonDocAuthor);
-              }
-              jsonHit.put("author", jsonDocAuthorDetails);
-            }
-            IndexableField docTitleField = doc.getField("title");
-            if (docTitleField != null) {
-              String docTitle = docTitleField.stringValue();
-              docTitle = StringUtils.resolveXmlEntities(docTitle);
-              jsonHit.put("title", docTitle);
-            }
-            IndexableField alternativeTitleField = doc.getField("alternativeTitle");
-            if (alternativeTitleField != null) {
-              String alternativeTitle = alternativeTitleField.stringValue();
-              jsonHit.put("alternativeTitle", alternativeTitle);
-            }
-            if (languageField != null) {
-              jsonHit.put("language", lang);
-            }
-            IndexableField descriptionField = doc.getField("description");
-            if (descriptionField != null) {
-              String description = descriptionField.stringValue();
-              description = StringUtils.resolveXmlEntities(description);
-              jsonHit.put("description", description);
-            }
-            IndexableField docDateField = doc.getField("date");
-            if (docDateField != null) {
-              jsonHit.put("date", docDateField.stringValue());
-            }
-            IndexableField lastModifiedField = doc.getField("lastModified");
-            if (lastModifiedField != null) {
-              jsonHit.put("lastModified", lastModifiedField.stringValue());
-            }
-            IndexableField typeField = doc.getField("type");
-            if (typeField != null) {
-              String type = typeField.stringValue();
-              jsonHit.put("type", type);
-            }
-            IndexableField systemTypeField = doc.getField("systemType");
-            if (systemTypeField != null) {
-              String systemType = systemTypeField.stringValue();
-              jsonHit.put("systemType", systemType);
-            }
-            IndexableField docPageCountField = doc.getField("pageCount");
-            if (docPageCountField != null) {
-              jsonHit.put("pageCount", docPageCountField.stringValue());
-            }
-            IndexableField extentField = doc.getField("extent");
-            if (extentField != null) {
-              jsonHit.put("extent", extentField.stringValue());
-            }
-            ArrayList<String> hitFragments = doc.getHitFragments();
-            JSONArray jsonFragments = new JSONArray();
-            if (hitFragments != null) {
-              for (int j = 0; j < hitFragments.size(); j++) {
-                String hitFragment = hitFragments.get(j);
-                jsonFragments.add(hitFragment);
-              }
-            }
-            jsonHit.put("fragments", jsonFragments);
-            
-            IndexableField entitiesDetailsField = doc.getField("entitiesDetails");
-            if (entitiesDetailsField != null) {
-              String entitiesDetailsXmlStr = entitiesDetailsField.stringValue();
-              JSONArray jsonDocEntitiesDetails = docEntitiesDetailsXmlStrToJson(xQueryEvaluator, entitiesDetailsXmlStr, baseUrl, lang);
-              jsonHit.put("entities", jsonDocEntitiesDetails);
-            }
-            
-            IndexableField personsField = doc.getField("persons");
-            IndexableField personsDetailsField = doc.getField("personsDetails");
-            JSONArray jsonDocPersonsDetails = new JSONArray();
-            if (personsDetailsField != null) {
-              String personsDetailsXmlStr = personsDetailsField.stringValue();
-              jsonDocPersonsDetails = docPersonsDetailsXmlStrToJson(xQueryEvaluator, personsDetailsXmlStr, baseUrl, lang);
-            } else if (personsField != null) {
-              String personsStr = personsField.stringValue();
-              String[] persons = personsStr.split("###");  // separator of persons
-              for (int j=0; j<persons.length; j++) {
-                String personName = persons[j];
-                personName = StringUtils.resolveXmlEntities(personName);
-                JSONObject jsonDocPerson = new JSONObject();
-                jsonDocPerson.put("role", "mentioned");
-                jsonDocPerson.put("name", personName);
-                String aboutPersonLink = baseUrl + "/query/About?query=" + personName + "&type=person";
-                if (lang != null && ! lang.isEmpty())
-                  aboutPersonLink = aboutPersonLink + "&language=" + lang;
-                String aboutLinkEnc = URIUtil.encodeQuery(aboutPersonLink);
-                jsonDocPerson.put("referenceAbout", aboutLinkEnc);
-                jsonDocPersonsDetails.add(jsonDocPerson);
-              }
-            }
-            if (! jsonDocPersonsDetails.isEmpty())
-              jsonHit.put("persons", jsonDocPersonsDetails);
-
-            IndexableField placesField = doc.getField("places");
-            if (placesField != null) {
-              JSONArray jsonPlaces = new JSONArray();
-              String placesStr = placesField.stringValue();
-              String[] places = placesStr.split("###");  // separator of places
-              places = cleanNames(places);
-              Arrays.sort(places, ignoreCaseComparator);
-              for (int j=0; j<places.length; j++) {
-                String placeName = places[j];
-                if (! placeName.isEmpty()) {
-                  JSONObject placeNameAndLink = new JSONObject();
-                  String placeLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(placeName) + "&type=place";
-                  if (lang != null && ! lang.isEmpty())
-                    placeLink = placeLink + "&language=" + lang;
-                  placeNameAndLink.put("name", placeName);
-                  placeNameAndLink.put("link", placeLink);  
-                  jsonPlaces.add(placeNameAndLink);
-                }
-              }
-              jsonHit.put("places", jsonPlaces);
-            }
-            IndexableField subjectControlledDetailsField = doc.getField("subjectControlledDetails");
-            if (subjectControlledDetailsField != null) {
-              JSONArray jsonSubjects = new JSONArray();
-              String subjectControlledDetailsStr = subjectControlledDetailsField.stringValue();
-              org.jsoup.nodes.Document subjectControlledDetailsDoc = Jsoup.parse(subjectControlledDetailsStr);
-              Elements dctermsSubjects = subjectControlledDetailsDoc.select("subjects > dcterms|subject");
-              if (dctermsSubjects != null && dctermsSubjects.size() > 0) {
-                for (int j=0; j<dctermsSubjects.size(); j++) {
-                  Element dctermsSubject = dctermsSubjects.get(j);
-                  // e.g.: <dcterms:subject rdf:resource="http://d-nb.info/gnd/4037764-7"/>
-                  String rdfIdSubject = dctermsSubject.attr("rdf:resource");
-                  Subject subject = ProjectReader.getInstance().getSubject(rdfIdSubject);
-                  if (subject != null) {
-                    String subjectRdfType = subject.getType();
-                    String subjectRdfLink = subject.getRdfId();
-                    String subjectName = subject.getName();
-                    JSONObject jsonSubject = new JSONObject();
-                    jsonSubject.put("type", subjectRdfType);
-                    jsonSubject.put("name", subjectName);
-                    jsonSubject.put("link", subjectRdfLink);
-                    jsonSubjects.add(jsonSubject);
-                  }
-                }
-              }
-              jsonHit.put("subjectsControlled", jsonSubjects);
-            }
-            IndexableField subjectField = doc.getField("subject");
-            if (subjectField != null) {
-              JSONArray jsonSubjects = new JSONArray();
-              String subjectStr = subjectField.stringValue();
-              String[] subjects = subjectStr.split("[,]");  // one separator of subjects
-              if (subjectStr.contains("###"))
-                subjects = subjectStr.split("###");  // another separator of subjects
-              subjects = cleanNames(subjects);
-              Arrays.sort(subjects, ignoreCaseComparator);
-              for (int j=0; j<subjects.length; j++) {
-                String subjectName = subjects[j];
-                if (! subjectName.isEmpty()) {
-                  JSONObject subjectNameAndLink = new JSONObject();
-                  subjectNameAndLink.put("name", subjectName);
-                  String subjectLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(subjectName) + "&type=subject";
-                  if (lang != null && ! lang.isEmpty())
-                    subjectLink = subjectLink + "&language=" + lang;
-                  subjectNameAndLink.put("link", subjectLink);
-                  jsonSubjects.add(subjectNameAndLink);
-                }
-              }
-              jsonHit.put("subjects", jsonSubjects);
-            }
-            IndexableField swdField = doc.getField("swd");
-            if (swdField != null) {
-              JSONArray jsonSwd = new JSONArray();
-              String swdStr = swdField.stringValue();
-              String[] swdEntries = swdStr.split("[,]");  // separator of swd entries
-              swdEntries = cleanNames(swdEntries);
-              Arrays.sort(swdEntries, ignoreCaseComparator);
-              for (int j=0; j<swdEntries.length; j++) {
-                String swdName = swdEntries[j];
-                if (! swdName.isEmpty()) {
-                  JSONObject swdNameAndLink = new JSONObject();
-                  swdNameAndLink.put("name", swdName);
-                  String swdLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(swdName) + "&type=swd";
-                  if (lang != null && ! lang.isEmpty())
-                    swdLink = swdLink + "&language=" + lang;
-                  swdNameAndLink.put("link", swdLink);  
-                  jsonSwd.add(swdNameAndLink);
-                }
-              }
-              jsonHit.put("swd", jsonSwd);
-            }
-            IndexableField ddcField = doc.getField("ddc");
-            if (ddcField != null) {
-              JSONArray jsonDdc = new JSONArray();
-              String ddcStr = ddcField.stringValue();
-              if (! ddcStr.isEmpty()) {
-                JSONObject ddcNameAndLink = new JSONObject();
-                ddcNameAndLink.put("name", ddcStr);
-                String ddcLink = baseUrl + "/query/About?query=" + URIUtil.encodeQuery(ddcStr) + "&type=ddc";
-                if (lang != null && ! lang.isEmpty())
-                  ddcLink = ddcLink + "&language=" + lang;
-                ddcNameAndLink.put("link", ddcLink);
-                jsonDdc.add(ddcNameAndLink);
-              }
-              jsonHit.put("ddc", jsonDdc);
-            }
-  
-            jsonArray.add(jsonHit);
+            doc.setBaseUrl(baseUrl);
+            JSONObject jsonHit = doc.toJsonObject();
+            jsonHits.add(jsonHit);
           }
-          jsonOutput.put("hits", jsonArray);
+          jsonOutput.put("hits", jsonHits);
+        }
+        ArrayList<GroupDocuments> groupByHits = hits.getGroupByHits();
+        if (groupByHits != null) {
+          JSONArray jsonGroupByHits = new JSONArray();
+          for (int i=0; i<groupByHits.size(); i++) {
+            GroupDocuments groupDocuments = groupByHits.get(i);
+            groupDocuments.setBaseUrl(baseUrl);
+            JSONObject jsonGroupDocument = groupDocuments.toJsonObject();
+            jsonGroupByHits.add(jsonGroupDocument);
+          }
+          jsonOutput.put("groupByHits", jsonGroupByHits);
         }
         out.println(jsonOutput.toJSONString());
       }
@@ -1442,18 +1138,6 @@ public class QueryDocuments extends HttpServlet {
     }
   }
 
-  private JSONArray docEntitiesDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
-    ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
-    JSONArray retArray = new JSONArray();
-    for (int i=0; i<entities.size(); i++) {
-      DBpediaResource entity = entities.get(i);
-      entity.setBaseUrl(baseUrl);
-      JSONObject jsonEntity = entity.toJsonObject();
-      retArray.add(jsonEntity);
-    }  
-    return retArray;
-  }
-  
   private String docEntitiesDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docEntitiesDetailsXmlStr, String baseUrl, String language, boolean htmlSmart) throws ApplicationException {
     ArrayList<DBpediaResource> entities = DBpediaResource.fromXmlStr(xQueryEvaluator, docEntitiesDetailsXmlStr);
     ArrayList<DBpediaResource> entitiesPerson = new ArrayList<DBpediaResource>();
@@ -1531,21 +1215,6 @@ public class QueryDocuments extends HttpServlet {
       retHtmlStrBuilder.append("</li>");
     }
     return retHtmlStrBuilder.toString();
-  }
-  
-  private JSONArray docPersonsDetailsXmlStrToJson(XQueryEvaluator xQueryEvaluator, String docPersonsDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
-    ArrayList<Person> persons = Person.fromXmlStr(xQueryEvaluator, docPersonsDetailsXmlStr);
-    JSONArray retArray = new JSONArray();
-    for (int i=0; i<persons.size(); i++) {
-      Person person = persons.get(i);
-      String aboutPersonLink = "/query/About?query=" + person.getName() + "&type=person";
-      if (language != null && ! language.isEmpty())
-        aboutPersonLink = aboutPersonLink + "&language=" + language;
-      person.setAboutLink(baseUrl + aboutPersonLink);
-      JSONObject jsonPerson = person.toJsonObject();
-      retArray.add(jsonPerson);
-    }  
-    return retArray;
   }
   
   private String docPersonsDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docPersonsDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
