@@ -160,9 +160,9 @@
         });
         var params = window.location.search.substring(1);
         if (params.length > 0) {
-          if (params.contains("field1") || params.contains("field2")) {
+          if (params.indexOf("field1") != -1 || params.indexOf("field2") != -1) {
             attributeQuery(params);
-          } else if (params.contains("query")) {
+          } else if (params.indexOf("query") != -1) {
             fulltextQuery(params);
           } else {
             // nothing
