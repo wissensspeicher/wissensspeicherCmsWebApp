@@ -7,7 +7,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 
 import javax.servlet.ServletConfig;
@@ -110,7 +109,6 @@ public class QueryDocuments extends HttpServlet {
       return;
     }
     try {
-      Date begin = new Date();
       IndexHandler indexHandler = IndexHandler.getInstance();
       Boolean translateBool = false;
       if (translate != null && translate.equals("true"))
@@ -129,10 +127,9 @@ public class QueryDocuments extends HttpServlet {
       int docsSize = -1;
       if (hits != null)
         hitsSize = hits.getSize();
+      long elapsedTime = hits.getElapsedTime();
       if (docs != null)
         docsSize = docs.size();
-      Date end = new Date();
-      long elapsedTime = end.getTime() - begin.getTime();
       String baseUrl = getBaseUrl(request);
       Comparator<String> ignoreCaseComparator = new Comparator<String>() {
         public int compare(String s1, String s2) {
@@ -1110,6 +1107,7 @@ public class QueryDocuments extends HttpServlet {
         }
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
+        jsonOutput.put("elapsedTime", String.valueOf(elapsedTime));
         if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
           JSONArray jsonHits = new JSONArray();
           for (int i=0; i<docsSize; i++) {
