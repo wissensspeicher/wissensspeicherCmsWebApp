@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
+import org.bbaw.wsp.cms.collections.OutputType;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.ProjectReader;
@@ -332,8 +333,12 @@ public class QueryDocuments extends HttpServlet {
                   if (collectionTitle == null)
                     collectionTitle = "Collection homepage";
                   String collectionHomepageUrl = coll.getHomepageUrl();
+                  String collectionTypeStr = "";
+                  OutputType collType = coll.getType();
+                  if (collType != null)
+                    collectionTypeStr = "(Type: " + collType.getLabel() + ")";
                   if (collectionHomepageUrl != null)
-                    htmlStrBuilder.append(", Collection: <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
+                    htmlStrBuilder.append(", Collection" + collectionTypeStr + ": <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
                 }
               }
               IndexableField databaseRdfIdField = doc.getField("databaseRdfId");
