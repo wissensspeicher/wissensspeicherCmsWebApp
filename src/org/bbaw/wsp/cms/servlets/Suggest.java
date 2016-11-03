@@ -35,6 +35,11 @@ public class Suggest extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
     String countStr = request.getParameter("count");
+    final String minFreq = request.getParameter("frequency"); // Mindest Frequency des Wortes damit es im Ergebnis JSON aufgenommen wird
+    int frequency = (minFreq!= null)? Integer.parseInt(minFreq):2; // entweder die frequency wurde mit angegeben oder ein Defaulwert von 2 wird gesetzt
+    String suggestJSON = request.getParameter("clear"); // wenn true, dann wird ein sauberes key:value JSON für die google ähnliche suggest funktion zurückgegeben
+    
+    
     int count = 10;
     if (countStr != null)
       count = Integer.parseInt(countStr);
@@ -75,18 +80,35 @@ public class Suggest extends HttpServlet {
       } else if (outputFormat.equals("json")) {
         WspJsonEncoder jsonEncoder = WspJsonEncoder.getInstance();
         jsonEncoder.clear();
-        jsonEncoder.putStrings("query", query);
-        JSONArray jsonSuggestions = new JSONArray();
-        for (int i=0; i<suggestions.size(); i++) {
-          JSONObject jsonSuggestion = new JSONObject();
-          LookupResult suggestion = suggestions.get(i);
-          String suggestionStr = suggestion.key;
-          int suggestionValue = (int) suggestion.value;
-          jsonSuggestion.put("key", suggestionStr);
-          jsonSuggestion.put("freq", String.valueOf(suggestionValue));
-          jsonSuggestions.add(jsonSuggestion);
+        if(suggestJSON!=null && suggestJSON.equals("true")){
+        	JSONArray jsonSuggestions = new JSONArray();
+        	for (int x=0 ;x<suggestions.size();x++){
+        		LookupResult lookupres = suggestions.get(x);
+        		JSONObject jsonOb = new JSONObject();
+        		if(lookupres.value>=frequency){
+        			jsonOb.put("key", lookupres.key);
+        			jsonSuggestions.add(jsonOb);
+        			jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
+        		}
+        		
+        	}
+        	
         }
-        jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
+        else{
+        	
+        	jsonEncoder.putStrings("query", query);
+        	JSONArray jsonSuggestions = new JSONArray();
+        	for (int i=0; i<suggestions.size(); i++) {
+        		JSONObject jsonSuggestion = new JSONObject();
+        		LookupResult suggestion = suggestions.get(i);
+        		String suggestionStr = suggestion.key;
+        		int suggestionValue = (int) suggestion.value;
+        		jsonSuggestion.put("key", suggestionStr);
+        		jsonSuggestion.put("freq", String.valueOf(suggestionValue));
+        		jsonSuggestions.add(jsonSuggestion);
+        		jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
+        	}
+        }
         out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       } else if (outputFormat.equals("html")) {
         StringBuilder htmlStrBuilder = new StringBuilder();

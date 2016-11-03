@@ -31,30 +31,19 @@
               <ul>
                 <li>supported fields
                   <ul>
+                  <li>docId</li>
+                  <li>schemaName</li>
+                  <li>language</li>
                   <li>author</li>
                   <li>title</li>
                   <li>publisher</li>
                   <li>date</li>
                   <li>lastModified</li>
-                  <li>projectId</li>
-                  <li>collectionRdfId</li>
-                  <li>docId</li>
-                  <li>language</li>
-                  <li>schemaName</li>
                 </ul>
               </li>
               <li>default: hits are sorted by Lucene score (the most relevant hits first)</li>
               </ul>
             </li>
-            </ul>
-          </li>
-          <li>groupBy (optional)
-            <ul>
-              <li>fieldName (if fieldName ends with a number x in parantheses (e.g. projectId(10)) then for each fieldName value the best x hits (sorted by Lucene score) are computed, default value is 5)
-                <ul>
-                  <li>supported fields: projectId</li>
-                </ul>
-              </li>
             </ul>
           </li>
           <li>fieldExpansion (optional)
@@ -185,44 +174,6 @@
     </ul>
   </li>
 
-  <li><b>Url: /wspCmsWebApp/query/ProjectReader</b>
-    <ul>
-      <li>Request parameters
-        <ul>
-          <li>operation (required)
-            <ul>
-              <li>getProjects (no parameter): all projects</li>
-              <li>getProjectsSorted (parameter "sortBy": "id", "title"): projects sorted by "sortBy"</li>
-              <li>getProjectsByProjectType (parameter "projectType"): projects with this projectType</li>
-              <li>getProjectsByStatus (parameter "status"): projects with this status</li>
-              <li>getCollections (parameter "projectRdfId"): collections of project with this projectRdfId</li>
-              <li>getSubjects (no parameter): all subjects of all projects</li>
-              <li>getSubjects (parameter "projectRdfId"): subjects of project with this projectRdfId</li>
-              <li>getStaff (no parameter): all staff of all projects</li>
-              <li>getStaff (parameter "projectRdfId"): staff of project with this projectRdfId</li>
-              <li>getOrganizations (no parameter): all organizations</li>
-              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, subjects, staffNames, collectionLabels, collectionAbstracts), "fieldExpansion" (optional), "translate" (optional), "page" (optional), "pageSize" (optional), "language" (optional)): projects which match the query</li>
-            </ul>
-          </li>
-          <li>parameters (optional)
-            <ul>
-              <li>parameters depending on operation (e.g. "projectType")</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Response output
-        <ul>
-          <li>Example: <a href="query/ProjectReader?operation=getProjects">Get all projects</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=getProjectsByProjectType&projectType=Vorhaben">Get all projects of project type "Vorhaben"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:Humb*dt abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Humb*dt" in field "label" and "Amerikareise in field "abstract"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Alexander von Humboldt" in field "label" or "Amerikareise in field "abstract"</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  
   <li><b>Url: /wspCmsWebApp/query/About</b>
     <ul>
       <li>Request parameters
@@ -279,6 +230,19 @@
             <ul>
               <li>suggest query</li>
             </ul>
+          </li>
+          <li>frequency (optional)
+           <ul>
+           	<li>min. frequency of word to be listed in result JSON</li>
+           	<li>default: 2</li>
+           </ul>
+          </li>
+          <li>clear (optional) - if true, returns a wellformed JSON Array for the google like suggest function
+          	<ul>
+          		<li>true</li>
+          		<li>false</li>
+          		<li>default: false</li>
+          	</ul>
           </li>
           <li>count (optional)
             <ul>
@@ -406,6 +370,14 @@
               <li>default: html</li>
             </ul>
           </li>
+          <li>addInf (optional)
+            <ul>
+              <li>hits with additional information such as person names etc.</li>
+              <li>true</li>
+              <li>false</li>
+              <li>default: false</li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li>Response output
@@ -518,6 +490,88 @@
 <h2>Old unsupported CMS services</h2>
 
 <ul>   
+  <li><b>Url: /wspCmsWebApp/query/QueryDocument</b>
+    <ul>
+      <li>Request parameters
+        <ul>
+          <li>docId (required)
+            <ul>
+              <li>resource identifier (e.g. "/tei/de/Marie_1969-12-13.xml"</li>
+            </ul>
+          </li>
+          <li>query (required)
+            <ul>
+              <li>Lucene query (e.g. +tokenMorph:gebrauchen +tokenMorph:schmutzig)
+	            <ul>
+	              <li>supported fields
+	                <ul>
+		              <li>language (language: ISO 639-3 specifier with 3 characters, e.g. "ger" or "eng")</li>
+		              <li>pageNumber (page number of node in resource)</li>
+		              <li>lineNumber (line number of node in resource)</li>
+		              <li>elementName (element name of node, e.g. "s")</li>
+		              <li>elementPosition (position of node)</li>
+		              <li>elementAbsolutePosition (absolute position of node)</li>
+		              <li>elementPagePosition (position of node on page)</li>
+		              <li>xmlId (xml id of node)</li>
+		              <li>xpath (xpath of node, e.g. "/TEI[1]/text[1]/p[1]/s[5]")</li>
+		              <li>tokenOrig (original fulltext tokens of node)</li>
+		              <li>tokenReg (regularized fulltext tokens of node)</li>
+		              <li>tokenNorm (normalized fulltext tokens of node)</li>
+		              <li>tokenMorph (morphological base forms of fulltext tokens of node)</li>
+		              <li>default: tokenOrig</li>
+		            </ul>
+		          </li>
+	            </ul>
+	          </li>
+            </ul>
+          </li>
+          <li>language (optional)
+            <ul>
+              <li>ISO 639-3 specifier</li>
+              <li>default: automatically derived from query</li>
+            </ul>
+          </li>
+          <li>translate (optional)
+            <ul>
+              <li>automatic translation of the query</li>
+              <li>default: false</li>
+            </ul>
+          </li>
+          <li>page (optional)
+            <ul>
+              <li>hits page number</li>
+              <li>default: 1</li>
+            </ul>
+          </li>
+          <li>pageSize (optional)
+            <ul>
+              <li>hits page size</li>
+              <li>default: 10</li>
+            </ul>
+          </li>
+          <li>outputFormat (optional)
+            <ul>
+              <li>xml</li>
+              <li>html</li>
+              <li>default: xml</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Response output
+        <ul>
+          <li>nodes in resource which matches the query, hits are highlighted</li>
+          <li>Example: <a href="query/QueryDocument?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper">in this MEGA ressource: all nodes which contains "körper" in original content (XML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenOrig:körper&outputFormat=html">in this MEGA ressource: all nodes which contains "körper" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:bin&outputFormat=html">in this MEGA ressource: all nodes which contains morphological "bin" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&query=tokenMorph:später&outputFormat=html">iin this MEGA ressource: all nodes which contains morphological "später" in content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/test/test/Test_1789.xml&query=tokenOrig:sentence&outputFormat=html">in this Test ressource: all nodes which contains "sentence" in original content (HTML output)</a></li>
+          <li>Example: <a href="query/QueryDocument?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&query=elementName:p">in this MEGA ressource: all p elements (XML output)</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
   <li><b>Url: /mpiwg-mpdl-cms-web/query/XQueryDocument</b>
     <ul>
       <li>Request parameters
