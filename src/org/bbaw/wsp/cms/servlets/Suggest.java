@@ -1,7 +1,10 @@
 package org.bbaw.wsp.cms.servlets;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -12,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.search.suggest.Lookup.LookupResult;
 import org.apache.lucene.search.suggest.tst.TSTLookup;
-
+import org.bbaw.wsp.cms.general.Constants;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.bbaw.wsp.cms.servlets.util.WspJsonEncoder;
 import org.json.simple.JSONArray;
@@ -21,13 +24,32 @@ import org.json.simple.JSONValue;
 
 public class Suggest extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private static Hashtable<String,String> stopwords=new Hashtable<String,String>();
+  
+  
+  private boolean readStopwordlist(){
+	  try {
+		BufferedReader br = new BufferedReader(new FileReader(Constants.getInstance().getExternalDataDir()+"/suggest/suggest"));
+		String x;
+		while((x=br.readLine())!=null){
+			x=x.trim().toLowerCase();
+			stopwords.put(x, x);
+		}
+		br.close();
+		
+	} catch (Exception e) {
+		return false;
+	}
+	  return true;
+  }
   
   public Suggest() {
     super();
   }
 
   public void init(ServletConfig config) throws ServletException  {
-    super.init(config);
+	super.init(config);
+	readStopwordlist();
   }
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -82,11 +104,13 @@ public class Suggest extends HttpServlet {
         jsonEncoder.clear();
         if(suggestJSON!=null && suggestJSON.equals("true")){
         	JSONArray jsonSuggestions = new JSONArray();
+        	String mykey;
         	for (int x=0 ;x<suggestions.size();x++){
         		LookupResult lookupres = suggestions.get(x);
+        		mykey=lookupres.key;
         		JSONObject jsonOb = new JSONObject();
-        		if(lookupres.value>=frequency){
-        			jsonOb.put("key", lookupres.key);
+        		if(lookupres.value>=frequency&&!stopwords.containsKey(mykey)){
+        			jsonOb.put("key", mykey);
         			jsonSuggestions.add(jsonOb);
         			jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
         		}
