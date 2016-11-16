@@ -192,7 +192,7 @@
           <li>operation (required)
             <ul>
               <li>getProjects (no parameter): all projects</li>
-              <li>getProjectsSorted (parameter "sortBy": "id", "title"): projects sorted by "sortBy"</li>
+              <li>getProjectsSorted (parameter "sortBy": "id", "label"): projects sorted by "sortBy"</li>
               <li>getProjectsByProjectType (parameter "projectType"): projects with this projectType</li>
               <li>getProjectsByStatus (parameter "status"): projects with this status</li>
               <li>getCollections (parameter "projectRdfId"): collections of project with this projectRdfId</li>
@@ -201,7 +201,7 @@
               <li>getStaff (no parameter): all staff of all projects</li>
               <li>getStaff (parameter "projectRdfId"): staff of project with this projectRdfId</li>
               <li>getOrganizations (no parameter): all organizations</li>
-              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, subjects, staffNames, collectionLabels, collectionAbstracts), "fieldExpansion" (optional), "translate" (optional), "page" (optional), "pageSize" (optional), "language" (optional)): projects which match the query</li>
+              <li>queryProjects (parameters (description see QueryDocuments): "queryLanguage" (optional), "query" (supported query fields: id, label, abstract, type, duration, status, mainLanguage, subjects, place, periodOfTime, persons, staff, collectionLabels, collectionAbstracts), "fieldExpansion" (optional), "translate" (optional), "page" (optional), "pageSize" (optional), "language" (optional)): projects which match the query</li>
             </ul>
           </li>
           <li>parameters (optional)
@@ -478,6 +478,7 @@
               <li>delete (delete project(s): project data + project configuration files)</li>
               <li>status (show status information of project(s))</li>
               <li>updateCyle (update those projects where update cycle is reached or project configuration files have been changed)</li>
+              <li>indexProjects (index all projects metadata)</li>
             </ul>
           </li>
           <li>projects (optional)
