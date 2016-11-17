@@ -4,8 +4,17 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -57,9 +66,9 @@ public class Suggest extends HttpServlet {
     response.setCharacterEncoding("utf-8");
     String query = request.getParameter("query");
     String countStr = request.getParameter("count");
-    final String minFreq = request.getParameter("frequency"); // Mindest Frequency des Wortes damit es im Ergebnis JSON aufgenommen wird
-    int frequency = (minFreq!= null)? Integer.parseInt(minFreq):2; // entweder die frequency wurde mit angegeben oder ein Defaulwert von 2 wird gesetzt
-    String suggestJSON = request.getParameter("clear"); // wenn true, dann wird ein sauberes key:value JSON für die google ähnliche suggest funktion zurückgegeben
+    final String minFreq = request.getParameter("frequency"); // min. frequency of words to be listed in result JSON
+    int frequency = (minFreq!= null)? Integer.parseInt(minFreq):2; // min. frequency can be specified, default value is 2
+    String suggestJSON = request.getParameter("clear"); // if true, returns a wellformed sorted JSON Array for the google like suggest function
     
     
     int count = 10;
@@ -104,18 +113,41 @@ public class Suggest extends HttpServlet {
         jsonEncoder.clear();
         if(suggestJSON!=null && suggestJSON.equals("true")){
         	JSONArray jsonSuggestions = new JSONArray();
+        	
+        	ArrayList<Entry<Integer, String>> list = new ArrayList<Entry<Integer,String>>();
         	String mykey;
         	for (int x=0 ;x<suggestions.size();x++){
         		LookupResult lookupres = suggestions.get(x);
         		mykey=lookupres.key;
-        		JSONObject jsonOb = new JSONObject();
+        		
         		if(lookupres.value>=frequency&&!stopwords.containsKey(mykey)){
-        			jsonOb.put("key", mykey);
-        			jsonSuggestions.add(jsonOb);
-        			jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
+        			
+        			list.add(new AbstractMap.SimpleEntry<Integer, String>((int)lookupres.value,mykey));
+        			        			
         		}
         		
         	}
+        	//list is sorted descendingly by frequency        	
+        	list.sort(new Comparator<Map.Entry<Integer, String>>(){
+
+				@Override
+				public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
+					int a = o1.getKey();
+					int b = o2.getKey();
+					return (a==b)?0:((a<b)?1:-1);
+				}
+        		
+        	});
+        	
+        	for(int x=0;x<list.size();x++){
+        		JSONObject jsonob = new JSONObject();
+        		jsonob.put("key", list.get(x).getValue());
+        		jsonSuggestions.add(jsonob);
+        	}
+        	
+        	
+        	
+        	jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
         	
         }
         else{
@@ -130,8 +162,8 @@ public class Suggest extends HttpServlet {
         		jsonSuggestion.put("key", suggestionStr);
         		jsonSuggestion.put("freq", String.valueOf(suggestionValue));
         		jsonSuggestions.add(jsonSuggestion);
-        		jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
         	}
+        	jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
         }
         out.println(JSONValue.toJSONString(jsonEncoder.getJsonObject()));
       } else if (outputFormat.equals("html")) {
