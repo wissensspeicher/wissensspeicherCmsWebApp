@@ -1,0 +1,3 @@
+.gitignore
+WebContent/WEB-INF/lib/*
+dist/
