@@ -110,45 +110,32 @@ public class Suggest extends HttpServlet {
         jsonEncoder.clear();
         if(suggestJSON!=null && suggestJSON.equals("true")){
         	JSONArray jsonSuggestions = new JSONArray();
-        	
         	ArrayList<Entry<Integer, String>> list = new ArrayList<Entry<Integer,String>>();
         	String mykey;
         	for (int x=0 ;x<suggestions.size();x++){
         		LookupResult lookupres = suggestions.get(x);
         		mykey=lookupres.key;
-        		
         		if(lookupres.value>=frequency&&!stopwords.containsKey(mykey)){
-        			
         			list.add(new AbstractMap.SimpleEntry<Integer, String>((int)lookupres.value,mykey));
-        			        			
         		}
-        		
         	}
         	//list is sorted descendingly by frequency        	
         	list.sort(new Comparator<Map.Entry<Integer, String>>(){
-
-				@Override
+        		@Override
 				public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
 					int a = o1.getKey();
 					int b = o2.getKey();
 					return (a==b)?0:((a<b)?1:-1);
 				}
-        		
         	});
-        	
         	for(int x=0;x<list.size();x++){
         		JSONObject jsonob = new JSONObject();
         		jsonob.put("key", list.get(x).getValue());
         		jsonSuggestions.add(jsonob);
         	}
-        	
-        	
-        	
         	jsonEncoder.putJsonObj("suggestions", jsonSuggestions);
-        	
         }
         else{
-        	
         	jsonEncoder.putStrings("query", query);
         	JSONArray jsonSuggestions = new JSONArray();
         	for (int i=0; i<suggestions.size(); i++) {
