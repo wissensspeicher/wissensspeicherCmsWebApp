@@ -174,7 +174,7 @@ public class ProjectReader extends HttpServlet {
             String projectRdfId = projectRdfIdField.stringValue();
             Project project = org.bbaw.wsp.cms.collections.ProjectReader.getInstance().getProjectByRdfId(projectRdfId);
             if (project != null)
-              jsonHit.put("project", project.toJsonObject());
+              jsonHit.put("project", project.toJsonObject(true));
           }
           jsonArray.add(jsonHit);
         }
@@ -197,7 +197,7 @@ public class ProjectReader extends HttpServlet {
     JSONArray jsonProjects = new JSONArray();
     for (int i=0; i<projects.size(); i++) {
        Project project = projects.get(i);
-       jsonProjects.add(project.toJsonObject());
+       jsonProjects.add(project.toJsonObject(true));
     }
     String jsonStr = jsonProjects.toJSONString();
     return jsonStr;
