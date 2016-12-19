@@ -31,19 +31,19 @@
               <ul>
                 <li>supported fields
                   <ul>
-                  <li>author</li>
-                  <li>title</li>
-                  <li>publisher</li>
-                  <li>date</li>
-                  <li>lastModified</li>
-                  <li>projectId</li>
-                  <li>collectionRdfId</li>
-                  <li>docId</li>
-                  <li>language</li>
-                  <li>schemaName</li>
-                </ul>
-              </li>
-              <li>default: hits are sorted by Lucene score (the most relevant hits first)</li>
+                    <li>projectId</li>
+                    <li>collectionRdfId</li>
+                    <li>author</li>
+                    <li>title</li>
+                    <li>publisher</li>
+                    <li>date</li>
+                    <li>lastModified</li>
+                    <li>docId</li>
+                    <li>language</li>
+                    <li>schemaName</li>
+                  </ul>
+                </li>
+                <li>default: hits are sorted by Lucene score (the most relevant hits first)</li>
               </ul>
             </li>
             </ul>
@@ -52,9 +52,43 @@
             <ul>
               <li>fieldName (if fieldName ends with a number x in parantheses (e.g. projectId(10)) then for each fieldName value the best x hits (sorted by Lucene score) are computed, default value is 5)
                 <ul>
-                  <li>supported fields: projectId</li>
+                  <li>supported fields
+                    <ul>
+                      <li>projectId</li>
+                      <li>collectionRdfId</li>
+                      <li>author</li>
+                      <li>title</li>
+                      <li>publisher</li>
+                      <li>author</li>
+                      <li>docId</li>
+                      <li>language</li>
+                    </ul>
+                  </li>
                 </ul>
               </li>
+            </ul>
+          </li>
+          <li>groupBySortBy (optional)
+            <ul>
+              <li>fieldNames separated by blank
+              <ul>
+                <li>supported fields
+                  <ul>
+                    <li>projectId</li>
+                    <li>collectionRdfId</li>
+                    <li>author</li>
+                    <li>title</li>
+                    <li>publisher</li>
+                    <li>date</li>
+                    <li>lastModified</li>
+                    <li>docId</li>
+                    <li>language</li>
+                    <li>schemaName</li>
+                  </ul>
+                </li>
+                <li>default: hit groups are sorted by Lucene score (the most relevant groups first)</li>
+              </ul>
+            </li>
             </ul>
           </li>
           <li>fieldExpansion (optional)

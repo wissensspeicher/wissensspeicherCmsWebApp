@@ -67,6 +67,10 @@ public class QueryDocuments extends HttpServlet {
     if (sortBy != null && ! sortBy.trim().isEmpty())
       sortFields = sortBy.split(" ");
     String groupBy = request.getParameter("groupBy");
+    String groupBySortBy = request.getParameter("groupBySortBy");
+    String[] groupBySortFields = null;
+    if (groupBySortBy != null && ! groupBySortBy.trim().isEmpty())
+      groupBySortFields = groupBySortBy.split(" ");
     String fieldExpansion = request.getParameter("fieldExpansion");
     if (fieldExpansion == null)
       fieldExpansion = "all";
@@ -118,7 +122,7 @@ public class QueryDocuments extends HttpServlet {
       if (requestHitFragments == null || requestHitFragments.equals("true"))
         withHitHighlights = true;
       query = query.replaceAll("%22", "\""); // if double quote is percent encoded
-      Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, groupBy, fieldExpansion, language, from, to, withHitHighlights, translateBool);
+      Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, groupBy, groupBySortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
       ArrayList<Document> docs = null;
