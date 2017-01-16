@@ -61,57 +61,75 @@ public class ProjectReader extends HttpServlet {
       org.bbaw.wsp.cms.collections.ProjectReader projectReader = org.bbaw.wsp.cms.collections.ProjectReader.getInstance();
       if (operation.equals("getProjects")) {
         ArrayList<Project> projects = projectReader.getProjects();
-        String jsonProjectsStr = toJsonStringProjects(projects);
-        out.println(jsonProjectsStr);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
         return;
       } else if (operation.equals("getProjectsSorted")) {
         String sortBy = request.getParameter("sortBy"); 
         ArrayList<Project> projects = projectReader.getProjectsSorted(sortBy);
-        String jsonProjectsStr = toJsonStringProjects(projects);
-        out.println(jsonProjectsStr);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
         return;
       } else if (operation.equals("getProjectsByProjectType")) {
         String projectType = request.getParameter("projectType"); 
         ArrayList<Project> projects = projectReader.getProjectsByProjectType(projectType);
-        String jsonProjectsStr = toJsonStringProjects(projects);
-        out.println(jsonProjectsStr);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
         return;
       } else if (operation.equals("getProjectsByStatus")) {
         String status = request.getParameter("status"); 
         ArrayList<Project> projects = projectReader.getProjectsByStatus(status);
-        String jsonProjectsStr = toJsonStringProjects(projects);
-        out.println(jsonProjectsStr);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
         return;
       } else if (operation.equals("getCollections")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         ArrayList<ProjectCollection> collections = projectReader.getCollections(projectRdfId);
-        String jsonStr = toJsonStringCollections(collections);
-        out.println(jsonStr);
+        if (collections != null) {
+          String jsonStr = toJsonStringCollections(collections);
+          out.println(jsonStr);
+        }
         return;
       } else if (operation.equals("getSubjects")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         if (projectRdfId != null) {
           ArrayList<Subject> subjects = projectReader.getSubjects(projectRdfId);
-          String jsonStr = toJsonStringSubjects(subjects);
-          out.println(jsonStr);
+          if (subjects != null) {
+            String jsonStr = toJsonStringSubjects(subjects);
+            out.println(jsonStr);
+          }
           return;
         } else {
           ArrayList<Subject> subjects = projectReader.getSubjects();
-          String jsonStr = toJsonStringSubjects(subjects);
-          out.println(jsonStr);
+          if (subjects != null) {
+            String jsonStr = toJsonStringSubjects(subjects);
+            out.println(jsonStr);
+          }
           return;
         }
       } else if (operation.equals("getStaff")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         if (projectRdfId != null) {
           ArrayList<Person> persons = projectReader.getStaff(projectRdfId);
-          String jsonStr = toJsonStringPersons(persons);
-          out.println(jsonStr);
+          if (persons != null) {
+            String jsonStr = toJsonStringPersons(persons);
+            out.println(jsonStr);
+          }
           return;
         } else {
           ArrayList<Person> persons = projectReader.getStaff();
-          String jsonStr = toJsonStringPersons(persons);
-          out.println(jsonStr);
+          if (persons != null) {
+            String jsonStr = toJsonStringPersons(persons);
+            out.println(jsonStr);
+          }
           return;
         }
       } else if (operation.equals("queryProjects")) {
