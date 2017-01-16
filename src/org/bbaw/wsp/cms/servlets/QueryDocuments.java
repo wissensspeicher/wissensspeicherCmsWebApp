@@ -1308,6 +1308,10 @@ public class QueryDocuments extends HttpServlet {
   }
 
   private String getServerUrl(HttpServletRequest request) {
-    return request.getScheme() + "://" + request.getServerName();
+    int port = request.getServerPort();
+    String serverUrl = request.getScheme() + "://" + request.getServerName();
+    if (port != -1 && port != 80)
+      serverUrl = request.getScheme() + "://" + request.getServerName() + ":" + port;
+    return serverUrl;
   }
 }
