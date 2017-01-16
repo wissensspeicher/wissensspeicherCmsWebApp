@@ -333,16 +333,20 @@ public class QueryDocuments extends HttpServlet {
                 String collectionRdfId = collectionRdfIdField.stringValue();
                 if (collectionRdfId != null && ! collectionRdfId.isEmpty()) {
                   ProjectCollection coll = project.getCollection(collectionRdfId);
-                  String collectionTitle = coll.getTitle();
-                  if (collectionTitle == null)
-                    collectionTitle = "Collection homepage";
-                  String collectionHomepageUrl = coll.getHomepageUrl();
-                  String collectionTypeStr = "";
-                  OutputType collType = coll.getType();
-                  if (collType != null)
-                    collectionTypeStr = "(Type: " + collType.getLabel() + ")";
-                  if (collectionHomepageUrl != null)
-                    htmlStrBuilder.append(", Collection" + collectionTypeStr + ": <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
+                  if (coll != null) {
+                    String collectionTitle = coll.getTitle();
+                    if (collectionTitle == null)
+                      collectionTitle = collectionRdfId;
+                    String collectionHomepageUrl = coll.getHomepageUrl();
+                    String collectionTypeStr = "";
+                    OutputType collType = coll.getType();
+                    if (collType != null)
+                      collectionTypeStr = "(Type: " + collType.getLabel() + ")";
+                    if (collectionHomepageUrl != null)
+                      htmlStrBuilder.append(", Collection" + collectionTypeStr + ": <img src=\"/wspCmsWebApp/images/linkext.png\" width=\"15\" height=\"15\" border=\"0\"/>" + " <a href=\"" + collectionHomepageUrl + "\">" + collectionTitle + "</a>");
+                    else
+                      htmlStrBuilder.append(", Collection" + collectionTypeStr + ":" + collectionTitle);
+                  }
                 }
               }
               IndexableField databaseRdfIdField = doc.getField("databaseRdfId");
