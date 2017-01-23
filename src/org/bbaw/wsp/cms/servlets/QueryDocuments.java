@@ -1146,7 +1146,7 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonOutput.put("groupByHits", jsonGroupByHits);
           int sizeTotalGroups = groupByHits.getSizeTotalGroups();
-          jsonOutput.put("sizeTotalGroups", String.valueOf(sizeTotalGroups));
+          jsonOutput.put("numberOfGroups", String.valueOf(sizeTotalGroups));
         }
         out.println(jsonOutput.toJSONString());
       }
