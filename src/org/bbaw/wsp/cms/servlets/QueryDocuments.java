@@ -28,6 +28,7 @@ import org.bbaw.wsp.cms.document.DBpediaResource;
 import org.bbaw.wsp.cms.document.Document;
 import org.bbaw.wsp.cms.document.Facets;
 import org.bbaw.wsp.cms.document.GroupDocuments;
+import org.bbaw.wsp.cms.document.GroupHits;
 import org.bbaw.wsp.cms.document.Hits;
 import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
@@ -1131,16 +1132,21 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonOutput.put("hits", jsonHits);
         }
-        ArrayList<GroupDocuments> groupByHits = hits.getGroupByHits();
+        GroupHits groupByHits = hits.getGroupByHits();
         if (groupByHits != null) {
+          ArrayList<GroupDocuments> groupDocs = groupByHits.getGroupDocuments();
           JSONArray jsonGroupByHits = new JSONArray();
-          for (int i=0; i<groupByHits.size(); i++) {
-            GroupDocuments groupDocuments = groupByHits.get(i);
-            groupDocuments.setBaseUrl(baseUrl);
-            JSONObject jsonGroupDocument = groupDocuments.toJsonObject();
-            jsonGroupByHits.add(jsonGroupDocument);
+          if (groupDocs != null) {
+            for (int i=0; i<groupDocs.size(); i++) {
+              GroupDocuments groupDocuments = groupDocs.get(i);
+              groupDocuments.setBaseUrl(baseUrl);
+              JSONObject jsonGroupDocument = groupDocuments.toJsonObject();
+              jsonGroupByHits.add(jsonGroupDocument);
+            }
           }
           jsonOutput.put("groupByHits", jsonGroupByHits);
+          int sizeTotalGroups = groupByHits.getSizeTotalGroups();
+          jsonOutput.put("sizeTotalGroups", String.valueOf(sizeTotalGroups));
         }
         out.println(jsonOutput.toJSONString());
       }
