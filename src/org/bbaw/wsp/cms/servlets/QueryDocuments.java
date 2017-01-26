@@ -1122,7 +1122,8 @@ public class QueryDocuments extends HttpServlet {
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         jsonOutput.put("sizeTotalTerms", String.valueOf(sizeTotalTerms));
         jsonOutput.put("elapsedTime", String.valueOf(elapsedTime));
-        if (outputOptions.contains("showHits") || outputOptions.equals("showAll")) {
+        GroupHits groupByHits = hits.getGroupByHits();
+        if ((outputOptions.contains("showHits") || outputOptions.equals("showAll")) && groupByHits == null) {
           JSONArray jsonHits = new JSONArray();
           for (int i=0; i<docsSize; i++) {
             org.bbaw.wsp.cms.document.Document doc = docs.get(i);
@@ -1132,7 +1133,6 @@ public class QueryDocuments extends HttpServlet {
           }
           jsonOutput.put("hits", jsonHits);
         }
-        GroupHits groupByHits = hits.getGroupByHits();
         if (groupByHits != null) {
           ArrayList<GroupDocuments> groupDocs = groupByHits.getGroupDocuments();
           JSONArray jsonGroupByHits = new JSONArray();
