@@ -229,7 +229,7 @@
             <ul>
               <li>getProjects (no parameter): all projects</li>
               <li>getProjectsSorted (parameter "sortBy": "id", "label"): projects sorted by "sortBy"</li>
-              <li>getProject (parameter "projectRdfId"): projects with this projectRdfId</li>
+              <li>getProject (parameter "projectRdfId"): project with this projectRdfId</li>
               <li>getProjectsByProjectType (parameter "projectType"): projects with this projectType</li>
               <li>getProjectsByStatus (parameter "status"): projects with this status</li>
               <li>getCollection (parameter "collectionRdfId"): collection with this collectionRdfId</li>
@@ -253,7 +253,7 @@
         <ul>
           <li>Example: <a href="query/ProjectReader?operation=getProjects">Get all projects</a></li>
           <li>Example: <a href="query/ProjectReader?operation=getProjectsByProjectType&projectType=Vorhaben">Get all projects of project type "Vorhaben"</a></li>
-          <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/projectdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/normdata/AvHForschungsstelle"</a></li>
+          <li>Example: <a href="query/ProjectReader?operation=getStaff&projectRdfId=http://wissensspeicher.bbaw.de/rdf/projectdata/AvHForschungsstelle">Get staff of project "http://wissensspeicher.bbaw.de/rdf/projectdata/AvHForschungsstelle"</a></li>
           <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:Humb*dt abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Humb*dt" in field "label" and "Amerikareise in field "abstract"</a></li>
           <li>Example: <a href="query/ProjectReader?operation=queryProjects&query=label:&quot;Alexander von Humboldt&quot;|abstract:Amerikareise&fieldExpansion=none">Find all projects which contain "Alexander von Humboldt" in field "label" or "Amerikareise in field "abstract"</a></li>
         </ul>
