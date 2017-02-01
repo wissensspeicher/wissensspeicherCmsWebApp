@@ -74,6 +74,13 @@ public class ProjectReader extends HttpServlet {
           out.println(jsonProjectsStr);
         }
         return;
+      } else if (operation.equals("getProject")) {
+        String projectRdfId = request.getParameter("projectRdfId"); 
+        Project project = projectReader.getProjectByRdfId(projectRdfId);
+        if (project != null) {
+          out.println(project.toJsonObject(true).toJSONString());
+        }
+        return;
       } else if (operation.equals("getProjectsByProjectType")) {
         String projectType = request.getParameter("projectType"); 
         ArrayList<Project> projects = projectReader.getProjectsByProjectType(projectType);
@@ -96,6 +103,13 @@ public class ProjectReader extends HttpServlet {
         if (collections != null) {
           String jsonStr = toJsonStringCollections(collections);
           out.println(jsonStr);
+        }
+        return;
+      } else if (operation.equals("getCollectionByRdfId")) {
+        String rdfId = request.getParameter("collectionRdfId"); 
+        ProjectCollection collection = projectReader.getCollection(rdfId);
+        if (collection != null) {
+          out.println(collection.toJsonObject().toJSONString());
         }
         return;
       } else if (operation.equals("getSubjects")) {
