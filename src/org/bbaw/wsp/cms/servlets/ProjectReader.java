@@ -81,6 +81,14 @@ public class ProjectReader extends HttpServlet {
           out.println(project.toJsonObject(true).toJSONString());
         }
         return;
+      } else if (operation.equals("getProjectsByType")) {
+        String type = request.getParameter("type"); 
+        ArrayList<Project> projects = projectReader.getProjectsByType(type);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
+        return;
       } else if (operation.equals("getProjectsByProjectType")) {
         String projectType = request.getParameter("projectType"); 
         ArrayList<Project> projects = projectReader.getProjectsByProjectType(projectType);
