@@ -97,6 +97,14 @@ public class ProjectReader extends HttpServlet {
           out.println(jsonProjectsStr);
         }
         return;
+      } else if (operation.equals("getProjectsByOrganizationRdfId")) {
+        String organizationRdfId = request.getParameter("organizationRdfId"); 
+        ArrayList<Project> projects = projectReader.getProjectsByOrganizationRdfId(organizationRdfId);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
+        return;
       } else if (operation.equals("getCollections")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         ArrayList<ProjectCollection> collections = projectReader.getCollections(projectRdfId);
@@ -146,6 +154,18 @@ public class ProjectReader extends HttpServlet {
           }
           return;
         }
+      } else if (operation.equals("getOrganizations")) {
+        ArrayList<Organization> organizations = projectReader.getOrganizations();
+        String jsonStr = toJsonStringOrganizations(organizations);
+        out.println(jsonStr);
+        return;
+      } else if (operation.equals("getOrganization")) {
+        String organizationRdfId = request.getParameter("organizationRdfId"); 
+        Organization organization = projectReader.getOrganization(organizationRdfId);
+        if (organization != null) {
+          out.println(organization.toJsonObject().toJSONString());
+        }
+        return;
       } else if (operation.equals("queryProjects")) {
         String queryLanguage = request.getParameter("queryLanguage"); 
         if (queryLanguage == null)
@@ -212,11 +232,6 @@ public class ProjectReader extends HttpServlet {
         }
         jsonOutput.put("hits", jsonArray);
         String jsonStr = jsonOutput.toJSONString();
-        out.println(jsonStr);
-        return;
-      } else if (operation.equals("getOrganizations")) {
-        ArrayList<Organization> organizations = projectReader.getOrganizations();
-        String jsonStr = toJsonStringOrganizations(organizations);
         out.println(jsonStr);
         return;
       }
