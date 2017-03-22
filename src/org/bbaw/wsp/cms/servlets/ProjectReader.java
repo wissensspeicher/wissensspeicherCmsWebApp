@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.index.IndexableField;
 import org.bbaw.wsp.cms.collections.Organization;
+import org.bbaw.wsp.cms.collections.PeriodOfTime;
 import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectCollection;
 import org.bbaw.wsp.cms.collections.Subject;
@@ -113,6 +114,14 @@ public class ProjectReader extends HttpServlet {
           out.println(jsonProjectsStr);
         }
         return;
+      } else if (operation.equals("getProjectsByLabelStartStr")) {
+        String labelStartStr = request.getParameter("labelStartStr"); 
+        ArrayList<Project> projects = projectReader.getProjectsByLabelStartStr(labelStartStr);
+        if (projects != null) {
+          String jsonProjectsStr = toJsonStringProjects(projects);
+          out.println(jsonProjectsStr);
+        }
+        return;
       } else if (operation.equals("getCollections")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         ArrayList<ProjectCollection> collections = projectReader.getCollections(projectRdfId);
@@ -145,6 +154,25 @@ public class ProjectReader extends HttpServlet {
           }
           return;
         }
+      } else if (operation.equals("getAllPeriodOfTime")) {
+        ArrayList<PeriodOfTime> pots = projectReader.getAllPeriodOfTime();
+        if (pots != null) {
+          String jsonStr = toJsonStringPeriodOfTime(pots);
+          out.println(jsonStr);
+        }
+        return;
+      } else if (operation.equals("getProjectTypes")) {
+        ArrayList<String> projectTypes = projectReader.getProjectTypes();
+        if (projectTypes != null) {
+          JSONArray jsonProjectTypes = new JSONArray();
+          for (int i=0; i<projectTypes.size(); i++) {
+            String projectType = projectTypes.get(i);
+            jsonProjectTypes.add(projectType);
+          }
+          String jsonStr = jsonProjectTypes.toJSONString();
+          out.println(jsonStr);
+        }
+        return;
       } else if (operation.equals("getStaff")) {
         String projectRdfId = request.getParameter("projectRdfId"); 
         if (projectRdfId != null) {
@@ -222,7 +250,10 @@ public class ProjectReader extends HttpServlet {
         }
         jsonOutput.put("sizeTotalDocuments", String.valueOf(sizeTotalDocuments));
         JSONArray jsonArray = new JSONArray();
-        for (int i=0; i<hits.getSize(); i++) {
+        int docsSize = -1;
+        if (docs != null)
+          docsSize = hits.getHits().size();
+        for (int i=0; i<docsSize; i++) {
           JSONObject jsonHit = new JSONObject();
           org.bbaw.wsp.cms.document.Document projectDoc = docs.get(i);
           Float score = projectDoc.getScore();
@@ -291,10 +322,20 @@ public class ProjectReader extends HttpServlet {
   private String toJsonStringPersons(ArrayList<Person> persons) throws ApplicationException {
     JSONArray jsonPersons = new JSONArray();
     for (int i=0; i<persons.size(); i++) {
-      Person subject = persons.get(i);
-      jsonPersons.add(subject.toJsonObject());
+      Person p = persons.get(i);
+      jsonPersons.add(p.toJsonObject());
     }
     String jsonStr = jsonPersons.toJSONString();
+    return jsonStr;
+  }
+
+  private String toJsonStringPeriodOfTime(ArrayList<PeriodOfTime> pots) throws ApplicationException {
+    JSONArray jsonPots = new JSONArray();
+    for (int i=0; i<pots.size(); i++) {
+      PeriodOfTime pot = pots.get(i);
+      jsonPots.add(pot.toJsonObject());
+    }
+    String jsonStr = jsonPots.toJSONString();
     return jsonStr;
   }
 
