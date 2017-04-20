@@ -49,7 +49,7 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
-  private static int SOCKET_TIMEOUT = 1 * 1000;
+  private static int SOCKET_TIMEOUT = 500;
   private HttpClient httpClient; 
 
   private XQueryEvaluator xQueryEvaluator = null;
@@ -1130,8 +1130,8 @@ public class QueryDocuments extends HttpServlet {
         JSONObject jsonOutput = new JSONObject();
         jsonOutput.put("searchTerm", query);
         if (queryLemmas != null) {
-          System.out.println("QueryDocuments: before dwds call (: " + queryLemmas + ")" + new Date().getTime());
           JSONArray jsonDwdsQueryLinks = new JSONArray();
+          System.out.println("Before: " + new Date().getTime());
           for (int i=0; i<queryLemmas.size(); i++) {
             String queryLemma = queryLemmas.get(i);
             if (! queryLemma.isEmpty()) {
@@ -1148,11 +1148,10 @@ public class QueryDocuments extends HttpServlet {
               if (dwdsQueryLinks != null  && ! dwdsQueryLinks.isEmpty()) {
                 jsonDwdsQueryLinks.addAll(dwdsQueryLinks);
               }
-              String dwdsQueryLink = performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
             }
           }
           jsonOutput.put("dwdsQueryLinks", jsonDwdsQueryLinks);
-          System.out.println("QueryDocuments: after dwds call: " + new Date().getTime());
+          System.out.println("After: " + new Date().getTime());
         }
         jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
