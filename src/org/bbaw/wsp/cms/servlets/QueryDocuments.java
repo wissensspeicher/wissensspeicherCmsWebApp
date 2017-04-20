@@ -3,10 +3,12 @@ package org.bbaw.wsp.cms.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.FileNameMap;
+import java.net.SocketTimeoutException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 
 import javax.servlet.ServletConfig;
@@ -16,6 +18,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
@@ -34,6 +39,7 @@ import org.bbaw.wsp.cms.document.Person;
 import org.bbaw.wsp.cms.lucene.IndexHandler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -43,6 +49,8 @@ import de.mpg.mpiwg.berlin.mpdl.xml.xquery.XQueryEvaluator;
 
 public class QueryDocuments extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  private static int SOCKET_TIMEOUT = 1 * 1000;
+  private HttpClient httpClient; 
 
   private XQueryEvaluator xQueryEvaluator = null;
   
@@ -52,10 +60,20 @@ public class QueryDocuments extends HttpServlet {
 
   public void init(ServletConfig config) throws ServletException  {
     super.init(config);
+    initHttpClient();
     ServletContext context = getServletContext();
     xQueryEvaluator = (XQueryEvaluator) context.getAttribute("xQueryEvaluator");
   }
 
+  private void initHttpClient() {
+    httpClient = new HttpClient();
+    // timeout seems to work
+    httpClient.getParams().setParameter("http.socket.timeout", SOCKET_TIMEOUT);
+    httpClient.getParams().setParameter("http.connection.timeout", SOCKET_TIMEOUT);
+    httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(SOCKET_TIMEOUT));
+    httpClient.getParams().setParameter("http.protocol.head-body-timeout", SOCKET_TIMEOUT);
+  }
+  
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     request.setCharacterEncoding("utf-8");
     response.setCharacterEncoding("utf-8");
@@ -126,6 +144,7 @@ public class QueryDocuments extends HttpServlet {
       Hits hits = indexHandler.queryDocuments(queryLanguage, query, sortFields, groupBy, groupBySortFields, fieldExpansion, language, from, to, withHitHighlights, translateBool);
       int sizeTotalDocuments = hits.getSizeTotalDocuments();
       int sizeTotalTerms = hits.getSizeTotalTerms();
+      ArrayList<String> queryLemmas = hits.getQueryLemmas();
       ArrayList<Document> docs = null;
       if (hits != null)
         docs = hits.getHits();
@@ -1107,8 +1126,34 @@ public class QueryDocuments extends HttpServlet {
         htmlStrBuilder.append("</html>");
         out.print(htmlStrBuilder.toString());
       } else if (outputFormat.equals("json")) {
+        JSONParser jsonParser = new JSONParser();
         JSONObject jsonOutput = new JSONObject();
         jsonOutput.put("searchTerm", query);
+        if (queryLemmas != null) {
+          System.out.println("QueryDocuments: before dwds call (: " + queryLemmas + ")" + new Date().getTime());
+          JSONArray jsonDwdsQueryLinks = new JSONArray();
+          for (int i=0; i<queryLemmas.size(); i++) {
+            String queryLemma = queryLemmas.get(i);
+            if (! queryLemma.isEmpty()) {
+              String queryLemmaFirstCharUpper = queryLemma.substring(0, 1).toUpperCase();
+              String queryLemmaAfterFirstChar = queryLemma.substring(1);
+              String dwdsRequest = "/api/wb/snippet?q=" + queryLemmaFirstCharUpper + queryLemmaAfterFirstChar;
+              String dwdsQueryLinksResp= performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
+              JSONArray dwdsQueryLinks = null;
+              try {
+                dwdsQueryLinks = (JSONArray) jsonParser.parse(dwdsQueryLinksResp);            
+              } catch (Exception e) {
+                // nothing
+              }
+              if (dwdsQueryLinks != null  && ! dwdsQueryLinks.isEmpty()) {
+                jsonDwdsQueryLinks.addAll(dwdsQueryLinks);
+              }
+              String dwdsQueryLink = performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
+            }
+          }
+          jsonOutput.put("dwdsQueryLinks", jsonDwdsQueryLinks);
+          System.out.println("QueryDocuments: after dwds call: " + new Date().getTime());
+        }
         jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
           Facets facets = hits.getFacets();
@@ -1319,5 +1364,25 @@ public class QueryDocuments extends HttpServlet {
     if (port != -1 && port != 80)
       serverUrl = request.getScheme() + "://" + request.getServerName() + ":" + port;
     return serverUrl;
+  }
+
+  private String performGetRequest(String protocol, String host, String port, String requestName) throws ApplicationException {
+    String resultStr = null;
+    String portPart = ":" + port;
+    String urlStr = protocol + "://" + host + portPart + requestName;
+    try {
+      GetMethod method = new GetMethod(urlStr);
+      httpClient.executeMethod(method);
+      byte[] resultBytes = method.getResponseBody();
+      resultStr = new String(resultBytes, "utf-8");
+      method.releaseConnection();
+    } catch (HttpException e) {
+      // nothing
+    } catch (SocketTimeoutException e) {
+      // nothing
+    } catch (IOException e) {
+      // nothing
+    }
+    return resultStr;
   }
 }
