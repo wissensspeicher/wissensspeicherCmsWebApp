@@ -3,12 +3,10 @@ package org.bbaw.wsp.cms.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.FileNameMap;
-import java.net.SocketTimeoutException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 
 import javax.servlet.ServletConfig;
@@ -19,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.lucene.index.IndexableField;
@@ -1131,19 +1128,20 @@ public class QueryDocuments extends HttpServlet {
         jsonOutput.put("searchTerm", query);
         if (queryLemmas != null) {
           JSONArray jsonDwdsQueryLinks = new JSONArray();
-          System.out.println("Before: " + new Date().getTime());
           for (int i=0; i<queryLemmas.size(); i++) {
             String queryLemma = queryLemmas.get(i);
             if (! queryLemma.isEmpty()) {
               String queryLemmaFirstCharUpper = queryLemma.substring(0, 1).toUpperCase();
               String queryLemmaAfterFirstChar = queryLemma.substring(1);
               String dwdsRequest = "/api/wb/snippet?q=" + queryLemmaFirstCharUpper + queryLemmaAfterFirstChar;
-              String dwdsQueryLinksResp= performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
+              String dwdsQueryLinksResp = performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
               JSONArray dwdsQueryLinks = null;
-              try {
-                dwdsQueryLinks = (JSONArray) jsonParser.parse(dwdsQueryLinksResp);            
-              } catch (Exception e) {
-                // nothing
+              if (dwdsQueryLinksResp != null) {
+                try {
+                  dwdsQueryLinks = (JSONArray) jsonParser.parse(dwdsQueryLinksResp);            
+                } catch (Exception e) {
+                  // nothing
+                }
               }
               if (dwdsQueryLinks != null  && ! dwdsQueryLinks.isEmpty()) {
                 jsonDwdsQueryLinks.addAll(dwdsQueryLinks);
@@ -1151,7 +1149,6 @@ public class QueryDocuments extends HttpServlet {
             }
           }
           jsonOutput.put("dwdsQueryLinks", jsonDwdsQueryLinks);
-          System.out.println("After: " + new Date().getTime());
         }
         jsonOutput.put("numberOfHits", String.valueOf(hitsSize));
         if (outputOptions.contains("showAllFacets") || outputOptions.contains("showMainEntitiesFacet") || outputOptions.equals("showAll")) {
@@ -1375,11 +1372,7 @@ public class QueryDocuments extends HttpServlet {
       byte[] resultBytes = method.getResponseBody();
       resultStr = new String(resultBytes, "utf-8");
       method.releaseConnection();
-    } catch (HttpException e) {
-      // nothing
-    } catch (SocketTimeoutException e) {
-      // nothing
-    } catch (IOException e) {
+    } catch (Exception e) {
       // nothing
     }
     return resultStr;
