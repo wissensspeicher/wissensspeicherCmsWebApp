@@ -355,7 +355,7 @@
       </li>
       <li>Response output: suggestions (term + termFreq)
         <ul>
-          <li>Example: <a href="query/Suggest?query=hau">Suggestions for "hau"</a></li>
+          <li>Example: <a href="query/Suggest?query=haus">Suggestions for "haus"</a></li>
         </ul>
       </li>
     </ul>
@@ -407,8 +407,8 @@
         <ul>
           <li>Tokens of the attribute</li>
           <li>Example: <a href="query/GetToken?attribute=docId">all token in docId field (starting from beginning)</a></li>
-          <li>Example: <a href="query/GetToken?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenMorph&query=a">in /megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml: all token beginning with "a" in morphological content (starting from "a")</a></li>
-          <li>Example: <a href="query/GetToken?docId=/megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml&attribute=tokenOrig&sortBy=frequency">in /megadigital/mega/docs/MEGA_A2_B001-01_ETX.xml: all token in original content sorted by frequency</a></li>
+          <li>Example: <a href="query/GetToken?docId=/bbawbib/files/189/PDR_Evaluation_final.pdf&attribute=tokenMorph&query=a">in /bbawbib/files/189/PDR_Evaluation_final.pdf: all token beginning with "a" in morphological content (starting from "a")</a></li>
+          <li>Example: <a href="query/GetToken?docId=/bbawbib/files/189/PDR_Evaluation_final.pdf&attribute=tokenOrig&sortBy=frequency">in /bbawbib/files/189/PDR_Evaluation_final.pdf: all token in original content sorted by frequency</a></li>
           <li>Example: <a href="query/GetToken?attribute=tokenMorph&query=a">in all resources: all token beginning with "a" in morphological content (starting from "a")</a></li>
         </ul>
       </li>
@@ -421,14 +421,14 @@
         <ul>
           <li>id (required)
             <ul>
-              <li>resource identifier, e.g. "/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml"</li>
+              <li>resource identifier, e.g. "/bbawbib/files/189/PDR_Evaluation_final.pdf"</li>
             </ul>
           </li>
         </ul>
       </li>
       <li>Response output
         <ul>
-          <li>Example: <a href="doc/GetDocument?id=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Get test document</a></li>
+          <li>Example: <a href="doc/GetDocument?id=/bbawbib/files/189/PDR_Evaluation_final.pdf">Get test document</a></li>
         </ul>
       </li>
     </ul>
@@ -503,7 +503,7 @@
       <li>Response output
         <ul>
           <li>Meta info of resource</li>
-          <li>Example: <a href="query/GetDocInfo?docId=/avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml">Meta info of resource /avhbriefe/AvHBriefedition/Briefe/Dok280E18xml.xml</a></li>
+          <li>Example: <a href="query/GetDocInfo?docId=/bbawbib/files/189/PDR_Evaluation_final.pdf">Metadata info of resource /bbawbib/files/189/PDR_Evaluation_final.pdf</a></li>
         </ul>
       </li>
     </ul>
@@ -528,18 +528,18 @@
           <li>projects (optional)
             <ul>
               <li>one project id (e.g. ""aaew")</li>
-              <li>several project ids separated by comma (e.g. "aaew,aaewerbkam,aaewpreussen")</li>
-              <li>projects alphabetically between two project ids (e.g. "aaew-aaewtla")</li>
+              <li>several project ids separated by comma (e.g. "aaew,buber,bk")</li>
+              <li>projects alphabetically between two project ids (e.g. "aaew-buber")</li>
             </ul>
           </li>
         </ul>
       </li>
       <li>Response output
         <ul>
+          <li>Example: <a href="data/ProjectManager?operation=status&projects=aaew,buber">Show status information of projects "aaew" and "buber"</a></li>
           <li>Example: <a href="data/ProjectManager?operation=update&projects=aaew">Update project "aaew"</a></li>
-          <li>Example: <a href="data/ProjectManager?operation=update&projects=aaew,aaewerbkam">Update projects "aaew" and "aaewerbkam"</a></li>
-          <li>Example: <a href="data/ProjectManager?operation=harvest&projects=aaew-aaewtla">Harvest all projects alphabetically between "aaew" and "aaewtla"</a></li>
-          <li>Example: <a href="data/ProjectManager?operation=status&projects=aaew,aaewtla">Show status information of projects "aaew" and "aaewtla"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=update&projects=aaew,avh">Update projects "aaew" and "avh"</a></li>
+          <li>Example: <a href="data/ProjectManager?operation=harvest&projects=aaew-buber">Harvest all projects alphabetically between "aaew" and "buber"</a></li>
         </ul>
       </li>
     </ul>
