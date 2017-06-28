@@ -1128,25 +1128,30 @@ public class QueryDocuments extends HttpServlet {
         jsonOutput.put("searchTerm", query);
         if (queryLemmas != null) {
           JSONArray jsonDwdsQueryLinks = new JSONArray();
+          String dwdsQuery = "";
           for (int i=0; i<queryLemmas.size(); i++) {
             String queryLemma = queryLemmas.get(i);
             if (! queryLemma.isEmpty()) {
               String queryLemmaFirstCharUpper = queryLemma.substring(0, 1).toUpperCase();
               String queryLemmaAfterFirstChar = queryLemma.substring(1);
-              String dwdsRequest = "/api/wb/snippet?q=" + queryLemmaFirstCharUpper + queryLemmaAfterFirstChar;
-              String dwdsQueryLinksResp = performGetRequest("http", "www.dwds.de", "80", dwdsRequest);
-              JSONArray dwdsQueryLinks = null;
-              if (dwdsQueryLinksResp != null) {
-                try {
-                  dwdsQueryLinks = (JSONArray) jsonParser.parse(dwdsQueryLinksResp);            
-                } catch (Exception e) {
-                  // nothing
-                }
-              }
-              if (dwdsQueryLinks != null  && ! dwdsQueryLinks.isEmpty()) {
-                jsonDwdsQueryLinks.addAll(dwdsQueryLinks);
-              }
+              String dwdsQueryLemma = queryLemmaFirstCharUpper + queryLemmaAfterFirstChar;
+              dwdsQuery = dwdsQuery + dwdsQueryLemma + "%7C"; // %7C is "|" 
             }
+          }
+          if (! dwdsQuery.isEmpty())
+            dwdsQuery = dwdsQuery.substring(0, dwdsQuery.length() - 3); // remove last "%7C"
+          String dwdsRequest = "/api/wb/snippet?q=" + dwdsQuery;
+          String dwdsQueryLinksResp = performGetRequest("https", "www.dwds.de", null, dwdsRequest);
+          JSONArray dwdsQueryLinks = null;
+          if (dwdsQueryLinksResp != null) {
+            try {
+              dwdsQueryLinks = (JSONArray) jsonParser.parse(dwdsQueryLinksResp);            
+            } catch (Exception e) {
+              // nothing
+            }
+          }
+          if (dwdsQueryLinks != null  && ! dwdsQueryLinks.isEmpty()) {
+            jsonDwdsQueryLinks.addAll(dwdsQueryLinks);
           }
           jsonOutput.put("dwdsQueryLinks", jsonDwdsQueryLinks);
         }
@@ -1364,7 +1369,9 @@ public class QueryDocuments extends HttpServlet {
 
   private String performGetRequest(String protocol, String host, String port, String requestName) throws ApplicationException {
     String resultStr = null;
-    String portPart = ":" + port;
+    String portPart = "";
+    if (port != null)
+      portPart = ":" + port;
     String urlStr = protocol + "://" + host + portPart + requestName;
     try {
       GetMethod method = new GetMethod(urlStr);
