@@ -14,7 +14,6 @@ import org.bbaw.wsp.cms.collections.Project;
 import org.bbaw.wsp.cms.collections.ProjectReader;
 import org.bbaw.wsp.cms.scheduler.CmsChainScheduler;
 import org.bbaw.wsp.cms.scheduler.CmsOperation;
-import org.bbaw.wsp.cms.servlets.util.ServletUtil;
 
 import de.mpg.mpiwg.berlin.mpdl.exception.ApplicationException;
 
@@ -55,7 +54,7 @@ public class ProjectManager extends HttpServlet {
       if (operation.equals("updateCycle") || operation.equals("status")) {
         updateCycleProjects = getUpdateCycleProjectsIdsStr();
       }
-      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete") || operation.equals("updateCycle")) {
+      if (operation.equals("update") || operation.equals("harvest") || operation.equals("annotate") || operation.equals("index") || operation.equals("delete") || operation.equals("updateCycle") || operation.equals("indexProjects")) {
         if (uid == null || pw == null || (! uid.equals("wsp4711") && ! pw.equals("blabla4711"))) {
           out.write("<error>" + "incorrect uid or pw" + "</error>");
           return;
@@ -69,7 +68,7 @@ public class ProjectManager extends HttpServlet {
         CmsChainScheduler scheduler = CmsChainScheduler.getInstance();
         cmsOperation = scheduler.doOperation(cmsOperation);
         String jobbbbId = "" + cmsOperation.getOrderId();
-        String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
+        String baseUrl = getBaseUrl(request);
         String docJobUrlStr = baseUrl + "/query/GetCmsJobs?id=" + jobbbbId;
         out.write("<result>\n");
         out.write("<operation>" + operation + "</operation>\n");
@@ -109,7 +108,7 @@ public class ProjectManager extends HttpServlet {
         String status = "job killed";
         if (! success)
           status = "job could not be killed";
-        String baseUrl = ServletUtil.getInstance().getBaseUrl(request);
+        String baseUrl = getBaseUrl(request);
         String docJobUrlStr = baseUrl + "/query/GetCmsJobs";
         out.write("<result>\n");
         out.write("<operation>" + operation + "</operation>\n");
@@ -147,4 +146,8 @@ public class ProjectManager extends HttpServlet {
     doGet(request, response);
   }
 
+  protected String getBaseUrl( HttpServletRequest request ) {
+    return request.getScheme() + "://" + request.getServerName() + request.getContextPath();
+  }
+  
 }
