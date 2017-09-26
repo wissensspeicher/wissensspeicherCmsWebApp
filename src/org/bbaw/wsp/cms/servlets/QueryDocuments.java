@@ -1281,20 +1281,25 @@ public class QueryDocuments extends HttpServlet {
   }
   
   private String docPersonsDetailsXmlStrToHtml(XQueryEvaluator xQueryEvaluator, String docPersonsDetailsXmlStr, String baseUrl, String language) throws ApplicationException {
-    ArrayList<Person> persons = Person.fromXmlStr(xQueryEvaluator, docPersonsDetailsXmlStr);
-    String retHtmlStr = "<span class=\"persons\">";
-    for (int i=0; i<persons.size(); i++) {
-      Person person = persons.get(i);
-      person.setLanguage(language);
-      String aboutPersonLink = "/query/About?query=" + person.getName() + "&type=person";
-      if (language != null && ! language.isEmpty())
-        aboutPersonLink = aboutPersonLink + "&language=" + language;
-      person.setAboutLink(baseUrl + aboutPersonLink);
-      String htmlStrPerson = person.toHtmlStr();
-      retHtmlStr = retHtmlStr + htmlStrPerson + ", ";
+    String retHtmlStr = "";
+    try {
+      ArrayList<Person> persons = Person.fromXmlStr(xQueryEvaluator, docPersonsDetailsXmlStr);
+      retHtmlStr = "<span class=\"persons\">";
+      for (int i=0; i<persons.size(); i++) {
+        Person person = persons.get(i);
+        person.setLanguage(language);
+        String aboutPersonLink = "/query/About?query=" + person.getName() + "&type=person";
+        if (language != null && ! language.isEmpty())
+          aboutPersonLink = aboutPersonLink + "&language=" + language;
+        person.setAboutLink(baseUrl + aboutPersonLink);
+        String htmlStrPerson = person.toHtmlStr();
+        retHtmlStr = retHtmlStr + htmlStrPerson + ", ";
+      }
+      retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
+      retHtmlStr = retHtmlStr + "</span>";
+    } catch (Exception e) {
+      return "";
     }
-    retHtmlStr = retHtmlStr.substring(0, retHtmlStr.length() - 2);  // remove last comma
-    retHtmlStr = retHtmlStr + "</span>";
     return retHtmlStr;
   }
   
